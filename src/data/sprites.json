@@ -1,0 +1,366 @@
+[
+  {
+    "type": "cursor",
+    "name": "mouse",
+    "size": [30, 24],
+    "count": 178
+  },
+
+  {
+    "type": "ui",
+    "name": "trans",
+    "size": [24, 24],
+    "count": 4
+  },
+
+
+  {
+    "type": "ui",
+    "name": "htabs",
+    "size": [160, 14],
+    "count": 2
+  },
+  {
+    "type": "ui",
+    "name": "btexture",
+    "size": [320, 48],
+    "count": 2
+  },
+  {
+    "type": "ui",
+    "name": "hside1",
+    "size": [160, 118],
+    "count": 2
+  },
+  {
+    "type": "ui",
+    "name": "hside2",
+    "size": [160, 124],
+    "count": 2
+  },
+  {
+    "type": "ui",
+    "name": "btn-plh",
+    "size": [32, 24],
+    "count": 3
+  },
+  {
+    "type": "ui",
+    "name": "btn-sth",
+    "size": [32, 24],
+    "count": 3
+  },
+  {
+    "type": "ui",
+    "name": "btn-dn",
+    "size": [16, 16],
+    "count": 3
+  },
+  {
+    "type": "ui",
+    "name": "btn-up",
+    "size": [16, 16],
+    "count": 3
+  },
+  {
+    "type": "ui",
+    "name": "hclock",
+    "size": [64, 48],
+    "count": 109
+  },
+  {
+    "type": "ui",
+    "name": "hmap",
+    "size": [49, 16],
+    "count": 3
+  },
+  {
+    "type": "ui",
+    "name": "hpips",
+    "size": [39, 8],
+    "count": 8
+  },
+  {
+    "type": "ui",
+    "name": "hrepair",
+    "size": [49, 16],
+    "count": 2
+  },
+  {
+    "type": "ui",
+    "name": "hsell",
+    "size": [49, 16],
+    "count": 2
+  },
+  {
+    "type": "ui",
+    "name": "hstripdn",
+    "size": [32, 27],
+    "count": 2
+  },
+  {
+    "type": "ui",
+    "name": "hstripup",
+    "size": [32, 27],
+    "count": 2
+  },
+  {
+    "type": "ui",
+    "name": "options",
+    "size": [103, 79],
+    "count": 32
+  },
+  {
+    "type": "ui",
+    "name": "choose",
+    "size": [320, 156],
+    "count": 30
+  },
+
+
+  {
+    "type": "overlay",
+    "name": "120mm",
+    "size": [24, 24]
+  },
+  {
+    "type": "overlay",
+    "name": "50cal",
+    "size": [24, 24]
+  },
+  {
+    "type": "overlay",
+    "name": "art-exp1",
+    "size": [41, 35]
+  },
+  {
+    "type": "overlay",
+    "name": "atomdoor",
+    "size": [24, 48]
+  },
+  {
+    "type": "overlay",
+    "name": "atomicdn",
+    "size": [48, 48]
+  },
+  {
+    "type": "overlay",
+    "name": "atomicup",
+    "size": [48, 48]
+  },
+  {
+    "type": "overlay",
+    "name": "atomsfx",
+    "size": [78, 121]
+  },
+  {
+    "type": "overlay",
+    "name": "bomb",
+    "size": [8, 8],
+    "count": 8
+  },
+  {
+    "type": "overlay",
+    "name": "bomblet",
+    "size": [7, 7],
+    "count": 7
+  },
+  {
+    "type": "overlay",
+    "name": "burn-l",
+    "size": [23, 23],
+    "count": 67
+  },
+  {
+    "type": "overlay",
+    "name": "burn-m",
+    "size": [14, 14],
+    "count": 67
+  },
+  {
+    "type": "overlay",
+    "name": "burn-s",
+    "size": [10, 11],
+    "count": 65
+  },
+  {
+    "type": "overlay",
+    "name": "chemball",
+    "size": [22, 18],
+    "count": 14
+  },
+  {
+    "type": "overlay",
+    "name": "dragon",
+    "size": [15, 15],
+    "count": 32
+  },
+  {
+    "type": "overlay",
+    "name": "fball1",
+    "size": [67, 44],
+    "count": 18
+  },
+  {
+    "type": "overlay",
+    "name": "fire1",
+    "size": [23, 23],
+    "count": 15
+  },
+  {
+    "type": "overlay",
+    "name": "fire2",
+    "size": [23, 23],
+    "count": 15
+  },
+  {
+    "type": "overlay",
+    "name": "fire3",
+    "size": [23, 23],
+    "count": 15
+  },
+  {
+    "type": "overlay",
+    "name": "fire4",
+    "size": [7, 7],
+    "count": 15
+  },
+  {
+    "type": "overlay",
+    "name": "flmspt",
+    "size": [42, 40],
+    "count": 100
+  },
+  {
+    "type": "overlay",
+    "name": "frag1",
+    "size": [45, 33],
+    "count": 14
+  },
+  {
+    "type": "overlay",
+    "name": "frag3",
+    "size": [41, 28],
+    "count": 22
+  },
+  {
+    "type": "overlay",
+    "name": "gunfire",
+    "size": [16, 16],
+    "count": 3
+  },
+  {
+    "type": "overlay",
+    "name": "ionsfx",
+    "size": [72, 191],
+    "count": 15
+  },
+  {
+    "type": "overlay",
+    "name": "minigun",
+    "size": [18, 17],
+    "count": 48
+  },
+  {
+    "type": "overlay",
+    "name": "missile",
+    "size": [15, 15],
+    "count": 32
+  },
+  {
+    "type": "overlay",
+    "name": "napalm1",
+    "size": [22, 18],
+    "count": 14
+  },
+  {
+    "type": "overlay",
+    "name": "napalm2",
+    "size": [41, 40],
+    "count": 14
+  },
+  {
+    "type": "overlay",
+    "name": "napalm3",
+    "size": [72, 72],
+    "count": 14
+  },
+  {
+    "type": "overlay",
+    "name": "patriot",
+    "size": [26, 15],
+    "count": 32
+  },
+  {
+    "type": "overlay",
+    "name": "piff",
+    "size": [9, 13],
+    "count": 4
+  },
+  {
+    "type": "overlay",
+    "name": "piffpiff",
+    "size": [15, 15],
+    "count": 4
+  },
+  {
+    "type": "overlay",
+    "name": "smoke_m",
+    "size": [23, 23],
+    "count": 91
+  },
+  {
+    "type": "overlay",
+    "name": "smokey",
+    "size": [19, 17],
+    "count": 7
+  },
+  {
+    "type": "overlay",
+    "name": "smokland",
+    "size": [42, 31],
+    "count": 92
+  },
+  {
+    "type": "overlay",
+    "name": "veh-hit1",
+    "size": [30, 17],
+    "count": 17
+  },
+  {
+    "type": "overlay",
+    "name": "veh-hit2",
+    "size": [21, 17],
+    "count": 22
+  },
+  {
+    "type": "overlay",
+    "name": "veh-hit3",
+    "size": [19, 13],
+    "count": 14
+  },
+  {
+    "type": "overlay",
+    "name": "wake",
+    "size": [85, 8],
+    "count": 12
+  },
+  {
+    "type": "overlay",
+    "name": "bib1",
+    "size": [24, 24],
+    "count": 8
+  },
+  {
+    "type": "overlay",
+    "name": "bib2",
+    "size": [24, 24],
+    "count": 6
+  },
+  {
+    "type": "overlay",
+    "name": "bib3",
+    "size": [24, 24],
+    "count": 4
+  }
+]

@@ -1,0 +1,7 @@
+*.swp
+*.tern*
+/tmp*
+/node_modules
+/.tmp
+/src/data/*.ini
+/src/data/*.pal

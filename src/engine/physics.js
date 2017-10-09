@@ -1,0 +1,104 @@
+/*!
+ * cncjs
+ * @author Anders Evenrud <andersevenrud@gmail.com>
+ * @license MIT
+ */
+import {TILE_SIZE} from './globals';
+
+/**
+ * Gets a direction based on angle of direction
+ * @param {Object} target Target object
+ * @param {Object} source Source object
+ * @param {Number} [base=32] Number of directions
+ * @return {Number}
+ */
+export function getDirection(target, source, base = 32) {
+  let dx = target.x - source.x;
+  let dy = target.y - source.y;
+  let angle = base / 2 + Math.round(Math.atan2(dx, dy) * base / (2 * Math.PI));
+
+  if ( angle < 0 ) {
+    angle += base;
+  }
+
+  if ( angle >= base ) {
+    angle -= base;
+  }
+
+  return angle;
+}
+
+/**
+ * Axis-Aligned Bounding Box collision test
+ * @param {Object} rect Rectangle
+ * @param {Object} obj Object (rectangle)
+ * @return {Boolean}
+ */
+export function collideAABB(rect, obj) {
+  return (rect.x1 < obj.x2) &&
+    (rect.x2 > obj.x1) &&
+    (rect.y1 < obj.y2) &&
+    (rect.y2 > obj.y1);
+}
+
+/**
+ * Point collision test
+ * @param {Object} point Point
+ * @param {Object} obj Object (rectangle)
+ * @return {Boolean}
+ */
+export function collidePoint(point, obj) {
+  return (point.x >= obj.x1) &&
+    (point.x <= obj.x2) &&
+    (point.y >= obj.y1) &&
+    (point.y <= obj.y2);
+}
+
+/**
+ * Gets tile from a Point
+ * @param {Number} x X
+ * @param {Number} y Y
+ * @return {Object}
+ */
+export function tileFromPoint(x, y) {
+  const tileX = Math.floor(x / TILE_SIZE);
+  const tileY = Math.floor(y / TILE_SIZE);
+  return {tileX, tileY};
+}
+
+/**
+ * Gets point from Tile
+ * @param {Number} tileX X Tile
+ * @param {Number} tileY Y Tile
+ * @param {Boolean} [center] Get center ?
+ * @return {Object}
+ */
+export function pointFromTile(tileX, tileY, center) {
+  const c = center ? TILE_SIZE / 2 : 0;
+  const x = (tileX * TILE_SIZE) + c;
+  const y = (tileY * TILE_SIZE) + c;
+  return {x, y};
+}
+
+/**
+ * Gets a tile from index
+ * @param {Number} index The index
+ * @param {Number} tilesX Tiles in horizontal direction
+ * @return {Object}
+ */
+export function tileFromIndex(index, tilesX) {
+  const tileX = index % tilesX;
+  const tileY = parseInt(index / tilesX, 10);
+  return {tileX, tileY};
+}
+
+/**
+ * Gets a index from tile
+ * @param {Number} tileX X tile
+ * @param {Number} tileY Y tile
+ * @param {Number} tilesX Tiles in horizontal direction
+ * @return {Number}
+ */
+export function indexFromTile(tileX, tileY, tilesX) {
+  return tileY * tilesX + tileX;
+}
