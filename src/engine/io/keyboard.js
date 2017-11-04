@@ -97,23 +97,34 @@ export default class Keyboard {
 
   /**
    * Check if key was clicked
-   * @param {String} keyName Key name
+   * @param {String|String[]} [keyName] Key name
+   * @param {Boolean} [all=false] Test for keys
    * @return {Boolean}
    */
-  keyClicked(keyName) {
-    return this.keysPressed[keyName] === true;
+  keyClicked(keyName, all = false) {
+    if ( !(keyName instanceof Array) ) {
+      keyName = [keyName];
+    }
+
+    return keyName[all ? 'every' : 'some'](n => this.keysPressed[n] === true);
   }
 
   /**
    * Check if key is pressed
-   * @param {String} [keyName] Key name
+   * @param {String|String[]} [keyName] Key name
+   * @param {Boolean} [all=false] Test for keys
    * @return {Boolean}
    */
-  keyDown(keyName) {
+  keyDown(keyName, all = false) {
     if ( !keyName ) {
       return Object.keys(this.keysDown).length > 0;
     }
-    return this.keysDown[keyName] === true;
+
+    if ( !(keyName instanceof Array) ) {
+      keyName = [keyName];
+    }
+
+    return keyName[all ? 'every' : 'some'](n => this.keysDown[n] === true);
   }
 
   /**

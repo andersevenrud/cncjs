@@ -21,7 +21,7 @@ export default class MovieScene extends GameScene {
       this.$container = null;
     }
 
-    super.destroy(this.options);
+    super.destroy();
   }
 
   render(target, delta) {
@@ -38,6 +38,33 @@ export default class MovieScene extends GameScene {
     }
   }
 
+  resize() {
+    if ( this.$video ) {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const height = this.$video.videoHeight;
+      const width = this.$video.videoWidth;
+      const ratio = width / height;
+
+      const videoHeight = vh;
+      const videoWidth = Math.round(videoHeight * ratio);
+
+      this.$video.height = String(videoHeight);
+      this.$video.width = String(videoWidth);
+      this.$video.style.left = String((vw / 2) - (videoWidth / 2)) + 'px';
+    }
+  }
+
+  pause(paused) {
+    if ( this.$video ) {
+      if ( paused ) {
+        this.$video.pause();
+      } else {
+        this.$video.play();
+      }
+    }
+  }
+
   async load() {
     const video = this.options.movie;
     console.info('Playing movie', video);
@@ -50,6 +77,7 @@ export default class MovieScene extends GameScene {
     });
 
     this.$video.addEventListener('canplay', () => {
+      this.resize();
       this.$video.play();
     });
 
@@ -57,7 +85,7 @@ export default class MovieScene extends GameScene {
       this.destroy();
     });
 
-    this.$video.src = `movies/${video}.mp4`;
+    this.$video.src = `movies/${video}.webm`;
     this.$container.appendChild(this.$video);
     document.body.appendChild(this.$container);
   }

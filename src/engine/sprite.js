@@ -38,10 +38,15 @@ export default class Sprite {
    */
   async load(engine, type) {
     const asset = await engine.mix.getDataFile(this.filename);
-    const img = await loadImage(asset);
+    const url = URL.createObjectURL(asset);
+    const img = await loadImage(url);
 
     this.canvas.width = img.width;
     this.canvas.height = img.height;
+
+    if ( img.width > 32767 || img.height > 32767 ) {
+      console.warn('The sprite', this.filename, 'is exceeding the browser pixel limit!');
+    }
 
     const context = this.canvas.getContext('2d');
     context.mozImageSmoothingEnabled = false;
@@ -49,6 +54,12 @@ export default class Sprite {
     context.msImageSmoothingEnabled = false;
     context.imageSmoothingEnabled = false;
     context.drawImage(img, 0, 0);
+
+    try {
+      URL.revokeObjectURL(url);
+    } catch ( e ) {
+      console.warn(e);
+    }
 
     console.debug('Sprite::load()',  type, this.filename, [img.width, img.height]);
 
@@ -87,6 +98,31 @@ export default class Sprite {
     const [sx, sy] = this.getFrameOffset(frame, row);
 
     target.drawImage(this.canvas, sx, sy, w, h, dx, dy, dw, dh);
+  }
+
+  /**
+   * Draws the Sprite onto target, but scaled to fill (and centered)
+   *
+   * @param {CanvasRenderingContext2D} target Render context
+   * @param {Number} dw Destination width
+   * @param {Number} dh Destination height
+   * @param {Number} [frame=0] Sprite image frame (column)
+   * @param {Number} [row=0] The row (color variant)
+   * @return {Object} The rectangle it made
+   */
+  renderFilled(target, dw, dh, frame = 0, row = 0) {
+    // TODO: Portrait mode
+    // TODO: Make sure it does not overflow
+    const [width, height] = this.getSize();
+
+    const h = dh;
+    const w = dh * (width / height);
+    const x = (dw / 2) - (w / 2);
+    const y = 0;
+
+    this.renderScaled(target, x, y, w, h, frame, row);
+
+    return {w, h, x, y};
   }
 
   /**
@@ -165,6 +201,23 @@ export default class Sprite {
    */
   static getFile(name) {
     return CACHE[name];
+  }
+
+  /**
+   * Destroys the Sprite cache
+   */
+  static destroyCache() {
+    console.info('Destroying sprite cache');
+
+    CACHE = {};
+  }
+
+  /**
+   * Get number of entries in cache
+   * @return {Number}
+   */
+  static getCacheCount() {
+    return Object.keys(CACHE).length;
   }
 
 }

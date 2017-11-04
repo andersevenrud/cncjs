@@ -4,6 +4,14 @@
  * @license MIT
  */
 
+const DEFAULT_TEXT = {
+  left: 4,
+  top: 4,
+  lineHeight: 12,
+  font: '12px monospace',
+  fillStyle: '#000000'
+};
+
 /**
  * Loads an image
  * @param {String} src Image URI
@@ -66,22 +74,52 @@ export function copy(arr) {
  * @param {String} [options.fillStyle=black] Fill style
  */
 export function drawText(target, text, options) {
+  options = Object.assign({}, DEFAULT_TEXT, options || {});
+
   if ( !(text instanceof Array) ) {
     text = [text];
   }
-
-  options = Object.assign({}, {
-    top: 0,
-    lineHeight: 10,
-    font: '12px monospace',
-    fillStyle: '#000000'
-  }, options || {});
 
   target.font = options.font;
   target.fillStyle = options.fillStyle;
 
   for ( let i = 0; i < text.length; i++ ) {
-    target.fillText(text[i], 4, options.top + (i * options.lineHeight));
+    target.fillText(text[i], options.left, options.top + (i * options.lineHeight));
+  }
+}
+
+/**
+ * Draws text over multiple lines
+ * @param {CanvasRenderingContext2D} target Render context
+ * @param {String} text Text
+ * @param {Object} options Options
+ * @param {Number} [options.top=0] Top position
+ * @param {Number} [options.lineHeight=10] Line height
+ * @param {String} [options.font=monospace] Font name
+ * @param {String} [options.fillStyle=black] Fill style
+ * @param {Number} wrap Wrap after this width
+ */
+export function drawWrappedText(target, text, options, wrap) {
+  options = Object.assign({}, DEFAULT_TEXT, options || {});
+
+  target.font = options.font;
+  target.fillStyle = options.fillStyle;
+
+  const words = text.split(' ');
+
+  let top = options.top;
+  let line = '';
+  for ( let i = 0; i < words.length; i++ ) {
+    const testLine = line + words[i] + ' ';
+    const {width} = target.measureText(testLine);
+
+    if ( width > wrap && i > 0 ) {
+      target.fillText(line, options.left, top);
+      line = words[i] + ' ';
+      top += options.lineHeight;
+    } else {
+      line = testLine;
+    }
   }
 }
 

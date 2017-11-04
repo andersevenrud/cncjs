@@ -12,10 +12,32 @@ export default class ChooseScene extends GameScene {
   constructor(engine, options) {
     super(...arguments);
     this.spriteIndex = 0;
+    this.selected = false;
+  }
+
+  destroy(options) {
+    const mapName = options.team === 'GDI' ? 'scg01ea' : 'scb01ea';
+    const level = this.engine.mix.getLevel(mapName);
+    const brief = level.info.Brief;
+
+    this.engine.pushScene('movie', {
+      movie: brief
+    });
+
+    this.engine.pushScene('theater', {
+      team: options.team,
+      map: mapName
+    });
+
+    super.destroy();
   }
 
   update() {
     super.update(...arguments);
+
+    if ( this.selected ) {
+      return;
+    }
 
     const click = this.engine.mouse.buttonClicked('LEFT');
     if ( click ) {
@@ -39,9 +61,9 @@ export default class ChooseScene extends GameScene {
       };
 
       if ( collidePoint(click, gdiRect) ) {
-        this.destroy({team: 'GDI'});
+        this.selectTeam('gdi');
       } else if ( collidePoint(click, nodRect) ) {
-        this.destroy({team: 'NOD'});
+        this.selectTeam('nod');
       }
     }
 
@@ -52,12 +74,8 @@ export default class ChooseScene extends GameScene {
 
   render(target, delta) {
     if ( this.sprite ) {
-      const [width, height] = this.sprite.getSize();
       const {vw, vh} =  this.getViewport();
-      const ratio = Math.min(vw / width, vh / height);
-      const cx = (vw / 2) - (width * ratio / 2);
-
-      this.sprite.renderScaled(target, cx, 0, width * ratio, height * ratio, Math.floor(this.spriteIndex));
+      this.sprite.renderFilled(target, vw, vh, Math.floor(this.spriteIndex));
 
       /*
       const left = (vw - (width * ratio)) / 2;
@@ -76,6 +94,17 @@ export default class ChooseScene extends GameScene {
 
     this.sprite = Sprite.getFile('choose');
     this.engine.sounds.playSong('struggle', 'music', true);
+  }
+
+  selectTeam(teamName) {
+    this.selected = true;
+    const done = () => {
+      this.destroy({team: teamName.toUpperCase()});
+    };
+
+    this.engine.sounds.playSong(`${teamName}_slct`).then((el) => {
+      el.addEventListener('ended', () => done());
+    }).catch(() => done());
   }
 
 }

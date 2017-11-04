@@ -6,7 +6,17 @@
 import EngineObject from '../engine/object';
 import {pointFromTile} from '../engine/physics';
 import {TILE_SIZE} from '../engine/globals';
-import {ZINDEX} from './globals';
+
+const ZINDEX = {
+  smudge: 0,
+  structure: 1,
+  overlay: 2,
+  unit: 10,
+  infantry: 10,
+  terrain: 20,
+  effect: 30,
+  projectile: 100
+};
 
 export default class MapObject extends EngineObject {
 
@@ -123,8 +133,9 @@ export default class MapObject extends EngineObject {
     const rect = this.getRect(true);
     const {x, y, w, h} = rect;
     const {offsetX, offsetY} = this.engine.getOffset();
+    const debug = this.engine.options.debug;
 
-    if ( this.engine.options.debug && this.orders ) {
+    if ( debug && this.orders ) {
       target.fillStyle = 'rgba(0, 255, 0, .1)';
 
       this.orders.forEach((o) => {
@@ -137,13 +148,11 @@ export default class MapObject extends EngineObject {
 
     super.render(...arguments);
 
-    if ( this.selected ) {
-      if ( this.engine.options.debug ) {
-        const debugLine = `${this.tileX}x${this.tileY}x${this.tileS} (${this.x.toFixed(2)}x${this.y.toFixed(2)}) - ${this.currentAnimation} - ${this.spriteFrame} (${this.currentAnimationOffset} / ${this.currentAnimationIndex}) | ${this.direction}`;
-        target.font = '8px monospace';
-        target.fillStyle = '#ff0000';
-        target.fillText(debugLine, x + w, y + h);
-      }
+    if ( debug && this.selected ) {
+      const debugLine = `${this.tileX}x${this.tileY}x${this.tileS} (${this.x.toFixed(2)}x${this.y.toFixed(2)}) - ${this.currentAnimation} - ${this.spriteFrame} (${this.currentAnimationOffset} / ${this.currentAnimationIndex}) | ${this.direction}`;
+      target.font = '8px monospace';
+      target.fillStyle = '#ff0000';
+      target.fillText(debugLine, x + w, y + h);
     }
   }
 
@@ -262,11 +271,20 @@ export default class MapObject extends EngineObject {
   }
 
   /**
+   * Get player name
+   * @return {String}
+   */
+  getPlayerName() {
+    const player = this.engine.scene.getPlayerByTeam(this.team);
+    return player ? player.playerName : null;
+  }
+
+  /**
    * Checks if this is an overlay type instance
    * @return {Boolean}
    */
   isMapOverlay() {
-    return ['overlay', 'terrain', 'tile', 'explosion', 'projectile'].indexOf(this.type) !== -1;
+    return ['overlay', 'terrain', 'tile', 'explosion', 'projectile', 'smudge'].indexOf(this.type) !== -1;
   }
 
   /**
@@ -286,6 +304,14 @@ export default class MapObject extends EngineObject {
   }
 
   /**
+   * Checks if this is a player object
+   * @return {Boolean}
+   */
+  isPlayerObject() {
+    return this.isStructure() || this.isUnit();
+  }
+
+  /**
    * Checks if this is an firendly type instance
    * @return {Boolean}
    */
@@ -300,6 +326,11 @@ export default class MapObject extends EngineObject {
    */
   isEnemy() {
     return !this.isFriendly();
+  }
+
+  isBlocking() {
+    // FIXME
+    return !this.destroying && !this.options.Tiberium && this.type !== 'smudge';
   }
 
   /**

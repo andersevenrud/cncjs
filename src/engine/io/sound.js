@@ -4,6 +4,8 @@
  * @license MIT
  */
 
+// TODO: Sounds and music needs to be prefixed by .MIX directgory instead of what is now
+
 import {randomInteger} from '../util';
 
 /**
@@ -85,6 +87,8 @@ export default class Sound {
     if ( this.musicElement ) {
       this.musicElement.volume = this.musicVolume;
     }
+
+    console.info('Music volume now', this.musicVolume);
   }
 
   /**
@@ -93,6 +97,7 @@ export default class Sound {
    */
   setSoundVolume(v) {
     this.soundVolume = parseFloat(v);
+    console.info('Sound volume now', this.soundVolume);
   }
 
   /**
@@ -130,14 +135,18 @@ export default class Sound {
     }
 
     if ( !this.musicEnabled ) {
+      setTimeout(() => {
+        this.musicElement.dispatchEvent(new CustomEvent('ended'));
+      }, 1);
       return Promise.resolve(this.musicElement);
     }
 
     return new Promise((resolve, reject) => {
       this.musicElement.addEventListener('canplay', () => {
+        resolve(this.musicElement);
+
         console.info('Playing song', src);
         this.musicElement.play();
-        resolve(this.musicElement);
       });
 
       this.musicElement.addEventListener('error', reject);

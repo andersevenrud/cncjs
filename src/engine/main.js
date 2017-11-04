@@ -8,6 +8,8 @@ import Mouse from './io/mouse';
 import Keyboard from './io/keyboard';
 import Sound from './io/sound';
 import MIX from './io/mix';
+import Sprite from './sprite';
+import Configuration from './configuration';
 import {MAX_DEBUG, UPDATE_RATE} from './globals';
 
 /**
@@ -17,22 +19,24 @@ export default class Engine {
 
   /**
    * @param {Node} canvas The root canvas element
-   * @param {Object} [options] Options
+   * @param {Object} configuration Game configuration
+   * @param {Object} [options] Game Options
    * @param {String} [options.version] Version stamp
    * @param {String} [options.dataFile] Data file (zip file)
    * @param {Number} [options.debug=0] Debug mode
-   * @param {Number} [options.scale=1] Scale mode
+   * @param {Object} [options.gui] GUI Element map
+   * @param {Object} [options.scenes] Scene map
    * @param {Boolean} [options.debugMode=false] Debug mode
-   * @param {Boolean} [options.audio=true] Audio toggle
    */
-  constructor(canvas, options = {}) {
+  constructor(canvas, configuration, options = {}) {
     this.options = Object.assign({}, {
+      gui: {},
+      scenes: {},
+      debug: false,
       version: '0.0.0',
       loading: null,
-      scale: 1,
-      debug: 0,
+      loadingBar: null,
       debugMode: false,
-      audio: true,
       dataFile: 'data.zip'
     }, options);
 
@@ -43,6 +47,7 @@ export default class Engine {
     this.mouse = new Mouse(this);
     this.keyboard = new Keyboard(this);
     this.sounds = new Sound(this);
+    this.configuration = new Configuration(options, configuration);
     this.scene = null;
 
     this.sceneQueue = [];
@@ -55,8 +60,11 @@ export default class Engine {
     this.fpsAverage = 0;
     this.updateTime = 0;
     this.currentTick = 0;
+    this.pauseTick = false;
     this.paused = false;
+    this.wasPaused = false;
     this.$loading = options.loading;
+    this.$loadingBar = options.loadingBar;
 
     let debounce;
     window.addEventListener('blur', () => this.pause());
@@ -84,12 +92,16 @@ export default class Engine {
     console.group('Engine::load()');
 
     this.toggleLoading(true);
-    this.setScale(this.options.scale);
-    this.toggleDebug(this.options.debug);
-    this.sounds.toggleSound(this.options.audio);
-    this.sounds.toggleMusic(this.options.audio);
 
+    await this.configuration.load();
     await this.mix.load();
+
+    this.setScale(this.getConfig('scale'));
+    this.toggleDebug(this.options.debug);
+    this.sounds.setSoundVolume(this.getConfig('soundVolume'));
+    this.sounds.setMusicVolume(this.getConfig('musicVolume'));
+    this.sounds.toggleSound(this.getConfig('audio'));
+    this.sounds.toggleMusic(this.getConfig('audio'));
 
     this.toggleLoading(false);
 
@@ -111,9 +123,10 @@ export default class Engine {
       this.options.debug = (this.options.debug + 1) % (MAX_DEBUG + 1);
     }
 
-    console.debug('Debug level is now', this.options.debug);
+    const state = this.options.debug;
+    console.debug('Debug level is now', state);
 
-    this.canvas.style.cursor = this.options.debug ? 'default' : 'none';
+    this.canvas.style.cursor = state ? 'default' : 'none';
   }
 
   /**
@@ -124,6 +137,11 @@ export default class Engine {
   pause(t) {
     this.paused = (typeof t === 'undefined' ? !this.paused : t === true);
     this.sounds.pause(!this.paused);
+
+    if ( this.scene ) {
+      this.scene.pause(this.paused);
+    }
+
     return this.paused;
   }
 
@@ -189,8 +207,22 @@ export default class Engine {
    * Event: On update
    */
   onupdate() {
+    if ( this.paused ) {
+      this.wasPaused = true;
+      return;
+    }
+
+    // Makes sure input is ignored whenever we return to browser
+    // from a paused state
+    if ( this.wasPaused ) {
+      this.keyboard.reset();
+      this.mouse.reset();
+      this.wasPaused = false;
+      return;
+    }
+
     const now = performance.now();
-    if ( this.scene && !this.paused ) {
+    if ( this.scene && !this.paused && !this.scene.destroying ) {
       this.scene.update();
     }
 
@@ -198,7 +230,9 @@ export default class Engine {
     this.mouse.update();
 
     this.updateTime = (performance.now() - now);
-    this.currentTick++;
+    if ( !this.pauseTick ) {
+      this.currentTick++;
+    }
   }
 
   /**
@@ -209,11 +243,12 @@ export default class Engine {
     if ( this.paused ) {
       return;
     }
+    //this.canvas.width = this.canvas.width;
 
     this.context.clearRect(0, 0, this.width, this.height);
     this.context.textBaseline = 'alphabetic';
     this.context.textAlign = 'start';
-    if ( this.scene ) {
+    if ( this.scene && !this.scene.destroying ) {
       this.scene.render(this.context, delta);
     }
   }
@@ -224,12 +259,17 @@ export default class Engine {
   resize() {
     const w = Math.max(640, window.innerWidth);
     const h = Math.max(535, window.innerHeight);
+    const s = this.getConfig('scale');
 
-    this.width = Math.round(w / this.options.scale);
-    this.height = Math.round(h / this.options.scale);
+    this.width = Math.round(w / s);
+    this.height = Math.round(h / s);
 
     this.canvas.width = this.width;
     this.canvas.height = this.height;
+
+    if ( this.scene ) {
+      this.scene.resize();
+    }
 
     console.info('Resized to', [this.width, this.height]);
   }
@@ -238,8 +278,10 @@ export default class Engine {
    * Go to next scene
    * @param {Object} [args] Arguments to pass on
    */
-  async nextScene(args) {
+  async nextScene() {
     console.info('Going to next scene', this.started);
+
+    Sprite.destroyCache();
 
     this.toggleLoading(true);
 
@@ -261,7 +303,7 @@ export default class Engine {
       return;
     }
 
-    const scene = this.sceneQueue[0](args);
+    const scene = this.sceneQueue[0]();
     this.scene = scene;
     await this.scene.load();
 
@@ -269,12 +311,40 @@ export default class Engine {
     this.toggleLoading(false);
   }
 
-  toggleLoading(t) {
+  /**
+   * Push a scene
+   * @param {String} sceneName Scene Name
+   * @param {Object} [options] Instanciation options
+   */
+  pushScene(sceneName, options) {
+    const ClassRef = this.options.scenes[sceneName];
+    console.info('Pushing Scene', sceneName, ClassRef);
+
+    this.sceneQueue.push(() => {
+      return new ClassRef(this, options);
+    });
+  }
+
+  /**
+   * Toggle DOM loading indication
+   * @param {Boolean} t State
+   * @param {Number} [p] Percentage in progress
+   */
+  toggleLoading(t, p) {
     if ( !this.$loading ) {
       return;
     }
 
     this.$loading.style.display = t ? 'block' : 'none';
+
+    if ( this.$loadingBar ) {
+      if ( !t || typeof p === 'undefined' ) {
+        this.$loadingBar.style.display = 'none';
+      } else {
+        this.$loadingBar.style.display = 'block';
+        this.$loadingBar.style.width = String(Math.round(p || 0)) + '%';
+      }
+    }
   }
 
   /**
@@ -282,7 +352,7 @@ export default class Engine {
    * @param {Number} scale Scale factor
    */
   setScale(scale) {
-    this.options.scale = scale;
+    this.configuration.setConfig('scale', scale);
     this.resize();
     this.canvas.className = scale > 1 ? 'sharpen' : '';
   }
@@ -301,7 +371,17 @@ export default class Engine {
    * @return {Number}
    */
   getScale() {
-    return this.options.scale;
+    return this.getConfig('scale');
+  }
+
+  /**
+   * Gets configuration entry
+   * @param {String} [key] Configuration key
+   * @param {*} [defaultValue] Default value if none was found
+   * @return {*} If no key was give, entire tree is returned
+   */
+  getConfig(key, defaultValue) {
+    return this.configuration.getConfig(key, defaultValue);
   }
 
   /**

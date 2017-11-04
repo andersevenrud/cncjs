@@ -8,6 +8,30 @@ const MOUSE_LEFT = 1;
 const MOUSE_RIGHT = 2;
 
 /**
+ * Makes a fake mouse event
+ * @param {String} name Event name
+ * @param {Object} ev Event data
+ * @param {Number} [button=0] Button
+ * @return {MouseEvent}
+ */
+function makeFakeEvent(name, ev, button) {
+  const touch = ev.touches || ev.changedTouches || [];
+  const pos = touch.length
+    ? {x: touch[0].clientX, y: touch[0].clientY}
+    : {x: ev.clientX, y: ev.clientY};
+
+  const x = Math.round(pos.x);
+  const y = Math.round(pos.y);
+
+  return new MouseEvent(name, Object.assign({
+    button: button || MOUSE_LEFT,
+    clientX: x,
+    clientY: y,
+    x, y
+  }, ev));
+}
+
+/**
  * Game Mouse Handling Class
  */
 export default class Mouse {
@@ -48,6 +72,11 @@ export default class Mouse {
 
     events.forEach((evName) => window.addEventListener(evName, callback(evName)));
 
+    if ( typeof window.MouseEvent !== 'undefined' ) {
+      this.bindTouchClick(window);
+      this.bindTouchMove(window);
+    }
+
     this.onenter();
 
     console.log('Mouse::constructor()');
@@ -85,8 +114,9 @@ export default class Mouse {
    * @return {Object}
    */
   getMousePosition(ev) {
-    const x = ev.pageX / this.engine.options.scale;
-    const y = ev.pageY / this.engine.options.scale;
+    const s = this.engine.getConfig('scale');
+    const x = ev.clientX / s;
+    const y = ev.clientY / s;
     return {x, y};
   }
 
@@ -162,7 +192,8 @@ export default class Mouse {
     this.startX = pos.x;
     this.startY = pos.y;
 
-    if ( ev.which === MOUSE_LEFT ) {
+    const which = (ev.touches ? ev.detail : ev.which) || MOUSE_LEFT;
+    if ( which === MOUSE_LEFT ) {
       this.pressed = MOUSE_LEFT;
       this.buttonsDown.LEFT = pos;
     } else {
@@ -258,6 +289,69 @@ export default class Mouse {
    * @param {Event} ev Browser Event
    */
   onclick(ev) {
+  }
+
+  /**
+   * Emulates movement on a touch device
+   * @param {Node} el DOM Element
+   */
+  bindTouchMove(el) {
+    let firstEvent;
+
+    const tempMove = (ev) => {
+      el.dispatchEvent(makeFakeEvent('mousemove', ev, MOUSE_RIGHT));
+    };
+
+    el.addEventListener('touchcancel', (ev) => {
+      window.removeEventListener('touchmove', tempMove);
+    });
+
+    el.addEventListener('touchstart', (ev) => {
+      firstEvent = ev;
+      el.dispatchEvent(makeFakeEvent('mousedown', ev, MOUSE_RIGHT));
+      window.addEventListener('touchmove', tempMove);
+    });
+
+    el.addEventListener('touchend', (ev) => {
+      el.dispatchEvent(makeFakeEvent('mouseup', firstEvent, MOUSE_RIGHT));
+      window.removeEventListener('touchmove', tempMove);
+    });
+  }
+
+  /**
+   * Emulates clicks on a touch device
+   * @param {Node} el DOM Element
+   */
+  bindTouchClick(el) {
+    let cancelled = false;
+    let timeout, firstTarget, firstEvent;
+
+    const tempMove = () => (cancelled = true);
+
+    el.addEventListener('touchcancel', (ev) => {
+      clearTimeout(timeout);
+      firstTarget = null;
+      cancelled = true;
+
+      window.removeEventListener('touchmove', tempMove);
+    });
+
+    el.addEventListener('touchstart', (ev) => {
+      firstEvent = ev;
+      firstTarget = ev.target;
+      timeout = setTimeout(() => {
+        cancelled = true;
+      }, 300);
+      window.addEventListener('touchmove', tempMove);
+    });
+
+    el.addEventListener('touchend', (ev) => {
+      clearTimeout(timeout);
+      window.removeEventListener('touchmove', tempMove);
+      if ( !cancelled && ev.target === firstTarget ) {
+        ev.target.dispatchEvent(makeFakeEvent('click', firstEvent));
+      }
+    });
   }
 
   /**

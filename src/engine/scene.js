@@ -5,7 +5,6 @@
  */
 
 import Sprite from './sprite';
-import {drawText} from './util';
 
 /**
  * The base Scene class
@@ -21,7 +20,9 @@ export default class Scene {
     this.options = options;
     this.gameX = 0;
     this.gameY = 0;
-    this.debugOutput = null;
+    this.gui = [];
+    this.destroying = false;
+    this.debugOutput = [];
 
     console.log('scene::construct()');
   }
@@ -31,7 +32,8 @@ export default class Scene {
    * @param {Object} [args] Arguments to pass on
    */
   destroy(args) {
-    this.engine.nextScene(args);
+    this.destroying = true;
+    this.engine.nextScene();
   }
 
   /**
@@ -39,13 +41,20 @@ export default class Scene {
    * @param {String[]} [list] List of sprites to load
    */
   async load(list = []) {
-    for ( let i = 0; i < list.length; i++ ) {
+
+    const total = list.length;
+
+    console.info('Loading', total, 'sprites');
+
+    for ( let i = 0; i < total; i++ ) {
       const [sub, name] = list[i].indexOf('/') !== -1 ? list[i].split('/') : [null, list[i]];
       try {
         await Sprite.loadFile(this.engine, name, sub);
       } catch ( e ) {
         console.error('Failed to load sprite', list[i], e);
       }
+
+      this.engine.toggleLoading(true, (i / total) * 100);
     }
 
     this.loaded = true;
@@ -53,8 +62,26 @@ export default class Scene {
 
   /**
    * Updates the Scene
+   * @return {Boolean} If GUI was clicked
    */
   update() {
+    let clicked = false;
+
+    if ( this.gui.length ) {
+      const click = this.engine.mouse.buttonClicked('LEFT');
+      const viewport = this.getViewport(true);
+
+      for ( let i = 0; i < this.gui.length; i++ ) {
+        const gui = this.gui[i];
+        gui.update(viewport);
+
+        if ( !clicked && click ) {
+          clicked = gui.click(click) === true;
+        }
+      }
+    }
+
+    return clicked;
   }
 
   /**
@@ -63,16 +90,24 @@ export default class Scene {
    * @param {Number} delta Render delta time
    */
   render(target, delta) {
-    // Debug
-    if ( this.debugOutput ) {
-      const lineHeight = this.engine.options.scale > 1 ? 12 : 16;
-      drawText(target, this.debugOutput, {
-        lineHeight: lineHeight,
-        top: this.engine.height - (this.debugOutput.length * lineHeight),
-        font: this.engine.options.scale > 1 ? '8px monospace' : '12px monospace',
-        fillStyle: '#fff'
-      });
+    for ( let i = 0; i < this.gui.length; i++ ) {
+      this.gui[i].render(target, delta);
     }
+  }
+
+  /**
+   * When viewport is resized
+   */
+  resize() {
+
+  }
+
+  /**
+   * When game is paused
+   * @param {Boolean} paused Paused state
+   */
+  pause(paused) {
+
   }
 
   /**

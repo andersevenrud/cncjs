@@ -5,18 +5,14 @@
  */
 import 'babel-polyfill';
 import Game from './game/main';
-import {queryParameter} from './engine/util';
 
 window.addEventListener('DOMContentLoaded', () => {
   const canvas = document.querySelector('canvas');
-  const debugType = DEBUG ? parseInt(queryParameter('debug'), 10) || 0 : 0;
   const e = new Game(canvas, {
     loading: document.getElementById('loading'),
+    loadingBar: document.getElementById('loading-progress'),
     version: VERSION, // webpack global
-    debugMode: DEBUG, // webpack global
-    debug: debugType,
-    audio: debugType === 0,
-    scale: parseInt(queryParameter('scale'), 10) || 2
+    debugMode: DEBUG // webpack global
   });
 
   // DEBUG is a global from Webpack

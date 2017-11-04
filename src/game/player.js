@@ -4,7 +4,18 @@
  * @license MIT
  */
 
-import {PLAYER_NAMES} from './globals';
+const PLAYER_NAMES = [
+  'GoodGuy',
+  'BadGuy',
+  'Neutral',
+  'Special'/*,
+  'Multi1',
+  'Multi2',
+  'Multi3',
+  'Multi4',
+  'Multi5',
+  'Multi6'*/
+];
 
 export default class Player {
 

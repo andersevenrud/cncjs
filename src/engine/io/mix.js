@@ -25,14 +25,44 @@ export default class MIX {
     console.log('Mix::constructor()');
   }
 
+  download(filename, progress) {
+    return new Promise((resolve, reject) => {
+      const req = new XMLHttpRequest();
+      req.open('GET', filename, true);
+      req.responseType = 'arraybuffer';
+
+      req.addEventListener('progress', (ev) => {
+        if ( ev.lengthComputable ) {
+          const p = (ev.loaded / ev.total) * 100;
+          progress(p);
+        }
+      });
+
+      req.addEventListener('load', () => {
+        const blob = new Blob([req.response], {type: 'application/zip'});
+        progress(100);
+        resolve(blob);
+      });
+
+      req.addEventListener('error', (ev) => reject(ev));
+
+      req.send(null);
+    });
+  }
+
   /**
    * Loads all required assets
    */
   async load() {
     console.group('MIX::load()');
 
+    /*
     const response = await fetch(this.filename);
     const content = await response.blob();
+    */
+    const content = await this.download(this.filename, (p) => {
+      this.engine.toggleLoading(true, p);
+    });
     const zip = new JSZip();
 
     this.zip = await zip.loadAsync(content);
@@ -124,6 +154,7 @@ export default class MIX {
 
     if ( filename.match(/\.png$/) ) {
       mime = 'image/png';
+      type = 'blob';
     } else if ( filename.match(/\.wav$/) ) {
       mime = 'audio/x-wav';
     } else if ( filename.match(/\.json$/) ) {
@@ -139,7 +170,9 @@ export default class MIX {
 
     try {
       const raw = await this.zip.file(filename).async(type);
-      if ( type === 'base64' ) {
+      if ( type === 'blob' ) {
+        return raw;
+      } else if ( type === 'base64' ) {
         return `data:${mime};base64,${raw}`;
       } else if ( parse ) {
         return parse(raw);

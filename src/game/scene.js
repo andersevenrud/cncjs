@@ -5,7 +5,27 @@
  */
 import Scene from '../engine/scene';
 import Sprite from '../engine/sprite';
-import {CURSOR_SPRITES} from './globals';
+import {UPDATE_RATE} from '../engine/globals';
+import {drawText} from '../engine/util';
+
+const CURSOR_SPRITES = {
+  default: 0,
+  pann: 1,
+  panne: 2,
+  pane: 3,
+  panse: 4,
+  pans: 5,
+  pansw: 6,
+  panw: 7,
+  pannw: 8,
+  invalid: 9,
+  move: 10,
+  unavailable: 11,
+  select: [12, 6],
+  attack: [18, 8],
+  expand: [53, 9]
+  // TODO
+};
 
 /**
  * Base Game Scene class
@@ -52,13 +72,15 @@ export default class GameScene extends Scene {
   update() {
     // Keyboard
     const kbd = this.engine.keyboard;
-    if ( kbd.keyClicked('F2') ) {
+    const cfg = this.engine.configuration;
+
+    if ( kbd.keyClicked(cfg.getKey('DEBUG_TOGGLE')) ) {
       this.engine.toggleDebug();
-    } else if ( kbd.keyClicked('F5') ) {
+    } else if ( kbd.keyClicked(cfg.getKey('DEBUG_SCALE')) ) {
       this.engine.setScale((Math.round(this.engine.getScale() + 1) % 4) || 1);
-    } else if ( kbd.keyClicked('F6') ) {
+    } else if ( kbd.keyClicked(cfg.getKey('DEBUG_SOUND')) ) {
       this.engine.sounds.toggleSound();
-    } else if ( kbd.keyClicked('F7') ) {
+    } else if ( kbd.keyClicked(cfg.getKey('DEBUG_MUSIC')) ) {
       this.engine.sounds.toggleMusic();
     }
 
@@ -78,6 +100,8 @@ export default class GameScene extends Scene {
     this.mouse.left = this.cursorName === 'default' ? 0 : this.mouse.sprite.width / 2;
     this.mouse.top = this.cursorName === 'default' ? 0 : this.mouse.sprite.height / 2;
     this.mouse.timer = (this.mouse.timer + 1) % 4;
+
+    super.update(...arguments);
   }
 
   /**
@@ -86,6 +110,8 @@ export default class GameScene extends Scene {
    * @param {Number} delta Render delta time
    */
   render(target, delta) {
+    super.render(...arguments);
+
     // Mouse
     if ( this.mouse.sprite ) {
       const [mouseX, mouseY] = this.engine.mouse.getPosition();
@@ -95,7 +121,31 @@ export default class GameScene extends Scene {
                                Math.round(this.mouse.index) + this.mouse.offset);
     }
 
-    super.render(...arguments);
-  }
+    // Debug info
+    if ( this.engine.options.debug ) {
+      const {vw, vh} = this.getViewport();
+      const km = this.engine.getConfig('keymap');
 
+      const debug = [
+        `FPS: ${(this.engine.fpsAverage).toFixed(0)} (${(this.engine.fps).toFixed(0)} / ${(this.engine.delta * 1000).toFixed(2)}ms)`,
+        `Update: ${this.engine.updateTime.toFixed(2)} (${Math.round(1000 / UPDATE_RATE)}Hz) (${Sprite.getCacheCount()} sprites)`,
+        `Viewport: ${vw}x${vh} (${this.engine.getConfig('scale').toFixed(1)}x) @ ${this.gameX}x${this.gameY}`,
+        `Sound: s:${String(this.engine.sounds.soundEnabled)} m:${String(this.engine.sounds.musicEnabled)}`,
+        ...this.debugOutput,
+        '',
+        `<${km.DEBUG_TOGGLE}> Debug, <${km.DEBUG_SCALE}> Scale`,
+        `<${km.DEBUG_SOUND}> Sound, <${km.DEBUG_MUSIC}> Music`,
+        `<${km.DEBUG_FOG}> Fog`
+      ];
+
+      const scale = this.engine.getConfig('scale');
+      const lineHeight = scale > 1 ? 12 : 16;
+      drawText(target, debug, {
+        lineHeight: lineHeight,
+        top: this.engine.height - (debug.length * lineHeight),
+        font: scale > 1 ? '8px monospace' : '12px monospace',
+        fillStyle: '#fff'
+      });
+    }
+  }
 }

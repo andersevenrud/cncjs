@@ -4,6 +4,7 @@
  * @license MIT
  */
 import PF from 'pathfinding';
+import Fog from './fog';
 import MapObject from './mapobject';
 import TileObject from './objects/tile';
 import UnitObject from './objects/unit';
@@ -15,8 +16,23 @@ import ProjectileObject from './objects/projectile';
 import Sprite from '../engine/sprite';
 import {TILE_SIZE} from '../engine/globals';
 import {copy} from '../engine/util';
-import {collideAABB, collidePoint, pointFromTile, tileFromPoint} from '../engine/physics';
-import {MINIMAP_SIZE} from './globals';
+import {
+  collideAABB,
+  collidePoint,
+  pointFromTile,
+  tileFromPoint,
+  tileFromIndex
+} from '../engine/physics';
+
+const ObjectMap = {
+  structure: StructureObject,
+  unit: UnitObject,
+  infantry: UnitObject,
+  aircraft: UnitObject,
+  terrain: TerrainObject,
+  overlay: OverlayObject,
+  smudge: OverlayObject
+};
 
 /**
  * Game Map Implementation Class
@@ -25,18 +41,15 @@ export default class Map {
 
   /**
    * @param {Engine} engine Game Engine reference
+   * @param {Object} level Level data
    */
   constructor(engine, level) {
     this.engine = engine;
 
     this.canvas = document.createElement('canvas');
     this.context = this.canvas.getContext('2d');
-    this.fowCanvas = document.createElement('canvas');
-    this.fowContext = this.fowCanvas.getContext('2d');
-    this.mmCanvas = document.createElement('canvas');
-    this.mmContext = this.mmCanvas.getContext('2d');
+    this.fog = new Fog(engine, this);
 
-    this.renderFOW = engine.options.debug === 0; // FIXME: For debugging
     this.theatre = 'TEMPERAT.MIX';
     this.id = '';
     this.tilesX = 0;
@@ -44,13 +57,12 @@ export default class Map {
     this.width = 0;
     this.height = 0;
     this.visibleObjects = 0;
-    this.fowGrid = [];
     this.baseGrid = [];
     this.grid = [];
     this.objects = [];
     this.selectedObjects = [];
+    this.cellTriggers = [];
     this.loaded = false;
-    this.minimapScale = [0, 0];
 
     console.log('Map::constructor()');
   }
@@ -58,7 +70,7 @@ export default class Map {
   /**
    * Loads the Map
    * @param {Object} data Game Level Data from JSON
-   * @return {Boolean}
+   * @return {String[]} Sprites to load
    */
   async load(data) {
     console.group('Map::load()');
@@ -75,25 +87,19 @@ export default class Map {
     this.width = (this.tilesX * TILE_SIZE);
     this.height = (this.tilesY * TILE_SIZE);
     this.grid = Array(...Array(this.tilesY)).map(() => Array(this.tilesX));
-    this.fowGrid = Array(...Array(this.tilesY)).map(() => Array(this.tilesX));
+    this.cellTriggers = Object.keys(data.cellTriggers).map((p) => {
+      const {tileX, tileY} = tileFromIndex(p, data.width);
+      return {
+        tileX,
+        tileY,
+        name: data.cellTriggers[p]
+      };
+    });
 
     this.canvas.width = this.width;
     this.canvas.height = this.height;
 
-    this.fowCanvas.width = this.width;
-    this.fowCanvas.height = this.height;
-    this.fowContext.fillStyle = 'rgba(0, 0, 0, 1)';
-    this.fowContext.fillRect(0, 0, this.width, this.height);
-
-    this.mmCanvas.width = MINIMAP_SIZE[0];
-    this.mmCanvas.height = MINIMAP_SIZE[1];
-    this.mmContext.fillStyle = 'rgba(0, 0, 0, 1)';
-    this.mmContext.fillRect(0, 0, MINIMAP_SIZE[0], MINIMAP_SIZE[1]);
-    this.minimapScale = [
-      this.width / MINIMAP_SIZE[0],
-      this.height / MINIMAP_SIZE[1]
-    ];
-
+    await this.fog.load();
     await Sprite.loadFile(this.engine, 'bib1');
     await Sprite.loadFile(this.engine, 'bib2');
     await Sprite.loadFile(this.engine, 'bib3');
@@ -121,12 +127,16 @@ export default class Map {
 
     // Terrain objects
     for ( let i = 0; i < data.terrain.length; i++ ) {
-      await this.addTerrain(data.terrain[i]);
+      await this.addObject(data.terrain[i], 'terrain');
     }
 
     // Overlays
+    for ( let i = 0; i < data.smudge.length; i++ ) {
+      await this.addObject(data.smudge[i], 'smudge');
+    }
+
     for ( let i = 0; i < data.overlays.length; i++ ) {
-      await this.addOverlay(data.overlays[i]);
+      await this.addObject(data.overlays[i], 'overlay');
     }
 
     // Objects
@@ -138,9 +148,16 @@ export default class Map {
     this.baseGrid = copy(this.grid);
     this._sortObjects();
 
+    let loadSprites = [];
+
+    const buildables = this.engine.mix.getBuildables(data.info.BuildLevel);
+    Object.keys(buildables).filter(key => buildables[key].length > 0).forEach((key) => {
+      loadSprites = loadSprites.concat(buildables[key].map(iter => iter.Id));
+    });
+
     console.groupEnd();
 
-    return true;
+    return loadSprites;
   }
 
   /**
@@ -160,14 +177,9 @@ export default class Map {
       y2: offsetY + vh
     };
 
-    const objects = this.getObjectsFromRect(rect);
-
-    const mm = this.mmContext;
-    mm.fillStyle = 'rgba(0, 0, 0, 1)';
-    mm.fillRect(0, 0, MINIMAP_SIZE[0], MINIMAP_SIZE[1]);
-
     target.drawImage(this.canvas, offsetX, offsetY, vw, vh, vx, vy, vw, vh);
-    mm.drawImage(this.canvas, 0, 0, this.width, this.height, 0, 0, MINIMAP_SIZE[0], MINIMAP_SIZE[1]);
+
+    const objects = this.getObjectsFromRect(rect);
 
     if ( this.engine.options.debug > 1 ) {
       target.strokeStyle = 'rgba(0, 0, 0, .1)';
@@ -191,7 +203,6 @@ export default class Map {
       objects[i].renderOverlay(target, delta);
     }
 
-    const [mx, my] = this.minimapScale;
     for ( let i = 0; i < objects.length; i++ ) {
       objects[i].render(target, delta);
     }
@@ -202,67 +213,7 @@ export default class Map {
       o.renderHealthBar(target);
     }
 
-    const fow = this.fowContext;
-    fow.fillStyle = 'rgb(0, 0, 0)';
-    fow.fillRect(0, 0, this.width, this.height);
-
-    fow.globalCompositeOperation = 'destination-out';
-    for ( let y = 0; y < this.tilesY; y++ ) {
-      for ( let x = 0; x < this.tilesX; x++ ) {
-        if ( this.fowGrid[y][x] ) {
-          const px = x * TILE_SIZE;
-          const py = y * TILE_SIZE;
-
-          fow.fillStyle = 'rgba(0, 255, 0, .5)';
-          fow.beginPath();
-          fow.arc(px, py, TILE_SIZE + 2, 0, 2 * Math.PI, false);
-          fow.fill();
-
-          fow.fillStyle = 'rgba(0, 255, 0, 1)';
-          fow.beginPath();
-          fow.arc(px, py, TILE_SIZE - 2, 0, 2 * Math.PI, false);
-          fow.fill();
-        }
-      }
-    }
-    fow.globalCompositeOperation = 'source-over';
-
-    for ( let i = 0; i < this.objects.length; i++ ) {
-      const obj = this.objects[i];
-      const rect = obj.getRect();
-
-      if ( obj.isMapOverlay() ) {
-        obj.sprite.renderScaled(
-          mm,
-          Math.round(rect.x1 / mx),
-          Math.round(rect.y1 / my),
-          Math.round((rect.x2 - rect.x1) / mx),
-          Math.round((rect.y2 - rect.y1) / my),
-          obj.spriteFrame
-        );
-      } else {
-        mm.fillStyle = obj.spriteColor || '#ffffff';
-        mm.fillRect(
-          Math.floor(rect.x1 / mx),
-          Math.floor(rect.y1 / my),
-          Math.floor((rect.x2 - rect.x1) / mx),
-          Math.floor((rect.y2 - rect.y1) / my)
-        );
-      }
-    }
-
-    if ( this.renderFOW ) {
-      target.drawImage(this.fowCanvas, offsetX, offsetY, vw, vh, vx, vy, vw, vh);
-      mm.drawImage(this.fowCanvas, 0, 0, this.width, this.height, 0, 0, MINIMAP_SIZE[0], MINIMAP_SIZE[1]);
-    }
-
-    mm.strokeStyle = '#ffffff';
-    mm.strokeRect(
-      Math.round(this.engine.scene.gameX / mx),
-      Math.round(this.engine.scene.gameY / my),
-      Math.round(vw / mx),
-      Math.round(vh / my)
-    );
+    this.fog.render(target, delta);
 
     this.visibleObjects = objects.length;
   }
@@ -273,23 +224,13 @@ export default class Map {
   update() {
     this.grid = copy(this.baseGrid);
 
+    this.fog.update();
+
     for ( let i = 0; i < this.objects.length; i++ ) {
       let o = this.objects[i];
       o.update();
 
-      if ( o.isFriendly() ) { // TODO: Reveal when shooting
-        const s = (o.options.Sight || 1);
-        for ( let y = -s; y <= s; y++ ) {
-          for ( let x = -s; x <= s; x++ ) {
-            const dy = Math.min(this.tilesY - 1, Math.max(0, o.tileY + y));
-            const dx = Math.min(this.tilesX - 1, Math.max(0, o.tileX + x));
-
-            this.fowGrid[dy][dx] = 1;
-          }
-        }
-      }
-
-      if ( !o.destroying && !o.options.Tiberium ) {
+      if ( o.isBlocking() ) {
         this.addToGrid(o);
       }
     }
@@ -374,41 +315,24 @@ export default class Map {
   }
 
   /**
-   * Adds a terrain object to the map
-   * @param {Object} args Arguments
-   */
-  async addTerrain(args) {
-    try {
-      await Sprite.loadFile(this.engine, args.id, this.theatre);
-    } catch ( e ) {}
-
-    this._addObject(new TerrainObject(this.engine, args));
-  }
-
-  /**
-   * Adds an overlay to the map
-   * @param {Object} args Arguments
-   */
-  async addOverlay(args) {
-    try {
-      await Sprite.loadFile(this.engine, args.id);
-    } catch ( e ) {}
-
-    this._addObject(new OverlayObject(this.engine, args));
-  }
-
-  /**
    * Adds an object to the map
    * @param {Object} args Arguments
+   * @param {String} [type] Object type
    */
-  async addObject(args) {
+  async addObject(args, type = null) {
+    const col = args.type === 'terrain' ? this.theatre : 0;
+    type = type || args.type;
+
+    if ( !type ) {
+      console.warn('Invalid object type given', type, args);
+      return;
+    }
+
     try {
-      await Sprite.loadFile(this.engine, args.id);
+      await Sprite.loadFile(this.engine, args.id, col);
     } catch ( e ) {}
 
-    const obj = args.type === 'structure'
-      ? new StructureObject(this.engine, args)
-      : new UnitObject(this.engine, args);
+    const obj = new ObjectMap[type](this.engine, args);
 
     this._addObject(obj);
   }
@@ -421,9 +345,11 @@ export default class Map {
     if ( obj instanceof MapObject ) {
       const foundSelected = this.selectedObjects.indexOf(obj);
       const found = this.objects.indexOf(obj);
+
       if ( found !== -1 ) {
         this.objects.splice(found, 1);
       }
+
       if ( foundSelected !== -1 ) {
         this.selectedObjects.splice(foundSelected, 1);
       }
@@ -504,6 +430,15 @@ export default class Map {
     const method = first ? 'find' : 'filter';
     const result = this.objects[method]((obj) => obj.tileX === x && obj.tileY === y);
     return first ? (result ? [result] : []) : result;
+  }
+
+  /**
+   * Gets objects by filter
+   * @param {Function} filter Filter callback
+   * @return {MapObject[]}
+   */
+  getObjectsFromFilter(filter) {
+    return this.objects.filter(filter);
   }
 
   /**

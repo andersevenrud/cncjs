@@ -70,12 +70,6 @@
   },
   {
     "type": "ui",
-    "name": "hmap",
-    "size": [49, 16],
-    "count": 3
-  },
-  {
-    "type": "ui",
     "name": "hpips",
     "size": [39, 8],
     "count": 8
@@ -84,13 +78,19 @@
     "type": "ui",
     "name": "hrepair",
     "size": [49, 16],
-    "count": 2
+    "count": 3
   },
   {
     "type": "ui",
     "name": "hsell",
     "size": [49, 16],
-    "count": 2
+    "count": 3
+  },
+  {
+    "type": "ui",
+    "name": "hmap",
+    "size": [49, 16],
+    "count": 3
   },
   {
     "type": "ui",
@@ -115,6 +115,103 @@
     "name": "choose",
     "size": [320, 156],
     "count": 30
+  },
+  {
+    "type": "ui",
+    "name": "s-gdiin2",
+    "size": [320, 200],
+    "count": 50
+  },
+  {
+    "type": "ui",
+    "name": "scrscn1",
+    "size": [320, 200],
+    "count": 26
+  },
+
+  {
+    "type": "ui",
+    "name": "africa",
+    "size": [320, 200],
+    "count": 176
+  },
+  {
+    "type": "ui",
+    "name": "bosnia",
+    "size": [320, 200],
+    "count": 59
+  },
+  {
+    "type": "ui",
+    "name": "hbosnia",
+    "size": [320, 200],
+    "count": 59
+  },
+  {
+    "type": "ui",
+    "name": "e-bwtocl",
+    "size": [159, 136],
+    "count": 10
+  },
+  {
+    "type": "ui",
+    "name": "europe",
+    "size": [320, 200],
+    "count": 227
+  },
+  {
+    "type": "ui",
+    "name": "greyerth",
+    "size": [160, 136],
+    "count": 10
+  },
+  {
+    "type": "ui",
+    "name": "s_africa",
+    "size": [320, 200],
+    "count": 59
+  },
+  {
+    "type": "ui",
+    "name": "hearth_e",
+    "size": [320, 200],
+    "count": 92
+  },
+  {
+    "type": "ui",
+    "name": "hearth_a",
+    "size": [320, 200],
+    "count": 92
+  },
+  {
+    "type": "ui",
+    "name": "hsafrica",
+    "size": [320, 200],
+    "count": 59
+  },
+  {
+    "type": "ui",
+    "name": "click_a",
+    "size": [320, 200],
+    "count": 1
+  },
+  {
+    "type": "ui",
+    "name": "click_e",
+    "size": [320, 200],
+    "count": 1
+  },
+  {
+    "type": "ui",
+    "name": "click_eb",
+    "size": [320, 200],
+    "count": 1
+  },
+  {
+    "type": "ui",
+    "name": "click_sa",
+    "size": [320, 200],
+    "count": 1
   },
 
 
@@ -362,5 +459,78 @@
     "name": "bib3",
     "size": [24, 24],
     "count": 4
+  },
+
+  {
+    "type": "overlay",
+    "name": "cr1",
+    "size": [23,  23],
+    "count": 5
+  },
+  {
+    "type": "overlay",
+    "name": "cr2",
+    "size": [24,  22],
+    "count": 5
+  },
+  {
+    "type": "overlay",
+    "name": "cr3",
+    "size": [24,  23],
+    "count": 5
+  },
+  {
+    "type": "overlay",
+    "name": "cr4",
+    "size": [24,  24],
+    "count": 5
+  },
+  {
+    "type": "overlay",
+    "name": "cr5",
+    "size": [24,  24],
+    "count": 5
+  },
+  {
+    "type": "overlay",
+    "name": "cr6",
+    "size": [24,  23],
+    "count": 5
+  },
+  {
+    "type": "overlay",
+    "name": "sc1",
+    "size": [24,  19],
+    "count": 1
+  },
+  {
+    "type": "overlay",
+    "name": "sc2",
+    "size": [15,  23],
+    "count": 1
+  },
+  {
+    "type": "overlay",
+    "name": "sc3",
+    "size": [20, 10],
+    "count": 1
+  },
+  {
+    "type": "overlay",
+    "name": "sc4",
+    "size": [30, 20],
+    "count": 1
+  },
+  {
+    "type": "overlay",
+    "name": "sc5",
+    "size": [21, 20],
+    "count": 1
+  },
+  {
+    "type": "overlay",
+    "name": "sc6",
+    "size": [24,  14],
+    "count": 1
   }
 ]

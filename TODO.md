@@ -42,6 +42,7 @@ Also, these version maps are not final and might change at any point.
 * [x] Order: Move
 * [x] Order: Attacking
 * [x] Misc: A player state object etc.
+* [x] Misc: Scene handling
 
 ### v0.5.0 (current goal)
 
@@ -56,12 +57,14 @@ Also, these version maps are not final and might change at any point.
 * [ ] Objects: Transports
 * [ ] Scene: Main Menu (*partially complete*)
 * [ ] Scene: Theatre (*partially complete*)
-* [ ] Scene: Level selection
-* [ ] Scene: Scores
+* [ ] Scene: Level selection (*partially complete*)
+* [ ] Scene: Scores (*partially complete*)
 * [ ] Order: Guarding
 * [ ] Order: Harvesting
+* [ ] UI: Set scale based on screen resoulution
 * [ ] Misc: Handle credits
 * [ ] Misc: Handle power
+* [ ] Misc: **Some sprites are hitting the canvas size limit! These needs to be split into columns**
 * [ ] AI: Enemy
 * [ ] AI: Collision
 * [ ] AI: Grouping
@@ -72,7 +75,7 @@ Also, these version maps are not final and might change at any point.
 
 * [ ] Tools: Windows build support
 * [ ] Tools: Conversion of original formats
-* [ ] Engine: Touch (pointer) support
+* [ ] Engine: Touch support (*partially complete*)
 * [ ] UI: Original font sprites
 * [ ] Electron binary with automated data build process
 * [ ] Optimize
