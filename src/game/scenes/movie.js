@@ -16,6 +16,10 @@ export default class MovieScene extends GameScene {
   }
 
   destroy() {
+    if ( this.destroying ) {
+      return;
+    }
+
     if ( this.$container ) {
       this.$container.remove();
       this.$container = null;

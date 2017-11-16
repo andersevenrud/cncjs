@@ -4,7 +4,9 @@
  * @license MIT
  */
 import MapObject from '../mapobject';
-import {TILE_SIZE} from '../../engine/globals';
+import Animation from '../../engine/animation';
+import {getDirection} from '../physics';
+import {TILE_SIZE} from '../globals';
 
 export default class ProjectileObject extends MapObject {
 
@@ -18,44 +20,95 @@ export default class ProjectileObject extends MapObject {
 
     this.spriteColor = '#ffff00';
     this.bulletSpeed = weapon.Projectile.BulletSpeed;
-    this.effect = weapon.Projectile.Explosion;
+    this.hasTrail = weapon.Projectile.SmokeTrail === true;
+    this.trailCounter = 0;
+    this.explosion = weapon.Projectile.Explosion;
     this.damage = weapon.Damage;
+    this.invisible = weapon.Projectile.Invisible;
     this.from = from;
-    this.to = to;
+    this.dest = {
+      x: to.x,
+      y: to.y,
+      tileX: to.tileX,
+      tileY: to.tileY
+    };
+
+    if ( !weapon.Projectile.NoRotation ) {
+      this.animation = new Animation({
+        loop: false,
+        frames: 1,
+        name: weapon.Projectile.Image,
+        sprite: this.sprite,
+        getOffset: (anim) => {
+          const d = getDirection({
+            x: this.tileX,
+            y: this.tileY
+          }, {
+            x: this.dest.tileX,
+            y: this.dest.tileY
+          });
+
+          return Math.round(d);
+        }
+      });
+    }
+
+    console.debug('Spawned projectile', this, weapon);
   }
 
   render(target, delta) {
-    if ( this.bulletSpeed <= 0 ) {
+    if ( this.bulletSpeed <= 0 || this.invisible ) {
       return;
     }
 
     super.render(...arguments);
   }
 
-  update() {
-    this.spriteFrame = 0; // FIXME
+  reachedDestination() {
+    // TODO: Splash damage
+    if ( this.explosion !== 'none' ) {
+      this.engine.scene.map.addEffect({
+        id: this.explosion
+      }, this.dest);
+    }
 
+    const objects = this.engine.scene.map.getObjectsFromTile(this.dest.tileX, this.dest.tileY);
+    for ( let i = 0; i < objects.length; i++ ) {
+      objects[i].health -= this.damage;
+    }
+
+    this.destroy();
+  }
+
+  addTrail() {
+
+    if ( !(this.trailCounter % 5) ) {
+      this.engine.scene.map.addEffect({
+        id: 'smokey',
+        x: this.x,
+        y: this.y
+      });
+    }
+
+    this.trailCounter++;
+  }
+
+  update() {
     if ( this.destroying ) {
       return;
     }
 
-    const reached = () => {
-      this.engine.scene.map.addEffect({
-        id: this.effect
-      }, this.to);
-
-      this.to.health -= this.damage;
-
-      this.destroy();
-    };
+    if ( this.animation ) {
+      this.animation.update();
+    }
 
     if ( this.bulletSpeed > 0 ) {
-      const tx = this.to.x - this.x;
-      const ty = this.to.y - this.y;
+      const tx = this.dest.x - this.x;
+      const ty = this.dest.y - this.y;
       const dist = Math.sqrt(tx * tx + ty * ty);
 
       if ( dist < TILE_SIZE / 2 ) {
-        reached();
+        this.reachedDestination();
       } else if ( dist > 400 ) { // FIXME
         this.destroy();
       } else {
@@ -64,9 +117,16 @@ export default class ProjectileObject extends MapObject {
 
         this.x += velX;
         this.y += velY;
+
+        this.tileX = Math.round(this.x / TILE_SIZE);
+        this.tileY = Math.round(this.y / TILE_SIZE);
+
+        if ( this.hasTrail ) {
+          this.addTrail();
+        }
       }
     } else {
-      reached();
+      this.reachedDestination();
     }
   }
 }

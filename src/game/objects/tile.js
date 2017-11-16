@@ -4,7 +4,7 @@
  * @license MIT
  */
 import GameObject from '../../engine/object';
-import {TILE_SIZE} from '../../engine/globals';
+import {TILE_SIZE} from '../globals';
 
 export default class TileObject extends GameObject {
 

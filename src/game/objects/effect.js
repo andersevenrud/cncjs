@@ -4,6 +4,7 @@
  * @license MIT
  */
 import MapObject from '../mapobject';
+import Animation from '../../engine/animation';
 
 export default class EffectObject extends MapObject {
 
@@ -12,25 +13,18 @@ export default class EffectObject extends MapObject {
       type: 'effect'
     }), engine.mix.getOverlay(args.id));
 
-    this.repeat = args.repeat === true;
     this.spriteColor = '#ff9900';
+    this.animation = new Animation({
+      sprite: this.sprite,
+      name: args.id,
+      repeat: args.repeat === true
+    });
   }
 
   update() {
-    if ( this.currentAnimationTime >= 4 ) { // FIXME
-      this.currentAnimationTime = 0;
-      this.spriteFrame++;
-
-      if ( this.spriteFrame > this.sprite.count ) {
-        if ( this.repeat ) {
-          this.spriteFrame = 0;
-        } else {
-          this.destroy();
-          return;
-        }
-      }
+    this.animation.update();
+    if ( !this.animation.loop && this.animation.isFinished() ) {
+      this.destroy();
     }
-
-    this.currentAnimationTime++;
   }
 }

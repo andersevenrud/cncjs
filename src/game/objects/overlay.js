@@ -22,16 +22,14 @@ export default class OverlayObject extends MapObject {
     this.isWall = ['sbag', 'cycl', 'brik', 'wood'].indexOf(this.id) !== -1;
   }
 
-  // FIXME: Move to update(), but since map renders via sorted array, that won't work atm
-  // Add an option to query previous grid!
-  render() {
+  update() {
     let f = 0;
     if ( this.isWall ) {
       const map = this.engine.scene.map;
-      const top = map.queryGrid(this.tileX, this.tileY - 1, 'id', this.id);
-      const bottom = map.queryGrid(this.tileX, this.tileY + 1, 'id', this.id);
-      const left = map.queryGrid(this.tileX - 1, this.tileY, 'id', this.id);
-      const right = map.queryGrid(this.tileX + 1, this.tileY, 'id', this.id);
+      const top = map.queryGrid(this.tileX, this.tileY - 1, 'id', this.id, true);
+      const bottom = map.queryGrid(this.tileX, this.tileY + 1, 'id', this.id, true);
+      const left = map.queryGrid(this.tileX - 1, this.tileY, 'id', this.id, true);
+      const right = map.queryGrid(this.tileX + 1, this.tileY, 'id', this.id, true);
 
       // FIXME
       f = (true ? 0 : 16) + (top ? 1 : 0) + (right ? 2 : 0) + (bottom ? 4 : 0) + (left ? 8 : 0);
@@ -40,7 +38,5 @@ export default class OverlayObject extends MapObject {
     }
 
     this.spriteFrame = f;
-
-    super.render(...arguments);
   }
 }

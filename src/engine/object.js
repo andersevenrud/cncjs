@@ -5,7 +5,6 @@
  */
 
 import Sprite from './sprite';
-import {TILE_SIZE} from './globals';
 
 /**
  * Base Engine Object Class
@@ -17,16 +16,12 @@ export default class EngineObject {
    * @param {String} [spriteId] Sprite ID
    */
   constructor(engine, spriteId) {
-    const sprite = Sprite.getFile(spriteId) || {
-      width: TILE_SIZE,
-      height: TILE_SIZE,
-      count: 0
-    };
-
     this.engine = engine;
-    this.sprite = sprite;
-    this.spriteId = spriteId;
+    this.sprite = Sprite.instance(spriteId);
     this.spriteFrame = 0;
+    this.spriteId = spriteId;
+    this.animation = null;
+    this.animations = {};
     this.spriteSheet = 0;
     this.spriteColor = '#0000ff';
     this.spriteDebug = true;
@@ -42,6 +37,9 @@ export default class EngineObject {
    * Updates the internal states
    */
   update() {
+    if ( this.animation ) {
+      this.animation.update();
+    }
   }
 
   /**
@@ -61,13 +59,31 @@ export default class EngineObject {
       target.strokeRect(x1, y1, (x2 - x1), (y2 - y1));
     }
 
-    if ( this.sprite && this.sprite.render ) {
+    if ( this.animation ) {
+      this.animation.render(target, x, y, this.spriteSheet);
+    } else if ( this.sprite && this.sprite.render ) {
       this.sprite.render(target, x, y, this.spriteFrame, this.spriteSheet);
     } else {
+      target.font = '10px Monospace';
       target.fillStyle = this.spriteColor;
       target.fillRect(x, y, w, h);
       target.fillStyle = '#ffffff';
-      target.fillText(this.spriteId, x + 2, y + (TILE_SIZE / 2));
+      target.fillText(this.spriteId, x + 2, y + 12);
+    }
+  }
+
+  /**
+   * Sets current animation
+   * @param {String} name Animation Name
+   * @param {Object} options Animation options
+   */
+  setAnimation(name, options) {
+    const anim = this.animations[name] || {};
+    if ( this.animation ) {
+      this.animation.setOptions(Object.assign({}, {
+        sprite: this.sprite,
+        name
+      }, anim, options));
     }
   }
 
@@ -99,14 +115,12 @@ export default class EngineObject {
     const h = this.sprite.height;
     const [x, y] = this.getPosition(world);
 
-    // FIXME!
-    const clip = this.sprite.clip;
-    const x1 = clip ? x + this.xOffset : x;
-    const x2 = clip ? x1 + TILE_SIZE : x1 + w;
-    const y1 = clip ? y + this.yOffset : y;
-    const y2 = clip ? y1 + TILE_SIZE : y1 + h;
-
-    return {w, h, x, y, x1, x2, y1, y2};
+    return {w, h, x, y,
+      x1: x,
+      x2: x + w,
+      y1: y,
+      y2: y + h
+    };
   }
 
 }

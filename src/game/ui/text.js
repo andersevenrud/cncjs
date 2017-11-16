@@ -4,12 +4,17 @@
  * @license MIT
  */
 import UIElement from '../../engine/ui/element';
-import {drawText, drawWrappedText} from '../../engine/util';
+import {drawText, drawWrappedText} from '../../engine/ui/util';
 
 export default class TextElement extends UIElement {
 
-  constructor(options) {
-    super(Object.assign({}, {
+  constructor(engine, options) {
+    super(engine, Object.assign({}, {
+      font: 'cnc',
+      underline: false,
+      center: false,
+      color: '#ffffff',
+      size: 12,
       text: 'Text'
     }, options));
   }
@@ -19,11 +24,17 @@ export default class TextElement extends UIElement {
       return;
     }
 
-    const {x, y, w} = this.rect;
+    const {x, y, w, h} = this.rect;
     const opts = {
-      fillStyle: '#ffffff',
+      fillStyle: this.options.color,
+      font: String(this.options.size) + 'px ' + this.options.font,
+      lineHeight: this.options.size + 2,
+      center: this.options.center,
+      underline: this.options.underline,
       left: x,
-      top: y
+      top: y,
+      width: w,
+      height: h
     };
 
     if ( this.options.text instanceof Array ) {

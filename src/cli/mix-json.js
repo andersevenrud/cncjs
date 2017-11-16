@@ -111,7 +111,8 @@ const ATTRIBUTE_TYPES = {
   MaxBuilding: 'integer',
   MaxUnit: 'integer',
   Credits: 'integer',
-  StartFacing: 'integer'
+  StartFacing: 'integer',
+  Unknown5: 'integer'
 };
 
 const SMALL_UNITS = ['stnk', 'apc', 'arty', 'bggy', 'bike', 'ftnk', 'ltnk', 'jeep', 'mhq', 'mlrs', 'msam'];
@@ -141,7 +142,8 @@ const INI_FILES = [
   'aircraft.ini', 'units.ini', 'infantry.ini', 'structs.ini',
   'overlay.ini', 'terrain.ini', 'tilesets.ini',
   'infanims.ini', 'stranims.ini',
-  'weapons.ini', 'bullets.ini', 'warheads.ini'
+  'weapons.ini', 'bullets.ini', 'warheads.ini',
+  'mission.ini'
 ];
 
 const INIS = {};
@@ -160,6 +162,7 @@ const TREE = {
 };
 
 INI_FILES.forEach((filename) => {
+  console.log('Reading', filename);
   INIS[filename.replace('.ini', '')] = INI.decode(fs.readFileSync(path.join(SRC, filename), 'utf8'));
 });
 
@@ -204,11 +207,11 @@ const parseObjectAttributeValue = (name, value) => {
   return (lcValues.indexOf(name) !== -1 && typeof value === 'string' ? value.toLowerCase() : value);
 };
 
-const parseObjectAttributes = (attributes) => {
+const parseObjectAttributes = (attributes, allow = []) => {
   const result = {};
   if ( attributes ) {
     Object.keys(attributes).forEach((name) => {
-      if ( name.match(/^Unknown/) ) {
+      if ( name.match(/^Unknown/) && allow.indexOf(name) === -1 ) {
         return;
       }
 
@@ -233,7 +236,7 @@ const parseObjectWeapon = (options, key) => {
       const warhead = INIS.warheads[warheadName];
 
       result = parseObjectAttributes(INIS.weapons[weaponName]);
-      result.Projectile = parseObjectAttributes(projectile);
+      result.Projectile = parseObjectAttributes(projectile, ['Unknown5']);
 
       if ( result.Projectile ) {
         result.Projectile.Warhead = parseObjectAttributes(warhead);
@@ -245,12 +248,14 @@ const parseObjectWeapon = (options, key) => {
 };
 
 const parseObjectOccupance = (list) => {
+  const map = {'x': 1, '-': 2, '*': 3};
+
   if ( list ) {
     const result = Object.keys(list)
       .filter((s) => s.match(/^\d/))
       .map((s) => list[s])
       .map((str) => {
-        return str.split('').map((s) => s === 'x' ? 1 : 0); // FIXME: '-'
+        return str.split('').map((s) => map[s] || 0);
       });
 
     return result;
@@ -560,6 +565,7 @@ const parseLevel = (name) => {
   };
 
   const {startX, startY} = tileFromIndex(parseInt(metadata.MAP.TacticalPos, 10), 64);
+  const brief = INIS.mission[name.toUpperCase()];
 
   const result = {
     width: tilesX,
@@ -569,6 +575,7 @@ const parseLevel = (name) => {
     diffX,
     diffY,
     info: parseObjectAttributes(metadata.BASIC || metadata.Basic),
+    brief: brief ? Object.values(brief) : [],
     players: {
       GoodGuy: parseObjectAttributes(metadata.GoodGuy),
       BadGuy: parseObjectAttributes(metadata.BadGuy),
@@ -763,11 +770,30 @@ const generateSpriteList = () => {
     });
   });
 
+  const makeCounts = {
+    atwr: 14,
+    afld: 14,
+    bio: 16,
+    fact: 32,
+    pump: 32,
+    sam: 30,
+    tmpl: 36
+  };
+
   Object.keys(TREE.structures).forEach((name) => {
     const [sx, sy] = TREE.structures[name].Dimensions.split('x');
+    const buildable =  TREE.structures[name].Buildable;
     const info = getSpriteInfo(name, parseInt(sx, 10), parseInt(sy, 10));
     if ( info ) {
       TREE.sprites[name] = info;
+      if ( buildable ) {
+        TREE.sprites[name + 'make'] = {
+          type: 'overlay',
+          name: name + 'make',
+          size: info.size,
+          count: makeCounts[name] || 20
+        };
+      }
     }
   });
 
@@ -873,15 +899,24 @@ const generateSpriteList = () => {
 ///////////////////////////////////////////////////////////////////////////////
 
 module.exports = function() {
+  console.log('Parsing objects');
   parseObjectList('aircraft', 'aircraft', 'Aircraft');
   parseObjectList('units', 'units', 'Units');
   parseObjectList('infantry', 'infantry', 'Infantry', 'infanims');
   parseObjectList('structures', 'structs', 'Structures', 'stranims');
+
+  console.log('Parsing terrains');
   parseTerrainList();
+  console.log('Parsing overlays');
   parseOverlayList();
+  console.log('Parsing tiles');
   parseTileList();
+  console.log('Parsing levels');
   parseLevels();
+  console.log('Generating sprite list');
   generateSpriteList();
 
-  return fs.writeJsonSync(path.join(DEST, 'mix.json'), TREE);
+  const dest = path.join(DEST, 'mix.json');
+  console.log('Writing', dest);
+  return fs.writeJsonSync(dest, TREE);
 };

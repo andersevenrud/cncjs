@@ -65,7 +65,7 @@ export default class TitleScene extends GameScene {
 
   async load() {
     await super.load([
-      'options'
+      'sprite:options'
     ]);
 
     let img;
@@ -76,7 +76,7 @@ export default class TitleScene extends GameScene {
       console.warn(e);
     }
 
-    this.engine.sounds.playSong('map1', 'music', true);
+    this.engine.sounds.playSong('map1', {loop: true});
 
     this.titleImage = img;
 
@@ -89,8 +89,8 @@ export default class TitleScene extends GameScene {
 
       new UIContainer(this.engine, [
         {type: 'box', corners: true, x: 171, y: 0, w: 301, h: 271},
-        {type: 'text', text: ABOUT_TEXT, x: 195, y: 50, w: 250, h: 200},
-        {type: 'button', label: 'Back', x: 195, y: 200, w: 250, h: 18, cb: () => (this.currentGUI = 0)}
+        {type: 'text', text: ABOUT_TEXT, x: 195, y: 50, w: 250, h: 200, size: 16, center: true},
+        {type: 'button', label: 'Back', x: 195, y: 240, w: 250, h: 18, cb: () => (this.currentGUI = 0)}
       ], {scaleTo: this.titleImage})
     ];
   }

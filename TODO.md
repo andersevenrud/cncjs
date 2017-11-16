@@ -64,11 +64,13 @@ Also, these version maps are not final and might change at any point.
 * [ ] UI: Set scale based on screen resoulution
 * [ ] Misc: Handle credits
 * [ ] Misc: Handle power
+* [ ] Misc: Handle selling (*partially complete*)
+* [ ] Misc: Handle repair (*partially complete*)
 * [ ] Misc: **Some sprites are hitting the canvas size limit! These needs to be split into columns**
 * [ ] AI: Enemy
 * [ ] AI: Collision
 * [ ] AI: Grouping
-* [ ] AI: Triggers and Waypoints
+* [ ] AI: Triggers and Waypoints (*partially complete*)
 * [ ] AI: Automatically attack when within range
 
 ### v1.0.0

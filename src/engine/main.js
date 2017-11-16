@@ -10,7 +10,8 @@ import Sound from './io/sound';
 import MIX from './io/mix';
 import Sprite from './sprite';
 import Configuration from './configuration';
-import {MAX_DEBUG, UPDATE_RATE} from './globals';
+
+const MAX_DEBUG = 3;
 
 /**
  * Base Game Engine Class
@@ -37,7 +38,8 @@ export default class Engine {
       loading: null,
       loadingBar: null,
       debugMode: false,
-      dataFile: 'data.zip'
+      dataFile: 'data.zip',
+      updateRate: 1000 / 30
     }, options);
 
     this.canvas = canvas;
@@ -172,7 +174,7 @@ export default class Engine {
     console.info('Strating rendering loop...');
 
     let lastFrame;
-    let skipTicks = 1000 / UPDATE_RATE;
+    let skipTicks = 1000 / this.options.updateRate;
     let nextGameTick = performance.now();
     let lastTick = nextGameTick;
 
@@ -228,6 +230,7 @@ export default class Engine {
 
     this.keyboard.update();
     this.mouse.update();
+    this.sounds.update();
 
     this.updateTime = (performance.now() - now);
     if ( !this.pauseTick ) {
@@ -394,9 +397,14 @@ export default class Engine {
 
   /**
    * Get viewport rect
-   * @return [Object]
+   * @return {Object}
    */
   getViewport() {
-    return this.scene.getViewport();
+    return {
+      vx: 0,
+      vy: 0,
+      vw: this.width,
+      vh: this.height
+    };
   }
 }

@@ -4,8 +4,9 @@
  * @license MIT
  */
 import MapObject from '../mapobject';
-import {getDirection} from '../../engine/physics';
-import {TILE_SIZE} from '../../engine/globals';
+import Animation from '../../engine/animation';
+import {getDirection} from '../physics';
+import {TILE_SIZE} from '../globals';
 
 export default class UnitObject extends MapObject {
 
@@ -25,6 +26,7 @@ export default class UnitObject extends MapObject {
     this.directions = this.type === 'infantry' ? 8 : 32;
     this.direction = (args.direction || 0) / this.directions;
     this.spriteColor = this.isFriendly() ? '#00ff00' : '#ff0000';
+    this.animation = new Animation({});
 
     if ( !Object.keys(this.animations).length ) {
       this.animations = { // FIXME
@@ -65,19 +67,21 @@ export default class UnitObject extends MapObject {
     if ( !this.destroying ) {
       this.handleOrder();
       this.handleMovement();
+      this.handleAI();
 
       if ( this.moving ) {
-        this.currentAnimation = 'Walk';
-      } else if ( this.attacking ) {
-        this.currentAnimation = 'FireUp';
-      } else {
-        this.currentAnimation = 'Ready';
+        this.setAnimation('Walk');
+      } else if ( this.attacking && this.type === 'infantry' ) { // FIXME
+        this.setAnimation('FireUp');
+      } else if ( !this.orders.length ) {
+        this.setAnimation('Ready');
       }
 
       if ( this.health <= 0 ) {
         if ( this.type === 'infantry' ) {
-          this.currentAnimationuIndex = 0;
-          this.currentAnimation = 'Die1';
+          this.setAnimation('Die1', {
+            loop: false
+          });
           this.engine.sounds.playSound('nuyell');
         } else {
           this.engine.sounds.playSound('xplos');
@@ -89,17 +93,10 @@ export default class UnitObject extends MapObject {
     super.update();
   }
 
-  render(target, delta) {
-    super.render(target, delta);
-  }
-
   /**
    * Handle movement
    */
   handleMovement() {
-    if ( this.targetX === null || this.targetY === null ) {
-      return;
-    }
 
     if ( this.targetDirection !== null ) {
       const dirs = this.directions;
@@ -124,6 +121,10 @@ export default class UnitObject extends MapObject {
       } else {
         return;
       }
+    }
+
+    if ( this.targetX === null || this.targetY === null ) {
+      return;
     }
 
     const movement = (this.options.Speed / TILE_SIZE); // FIXME
@@ -154,6 +155,10 @@ export default class UnitObject extends MapObject {
     // FIXME: Is outside sight while not targetting ?
     const to = this.targetObject;
     if ( to ) {
+      if ( !this.orders.length ) {
+        this.setDirection(getDirection(to, this, this.directions));
+      }
+
       if ( to.health <= 0 ) {
         this.targetObject = null;
         this.attacking = false;
@@ -177,6 +182,27 @@ export default class UnitObject extends MapObject {
             this.engine.sounds.playSound(sound);
           }
 
+          if ( weapon.Projectile.Unknown5 === 12 ) { // FIXME
+            const dirs = ['s', 'se', 'e', 'ne', 'n', 'nw', 'w', 'sw'];
+            const dir = getDirection({
+              x: this.tileX,
+              y: this.tileY
+            }, {
+              x: to.tileX,
+              y: to.tileY
+            }, 8);
+
+            // FIXME
+            const [x, y] = this.getPosition();
+            this.engine.scene.map.addEffect({
+              id: weapon.Projectile.Image + '-' + dirs[dir],
+              x: x,
+              y: y,
+              xOffset: (79 / 2),
+              yOffset: (79 / 2)
+            });
+          }
+
           this.engine.scene.map.addProjectile(this, to, weapon);
         }
 
@@ -198,17 +224,19 @@ export default class UnitObject extends MapObject {
     const order = this.orders[0];
     const direction = getDirection(order, this, this.directions);
 
-    if ( this.options.TurnSpeed ) {
-      if ( this.direction !== direction ) {
-        this.targetDirection = direction;
-      }
-    } else {
-      this.direction = direction;
-    }
+    this.setDirection(direction);
 
     this.targetX = order.x;
     this.targetY = order.y;
     this.orders.splice(0, 1);
+  }
+
+  handleAI() {
+    if ( this.orders.length ) {
+      return;
+    }
+
+    // TODO
   }
 
   select(t, report) {
@@ -230,7 +258,6 @@ export default class UnitObject extends MapObject {
 
     console.log('Entity::setPath()', path);
 
-    this.currentAnimation = 'Idle';
     this.targetX = null;
     this.targetY = null;
     this.targetDirection = null;
@@ -248,12 +275,32 @@ export default class UnitObject extends MapObject {
     return true;
   }
 
-  setTarget(obj) {
-    this.targetObject = obj;
+  setAnimation(name, options = {}) {
+    super.setAnimation(name, Object.assign({
+      loop: true,
+      step: 0.25, // FIXME
+      getOffset: (anim) => {
+        let offset = anim.options.multi !== 0
+          ? Math.round(this.direction) * anim.frames
+          : anim.frames;
+
+        return anim.offset + offset;
+      }
+    }, options));
   }
 
-  canSelect() {
-    return true;
+  setDirection(direction) {
+    if ( this.options.TurnSpeed ) {
+      if ( this.direction !== direction ) {
+        this.targetDirection = direction;
+      }
+    } else {
+      this.direction = direction;
+    }
+  }
+
+  setTarget(obj) {
+    this.targetObject = obj;
   }
 
 }

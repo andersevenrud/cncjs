@@ -5,7 +5,7 @@
  */
 import UIElement from '../../engine/ui/element';
 
-const MINIMAP_SIZE = [156, 138]; // 2px border
+import {MINIMAP_SIZE} from '../globals';
 
 /**
  * Game MiniMap Class
@@ -18,7 +18,7 @@ export default class MiniMap extends UIElement {
    * @param {UIContainer} container UI Container
    */
   constructor(engine, map, container) {
-    super({
+    super(engine, {
       x: 2,
       y: 2,
       w: MINIMAP_SIZE[0],
@@ -108,6 +108,25 @@ export default class MiniMap extends UIElement {
     );
 
     target.drawImage(this.canvas, this.rect.x, this.rect.y);
+  }
+
+  click(click) {
+    if ( click && this.rect && super.click(click, false) ) {
+      const {vw, vh} = this.engine.getViewport();
+      const {width, height} = this.map;
+      const relX = click.x - this.rect.x;
+      const relY = click.y - this.rect.y;
+      const absX = relX / MINIMAP_SIZE[0];
+      const absY = relY / MINIMAP_SIZE[1];
+      const ox = Math.round(width * absX) - (vw / 2);
+      const oy = Math.round(height * absY) - (vh / 2);
+
+      this.engine.setOffset(ox, oy);
+
+      return true;
+    }
+
+    return false;
   }
 
 }

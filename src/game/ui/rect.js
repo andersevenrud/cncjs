@@ -7,8 +7,8 @@ import Sprite from '../../engine/sprite';
 import UIElement from '../../engine/ui/element';
 
 export default class RectElement extends UIElement {
-  constructor(options) {
-    super(Object.assign({}, {
+  constructor(engine, options) {
+    super(engine, Object.assign({}, {
       color: '#000000',
       texture: false
     }, options));
@@ -21,8 +21,8 @@ export default class RectElement extends UIElement {
 
     const {x, y, w, h} = this.rect;
 
-    const sprite = this.options.texture ? Sprite.getFile('btexture') : null;
-    const backTexture = sprite ? Sprite.getFile('btexture').createImage(1) : null;
+    const sprite = this.options.texture ? Sprite.instance('btexture') : null;
+    const backTexture = sprite ? Sprite.instance('btexture').createImage(1) : null;
     const ptrn = backTexture ? target.createPattern(backTexture, 'repeat') : null;
 
     target.fillStyle = ptrn ? ptrn : this.options.color;

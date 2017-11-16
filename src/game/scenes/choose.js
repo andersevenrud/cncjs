@@ -16,6 +16,10 @@ export default class ChooseScene extends GameScene {
   }
 
   destroy(options) {
+    if ( this.destroying ) {
+      return;
+    }
+
     const mapName = options.team === 'GDI' ? 'scg01ea' : 'scb01ea';
     const level = this.engine.mix.getLevel(mapName);
     const brief = level.info.Brief;
@@ -89,11 +93,11 @@ export default class ChooseScene extends GameScene {
 
   async load() {
     await super.load([
-      'choose'
+      'sprite:choose'
     ]);
 
-    this.sprite = Sprite.getFile('choose');
-    this.engine.sounds.playSong('struggle', 'music', true);
+    this.sprite = Sprite.instance('choose');
+    this.engine.sounds.playSong('struggle', {loop: true});
   }
 
   selectTeam(teamName) {
@@ -102,9 +106,7 @@ export default class ChooseScene extends GameScene {
       this.destroy({team: teamName.toUpperCase()});
     };
 
-    this.engine.sounds.playSong(`${teamName}_slct`).then((el) => {
-      el.addEventListener('ended', () => done());
-    }).catch(() => done());
+    this.engine.sounds.playSong(`${teamName}_slct`, {}, (el) => done());
   }
 
 }

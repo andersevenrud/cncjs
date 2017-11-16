@@ -11,10 +11,6 @@ export default class GlobeScene extends GameScene {
   constructor(engine, options) {
     super(...arguments);
 
-    this.earthSprite = null;
-    this.zoomSprite = null;
-    this.selectSprite = null;
-    this.clickSprite = null;
     this.sprite = null;
     this.spriteIndex = 0;
     this.stage = 0;
@@ -22,14 +18,14 @@ export default class GlobeScene extends GameScene {
 
   async load() {
     const spriteNames = [
-      'e-bwtocl', // spinning earth
-      'greyerth', // spinning earth
-      'hbosnia', // zoom on bosnia
-      'hearth_a', // zoom on africa
-      'africa', // african mission selection
-      'hsafrica', // zoom on south africa
-      'hearth_e', // zoom on europe
-      'europe' // european mission selection
+      'sprite:e-bwtocl', // spinning earth
+      'sprite:greyerth', // spinning earth
+      'sprite:hbosnia', // zoom on bosnia
+      'sprite:hearth_a', // zoom on africa
+      'sprite:africa', // african mission selection
+      'sprite:hsafrica', // zoom on south africa
+      'sprite:hearth_e', // zoom on europe
+      'sprite:europe' // european mission selection
 
       /*
       'click_a', // african hotspots
@@ -44,11 +40,7 @@ export default class GlobeScene extends GameScene {
 
     await super.load(spriteNames);
 
-    this.earthSprite = await Sprite.loadFile(this.engine, 'e-bwtocl');
-    this.zoomSprite = await Sprite.loadFile(this.engine, 'hearth_e');
-    this.selectSprite = await Sprite.loadFile(this.engine, 'europe');
-
-    this.engine.sounds.playSong('loopie6m', 'music', true);
+    this.engine.sounds.playSong('loopie6m', {loop: true});
 
     console.log(this);
   }
@@ -57,7 +49,9 @@ export default class GlobeScene extends GameScene {
     super.update(...arguments);
 
     if ( this.stage < 2 ) {
-      this.sprite = this.stage === 0 ? this.earthSprite : this.zoomSprite;
+      this.sprite = this.stage === 0
+        ? Sprite.instance('e-bwtocl')
+        : Sprite.instance('hearth_e');
 
       const index = Math.round(this.spriteIndex);
       if ( index < this.sprite.count - 1 ) {
@@ -73,7 +67,7 @@ export default class GlobeScene extends GameScene {
     if ( this.stage >= 2 ) {
       // TODO
       this.spriteIndex = 0;
-      this.sprite = this.selectSprite;
+      this.sprite = Sprite.instance('europe');
 
       if ( this.engine.mouse.buttonDown('LEFT') || this.engine.keyboard.keyDown() ) {
         this.destroy();

@@ -19,13 +19,13 @@ export default class ScoreScene extends GameScene {
 
   async load() {
     await super.load([
-      's-gdiin2',
-      'scrscn1'
+      'sprite:s-gdiin2',
+      'sprite:scrscn1'
     ]);
 
-    this.engine.sounds.playSong('win1', 'music', true);
+    this.engine.sounds.playSong('win1', {loop: true});
 
-    this.sprite = Sprite.getFile(this.options.player === 'GoodGuy' ? 's-gdiin2' : 'scrscn1');
+    this.sprite = Sprite.instance(this.options.player === 'GoodGuy' ? 's-gdiin2' : 'scrscn1');
   }
 
   update(options) {

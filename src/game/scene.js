@@ -5,27 +5,8 @@
  */
 import Scene from '../engine/scene';
 import Sprite from '../engine/sprite';
-import {UPDATE_RATE} from '../engine/globals';
-import {drawText} from '../engine/util';
-
-const CURSOR_SPRITES = {
-  default: 0,
-  pann: 1,
-  panne: 2,
-  pane: 3,
-  panse: 4,
-  pans: 5,
-  pansw: 6,
-  panw: 7,
-  pannw: 8,
-  invalid: 9,
-  move: 10,
-  unavailable: 11,
-  select: [12, 6],
-  attack: [18, 8],
-  expand: [53, 9]
-  // TODO
-};
+import {drawText} from '../engine/ui/util';
+import {CURSOR_SPRITES} from './globals';
 
 /**
  * Base Game Scene class
@@ -53,17 +34,17 @@ export default class GameScene extends Scene {
 
   /**
    * Loads the Scene
-   * @param {String[]} [additional] Additional sprites to load
+   * @param {String[]} [additional] Additional assets to load
    */
   async load(additional = []) {
     const list = [
-      'btexture',
-      'mouse'
+      'sprite:btexture',
+      'sprite:mouse'
     ].concat(additional);
 
     await super.load(list);
 
-    this.mouse.sprite = Sprite.getFile('mouse');
+    this.mouse.sprite = Sprite.instance('mouse');
   }
 
   /**
@@ -128,7 +109,7 @@ export default class GameScene extends Scene {
 
       const debug = [
         `FPS: ${(this.engine.fpsAverage).toFixed(0)} (${(this.engine.fps).toFixed(0)} / ${(this.engine.delta * 1000).toFixed(2)}ms)`,
-        `Update: ${this.engine.updateTime.toFixed(2)} (${Math.round(1000 / UPDATE_RATE)}Hz) (${Sprite.getCacheCount()} sprites)`,
+        `Update: ${this.engine.updateTime.toFixed(2)} (${Math.round(1000 / this.engine.options.updateRate)}Hz) (${Sprite.getCacheCount()} sprites)`,
         `Viewport: ${vw}x${vh} (${this.engine.getConfig('scale').toFixed(1)}x) @ ${this.gameX}x${this.gameY}`,
         `Sound: s:${String(this.engine.sounds.soundEnabled)} m:${String(this.engine.sounds.musicEnabled)}`,
         ...this.debugOutput,
@@ -148,4 +129,5 @@ export default class GameScene extends Scene {
       });
     }
   }
+
 }

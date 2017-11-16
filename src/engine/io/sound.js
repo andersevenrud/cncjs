@@ -4,9 +4,7 @@
  * @license MIT
  */
 
-// TODO: Sounds and music needs to be prefixed by .MIX directgory instead of what is now
-
-import {randomInteger} from '../util';
+const WebAudioAPI = window.AudioContext || window.webkitAudioContext || window.mozAudioContext;
 
 /**
  * Sound Manager Class
@@ -18,15 +16,50 @@ export default class Sound {
    */
   constructor(engine) {
     this.engine = engine;
-    this.musicElement = null;
     this.soundEnabled = false;
     this.soundVolume = 0.9;
+    this.soundsPlaying = 0;
     this.musicEnabled = false;
     this.musicVolume = 1.0;
-    this.soundDebounce = {};
-    this.soundLibrary = {};
+    this.musicElement = null;
+    this.soundQueue = [];
+    this.soundHandler = null;
+
+    this.context = WebAudioAPI ? new WebAudioAPI() : null;
+    this.audio = {};
 
     console.log('Sound::constructor()');
+  }
+
+  /**
+   * Preloads an audio file
+   * @param {String} name Audio name
+   */
+  async preload(name) {
+    const src = `audio/${name}.wav`;
+
+    try {
+      const raw = await this.engine.mix.getDataFile(src);
+      const buffer = await this.context.decodeAudioData(raw.buffer);
+      this.audio[name] = buffer;
+    } catch ( e ) {
+      console.warn('Failed to preload audio', src, e);
+    }
+  }
+
+  /**
+   * Updates internals
+   */
+  update() {
+    if ( this.soundQueue.length && !this.soundsPlaying ) {
+      const [soundId, options, cb] = this.soundQueue.shift();
+
+      if ( options && typeof options.queue !== 'undefined' ) {
+        delete options.queue;
+      }
+
+      this.playSound(soundId, options, cb);
+    }
   }
 
   /**
@@ -38,7 +71,9 @@ export default class Sound {
       this.musicElement.load();
       this.musicElement = null;
     }
-    this.soundLibrary = {};
+
+    this.soundHandler = null;
+    this.audio = {};
   }
 
   /**
@@ -103,11 +138,14 @@ export default class Sound {
   /**
    * Plays given song
    * @param {String} filename Song filename
-   * @param {String} [type=music] Type
-   * @param {Boolean} [loop=false] Loop
-   * @return {Promise<src, Error>}
+   * @param {Object} [options] Options
+   * @param {Boolean} [options.loop=false] Loop
+   * @param {Function} [cb] Callback when done
    */
-  playSong(filename, type = 'music', loop = false) {
+  playSong(filename, options = {}, cb = null) {
+    options = options || {};
+    cb = cb || function() {};
+
     if ( this.musicElement ) {
       this.musicElement.pause();
 
@@ -121,80 +159,101 @@ export default class Sound {
       }
     }
 
-    const src = `${type}/${filename}.wav`;
+    const src = `audio/${filename}.wav`;
     console.debug('Requesting song', src);
 
     this.musicElement = new Audio(src);
     this.musicElement.volume = this.musicVolume;
 
-    if ( loop ) {
-      this.musicElement.addEventListener('ended', () => {
+    this.musicElement.addEventListener('ended', () => {
+      if ( options.loop ) {
         this.musicElement.currentTime = 0;
         this.musicElement.play();
-      });
-    }
+      } else {
+        setTimeout(() => cb(true), 1);
+      }
+    });
 
     if ( !this.musicEnabled ) {
-      setTimeout(() => {
-        this.musicElement.dispatchEvent(new CustomEvent('ended'));
-      }, 1);
-      return Promise.resolve(this.musicElement);
+      setTimeout(() => cb(false), 1);
+      return;
     }
 
-    return new Promise((resolve, reject) => {
-      this.musicElement.addEventListener('canplay', () => {
-        resolve(this.musicElement);
+    this.musicElement.addEventListener('error', () => {
+      console.error('Failed to play', src);
+      cb(false);
+    });
 
-        console.info('Playing song', src);
-        this.musicElement.play();
-      });
-
-      this.musicElement.addEventListener('error', reject);
+    this.musicElement.addEventListener('canplay', () => {
+      console.info('Playing', src);
+      this.musicElement.play();
     });
   }
 
   /**
    * Plays given sound
    * @param {String} soundId Sound ID
-   * @param {Float} [volume] Sound Volume
+   * @param {Object} [options] Options
+   * @param {Float} [options.volume] Sound Volume
+   * @param {Function} [cb] Callback when done
    */
-  playSound(soundId, volume) {
-    volume = volume || this.soundVolume;
+  playSound(soundId, options = {}, cb = null) {
+    options = options || {};
+    cb = cb || function() {};
 
-    if ( !this.soundEnabled ) {
+    if ( !this.context || !this.soundEnabled ) {
+      cb(false);
       return;
     }
 
-    const origSoundId = soundId;
-    const sound = this.soundLibrary[soundId];
+    if ( typeof this.soundHandler === 'function' ) {
+      this.soundHandler(soundId, (id) => {
+        this._playSound(id, options, cb);
+      });
+    } else if ( !this.audio[soundId] ) {
+      console.warn('Sound not found in library', soundId);
+      cb(false);
+    } else {
+      this._playSound(soundId, options, cb);
+    }
+  }
 
-    if ( sound ) {
-      const tmp = sound.count;
-      const index = tmp instanceof Array ? randomInteger(0, tmp.length - 1) : randomInteger(1, tmp);
-      soundId += (sound.separator || '') + String(tmp instanceof Array ? tmp[index] : index);
-
-      // FIXME: This is here because usually it's the "multiple" ones we don't want
-      if ( typeof this.soundDebounce[origSoundId] !== 'undefined' ) {
-        clearTimeout(this.soundDebounce[origSoundId]);
-        delete this.soundDebounce[origSoundId];
-      }
+  _playSound(id, options, cb) {
+    const queue = options.queue === true;
+    if ( queue && this.soundsPlaying > 0 ) {
+      this.soundQueue.push([id, options, cb]);
+      return;
     }
 
-    const src = `sounds/${soundId}.wav`;
+    console.debug('Playing sound', id);
 
-    this.soundDebounce[origSoundId] = setTimeout(() => {
-      console.debug('Playing sound', src);
-      const audio = new Audio(src);
-      audio.volume = volume;
-      audio.play();
-    }, 10);
+    const volume = options.volume || this.soundVolume;
+
+    const gainNode = this.context.createGain();
+    gainNode.gain.value = volume;
+    gainNode.connect(this.context.destination);
+
+    const source = this.context.createBufferSource();
+    source.buffer = this.audio[id];
+    source.connect(gainNode);
+    source.addEventListener('ended', () => {
+      this.soundsPlaying = Math.max(0, this.soundsPlaying - 1);
+      cb(true);
+    });
+
+    this.soundsPlaying++;
+    source.start(0);
   }
 
   /**
-   * Sets the sound library
-   * @param {Object} lib Library
+   * Sets the sound handler
+   *
+   * NOTE: This resets after scene changes
+   *
+   * @param {Function} fn Handler function
    */
-  setSoundLibrary(lib) {
-    this.soundLibrary = lib || {};
+  setSoundHandler(fn) {
+    this.soundHandler = fn || null;
   }
+
 }

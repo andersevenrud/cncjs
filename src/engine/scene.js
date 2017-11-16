@@ -21,6 +21,7 @@ export default class Scene {
     this.gameX = 0;
     this.gameY = 0;
     this.gui = [];
+    this.guiClicked = false;
     this.destroying = false;
     this.debugOutput = [];
 
@@ -38,42 +39,61 @@ export default class Scene {
 
   /**
    * Loads the Scene
-   * @param {String[]} [list] List of sprites to load
+   * @param {String[]} [list] List of assets to load
    */
   async load(list = []) {
+    const loadSprites = list.filter(str => str.match(/^sprite:/))
+      .map(str => str.replace(/^sprite:/, ''));
 
-    const total = list.length;
+    const loadAudio = list.filter(str => str.match(/^audio:/))
+      .map(str => str.replace(/^audio:/, ''));
 
-    console.info('Loading', total, 'sprites');
+    console.info('Loading', list.length, 'assets');
+    console.info('...', loadSprites.length, 'sprite files');
+    console.info('...', loadAudio.length, 'audio files');
 
-    for ( let i = 0; i < total; i++ ) {
-      const [sub, name] = list[i].indexOf('/') !== -1 ? list[i].split('/') : [null, list[i]];
+    for ( let i = 0; i < loadSprites.length; i++ ) {
+      const [sub, name] = loadSprites[i].indexOf('/') !== -1 ? loadSprites[i].split('/') : [null, loadSprites[i]];
+
       try {
-        await Sprite.loadFile(this.engine, name, sub);
+        await Sprite.preload(this.engine, name, sub);
       } catch ( e ) {
-        console.error('Failed to load sprite', list[i], e);
+        console.error('Failed to load sprite', loadSprites[i], e);
       }
 
-      this.engine.toggleLoading(true, (i / total) * 100);
+      this.engine.toggleLoading(true, (i / list.length) * 100);
     }
 
-    this.loaded = true;
+    for ( let i = 0; i < loadAudio.length; i++ ) {
+      const name = loadAudio[i];
+
+      try {
+        await this.engine.sounds.preload(name);
+      } catch ( e ) {
+        console.error('Failed to load audio', name, e);
+      }
+
+      this.engine.toggleLoading(true, ((i + loadSprites.length) / list.length) * 100);
+    }
+
   }
 
   /**
    * Updates the Scene
-   * @return {Boolean} If GUI was clicked
    */
   update() {
     let clicked = false;
 
     if ( this.gui.length ) {
-      const click = this.engine.mouse.buttonClicked('LEFT');
-      const viewport = this.getViewport(true);
+      const click = this.engine.mouse.buttonClicked();
+      const press = this.engine.mouse.buttonDown();
+      const viewport = this.engine.getViewport();
 
       for ( let i = 0; i < this.gui.length; i++ ) {
         const gui = this.gui[i];
         gui.update(viewport);
+
+        gui.press(press);
 
         if ( !clicked && click ) {
           clicked = gui.click(click) === true;
@@ -81,7 +101,7 @@ export default class Scene {
       }
     }
 
-    return clicked;
+    this.guiClicked = clicked;
   }
 
   /**
@@ -133,15 +153,10 @@ export default class Scene {
 
   /**
    * Get viewport rect
-   * @return [Object]
+   * @return {Object}
    */
   getViewport() {
-    return {
-      vx: 0,
-      vy: 0,
-      vw: this.engine.width,
-      vh: this.engine.height
-    };
+    return this.engine.getViewport();
   }
 
 }

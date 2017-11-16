@@ -14,15 +14,10 @@ import StructureObject from './objects/structure';
 import EffectObject from './objects/effect';
 import ProjectileObject from './objects/projectile';
 import Sprite from '../engine/sprite';
-import {TILE_SIZE} from '../engine/globals';
 import {copy} from '../engine/util';
-import {
-  collideAABB,
-  collidePoint,
-  pointFromTile,
-  tileFromPoint,
-  tileFromIndex
-} from '../engine/physics';
+import {TILE_SIZE} from './globals';
+import {pointFromTile, tileFromPoint, tileFromIndex} from './physics';
+import {collideAABB, collidePoint} from '../engine/physics';
 
 const ObjectMap = {
   structure: StructureObject,
@@ -41,16 +36,17 @@ export default class Map {
 
   /**
    * @param {Engine} engine Game Engine reference
+   * @param {String} theatre Theatre mix file
    * @param {Object} level Level data
    */
-  constructor(engine, level) {
+  constructor(engine, theatre, level) {
     this.engine = engine;
 
     this.canvas = document.createElement('canvas');
     this.context = this.canvas.getContext('2d');
     this.fog = new Fog(engine, this);
 
-    this.theatre = 'TEMPERAT.MIX';
+    this.theatre = theatre;
     this.id = '';
     this.tilesX = 0;
     this.tilesY = 0;
@@ -59,6 +55,7 @@ export default class Map {
     this.visibleObjects = 0;
     this.baseGrid = [];
     this.grid = [];
+    this.previousGrid = [];
     this.objects = [];
     this.selectedObjects = [];
     this.cellTriggers = [];
@@ -70,16 +67,10 @@ export default class Map {
   /**
    * Loads the Map
    * @param {Object} data Game Level Data from JSON
-   * @return {String[]} Sprites to load
    */
   async load(data) {
     console.group('Map::load()');
     console.info(data);
-
-    const tmap = {desert: 'DESERT.MIX', winter: 'WINTER.MIX'};
-    if ( tmap[data.theater] ) {
-      this.theatre = tmap[data.theater];
-    }
 
     this.id = data.id;
     this.tilesX = data.width;
@@ -87,6 +78,7 @@ export default class Map {
     this.width = (this.tilesX * TILE_SIZE);
     this.height = (this.tilesY * TILE_SIZE);
     this.grid = Array(...Array(this.tilesY)).map(() => Array(this.tilesX));
+    this.previousGrid = Array(...Array(this.tilesY)).map(() => Array(this.tilesX));
     this.cellTriggers = Object.keys(data.cellTriggers).map((p) => {
       const {tileX, tileY} = tileFromIndex(p, data.width);
       return {
@@ -100,16 +92,13 @@ export default class Map {
     this.canvas.height = this.height;
 
     await this.fog.load();
-    await Sprite.loadFile(this.engine, 'bib1');
-    await Sprite.loadFile(this.engine, 'bib2');
-    await Sprite.loadFile(this.engine, 'bib3');
 
     // Terrain tiles
     for ( let x = 0; x < this.tilesX; x++ ) {
       for ( let y = 0; y < this.tilesY; y++ ) {
         let i = data.tiles[y][x];
         try {
-          await Sprite.loadFile(this.engine, i[0], this.theatre);
+          await Sprite.preload(this.engine, i[0], this.theatre);
         } catch ( e ) {}
 
         let obj = new TileObject(this.engine, x, y, i);
@@ -148,16 +137,7 @@ export default class Map {
     this.baseGrid = copy(this.grid);
     this._sortObjects();
 
-    let loadSprites = [];
-
-    const buildables = this.engine.mix.getBuildables(data.info.BuildLevel);
-    Object.keys(buildables).filter(key => buildables[key].length > 0).forEach((key) => {
-      loadSprites = loadSprites.concat(buildables[key].map(iter => iter.Id));
-    });
-
     console.groupEnd();
-
-    return loadSprites;
   }
 
   /**
@@ -222,6 +202,7 @@ export default class Map {
    * Updates the Map
    */
   update() {
+    this.previousGrid = copy(this.grid);
     this.grid = copy(this.baseGrid);
 
     this.fog.update();
@@ -283,7 +264,7 @@ export default class Map {
    * @param {MapObject} [targetObject] Apply effect on an object
    */
   async addEffect(args, targetObject) {
-    await Sprite.loadFile(this.engine, args.id);
+    await Sprite.preload(this.engine, args.id);
 
     args = targetObject ? Object.assign({}, args, {
       tileX: targetObject.tileX,
@@ -308,7 +289,7 @@ export default class Map {
     }
 
     try {
-      await Sprite.loadFile(this.engine, weapon.Projectile.Image);
+      await Sprite.preload(this.engine, weapon.Projectile.Image);
     } catch ( e ) {}
 
     return this._addObject(new ProjectileObject(this.engine, from, to, weapon));
@@ -329,7 +310,11 @@ export default class Map {
     }
 
     try {
-      await Sprite.loadFile(this.engine, args.id, col);
+      await Sprite.preload(this.engine, args.id, col);
+
+      if ( args.type === 'structure' ) {
+        await Sprite.preload(this.engine, args.id + 'make', 0); // FIXME: Are these colored in conversion ?
+      }
     } catch ( e ) {}
 
     const obj = new ObjectMap[type](this.engine, args);
@@ -373,8 +358,12 @@ export default class Map {
     });
 
     const grid = this.grid.map((row) => row.map((col) => {
-      const obj = col.object || {};
-      return (typeof obj.isUnit === 'function' && obj.isUnit()) ? 0 : col.value;
+      if ( action === 'attack' ) {
+        const obj = col.object;
+        return obj && obj.isPlayerObject() ? 0 : col.value;
+      }
+
+      return col.value;
     }));
 
     if ( action === 'attack' ) {
@@ -447,6 +436,12 @@ export default class Map {
    * @param {Number} [value=100] The weight of the tile
    */
   addToGrid(object, value = 100) {
+    const add = (x, y, e) => {
+      if ( this.grid[y] ) {
+        this.grid[y][x] = e;
+      }
+    };
+
     const {tileX, tileY, sizeX, sizeY} = object;
     const isgo = object instanceof MapObject;
     const pattern = isgo ? object.options.OccupyList : null;
@@ -459,19 +454,19 @@ export default class Map {
     if ( pattern ) {
       for ( let y = 0; y < pattern.length; y++ ) {
         for ( let x = 0; x < pattern[y].length; x++ ) {
-          if (  pattern[y][x] ) {
-            this.grid[tileY + y][tileX + x] = entry;
+          if (  pattern[y][x] === 1 ) {
+            add(tileX + x, tileY + y, entry);
           }
         }
       }
     } else if ( sizeX && sizeY ) {
       for ( let y = 0; y < sizeY; y++ ) {
         for ( let x = 0; x < sizeX; x++ ) {
-          this.grid[tileY + y][tileX + x] = entry;
+          add(tileX + x, tileY + y, entry);
         }
       }
     } else {
-      this.grid[tileY][tileX] = entry;
+      add(tileX, tileY, entry);
     }
   }
 
@@ -481,10 +476,11 @@ export default class Map {
    * @param {Number} y Y
    * @param {String} k Key
    * @param {*} [v] Value
+   * @param {Boolean} [p=false] Previous grid
    * @return {*}
    */
-  queryGrid(x, y, k, v) {
-    const f = this.getGrid(x, y);
+  queryGrid(x, y, k, v, p = false) {
+    const f = this.getGrid(x, y, p);
     return k ? (typeof v === 'undefined' ? f[k] : f[k] === v) : f;
   }
 
@@ -492,10 +488,12 @@ export default class Map {
    * Gets a grid entry
    * @param {Number} x X
    * @param {Number} y Y
+   * @param {Boolean} [p=false] Previous grid
    * @return {Object}
    */
-  getGrid(x, y) {
+  getGrid(x, y, p = false) {
+    const g = p ? this.previousGrid : this.grid;
     const d = {value: 0, id: null, object: null};
-    return (this.grid[y] ? this.grid[y][x] : null) || d;
+    return (g[y] ? g[y][x] : null) || d;
   }
 }

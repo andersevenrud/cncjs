@@ -162,7 +162,15 @@ const makeSpritesFromDirectory = (p, applyPalette, outSelf, trans) => {
         ok();
       }));
     } else if ( trans !== false ) {
-      promises.push(() => createTransparency(dest, dest));
+      if ( trans instanceof Array ) {
+        trans.forEach((n) => {
+          if ( n === target ) {
+            promises.push(() => createTransparency(dest, dest));
+          }
+        });
+      } else {
+        promises.push(() => createTransparency(dest, dest));
+      }
     }
 
     return Promise.each(promises, (fn) => fn());
@@ -176,7 +184,7 @@ const makeSprites = () => {
     makeSpritesFromDirectory('DESEICNH.MIX', false, true),
     makeSpritesFromDirectory('TEMPICNH.MIX', false, true),
     makeSpritesFromDirectory('UPDATE.MIX', false, false, false),
-    makeSpritesFromDirectory('UPDATEC.MIX', false, false, false),
+    makeSpritesFromDirectory('UPDATEC.MIX', false, false, ['hclock', 'hpips']),
     makeSpritesFromDirectory('GENERAL.MIX', false, false, false),
     makeSpritesFromDirectory('TRANSIT.MIX'),
     makeSpritesFromDirectory('TEMPERAT.MIX', false, true),
@@ -190,22 +198,24 @@ const makeSprites = () => {
 ///////////////////////////////////////////////////////////////////////////////
 
 const makeSounds = () => {
-  const copy = (dir, name) => {
+  const copy = (dir, name, zip) => {
     const mix = path.resolve(SRC, dir);
     fs.readdirSync(mix).filter((f) => f.match(/\.wav$/)).forEach((f) => {
       const src = path.resolve(SRC, dir, f);
-      const dest = path.resolve(DIST, name, f);
+      const dest = zip ? path.resolve(DEST, name, f) : path.resolve(DIST, name, f);
+
       console.log(src, '=>', dest);
       fs.mkdirpSync(path.dirname(dest));
       fs.copyFileSync(src, dest);
     });
   };
 
-  copy('AUD.MIX', 'sounds');
-  copy('SPEECH.MIX', 'sounds');
-  copy('SOUNDS.MIX', 'sounds');
-  copy('TRANSIT.MIX', 'music');
-  copy('SCORES.MIX', 'music');
+  copy('AUD.MIX', 'audio', true);
+  copy('SPEECH.MIX', 'audio', true);
+  copy('SOUNDS.MIX', 'audio', true);
+
+  copy('TRANSIT.MIX', 'audio');
+  copy('SCORES.MIX', 'audio');
 };
 
 ///////////////////////////////////////////////////////////////////////////////

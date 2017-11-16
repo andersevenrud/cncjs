@@ -6,8 +6,8 @@
 import SpriteElement from './sprite';
 
 export default class TabElement extends SpriteElement {
-  constructor(options) {
-    super(Object.assign({}, {
+  constructor(engine, options) {
+    super(engine, Object.assign({}, {
       label: 'Tab',
       name: 'htabs'
     }, options));

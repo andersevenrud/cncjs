@@ -8,8 +8,8 @@ import UIElement from '../../engine/ui/element';
 
 export default class BoxElement extends UIElement {
 
-  constructor(options) {
-    super(Object.assign({}, {
+  constructor(engine, options) {
+    super(engine, Object.assign({}, {
       corners: false
     }, options));
   }
@@ -27,7 +27,7 @@ export default class BoxElement extends UIElement {
     target.fillRect(x, y, w, h);
 
     if ( this.options.corners ) {
-      const sprite = Sprite.getFile('options');
+      const sprite = Sprite.instance('options');
 
       if ( sprite ) {
         target.strokeRect(x + .5, y + .5, w, h);

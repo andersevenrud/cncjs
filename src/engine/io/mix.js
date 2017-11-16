@@ -5,7 +5,7 @@
  */
 import JSZip from 'jszip';
 import INI from 'ini';
-import {sort} from '../util';
+import {sort, requestArrayBuffer} from '../util';
 
 ///////////////////////////////////////////////////////////////////////////////
 // CLASS
@@ -25,47 +25,20 @@ export default class MIX {
     console.log('Mix::constructor()');
   }
 
-  download(filename, progress) {
-    return new Promise((resolve, reject) => {
-      const req = new XMLHttpRequest();
-      req.open('GET', filename, true);
-      req.responseType = 'arraybuffer';
-
-      req.addEventListener('progress', (ev) => {
-        if ( ev.lengthComputable ) {
-          const p = (ev.loaded / ev.total) * 100;
-          progress(p);
-        }
-      });
-
-      req.addEventListener('load', () => {
-        const blob = new Blob([req.response], {type: 'application/zip'});
-        progress(100);
-        resolve(blob);
-      });
-
-      req.addEventListener('error', (ev) => reject(ev));
-
-      req.send(null);
-    });
-  }
-
   /**
    * Loads all required assets
    */
   async load() {
     console.group('MIX::load()');
 
-    /*
-    const response = await fetch(this.filename);
-    const content = await response.blob();
-    */
-    const content = await this.download(this.filename, (p) => {
+    const content = await requestArrayBuffer(this.filename, (p) => {
       this.engine.toggleLoading(true, p);
     });
+
+    const blob = new Blob([content], {type: 'application/zip'});
     const zip = new JSZip();
 
-    this.zip = await zip.loadAsync(content);
+    this.zip = await zip.loadAsync(blob);
     this.data = Object.freeze(await this.getDataFile('mix.json'));
 
     Object.keys(this.data).forEach((k) => console.log(k, this.data[k]));
@@ -157,6 +130,7 @@ export default class MIX {
       type = 'blob';
     } else if ( filename.match(/\.wav$/) ) {
       mime = 'audio/x-wav';
+      type = 'uint8array';
     } else if ( filename.match(/\.json$/) ) {
       type = 'string';
       parse = (d) => JSON.parse(d);

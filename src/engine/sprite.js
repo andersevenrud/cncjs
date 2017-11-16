@@ -176,7 +176,7 @@ export default class Sprite {
    * @param {String} [sub] Sub-folder
    * @return {Sprite}
    */
-  static async loadFile(engine, name, sub) {
+  static async preload(engine, name, sub) {
     sub = sub ? `/${sub}` : '';
 
     if ( !CACHE[name] ) {
@@ -195,11 +195,11 @@ export default class Sprite {
   }
 
   /**
-   * Get a sprite by name
+   * Get a sprite instance by name
    * @param {String} name The sprite ID
    * @return {Sprite}
    */
-  static getFile(name) {
+  static instance(name) {
     return CACHE[name];
   }
 

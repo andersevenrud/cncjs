@@ -63,21 +63,21 @@ export default class Mouse {
       capture: false
     };
 
-    const events = ['mousemove', 'click', 'contextmenu', 'mousedown', 'mouseup', 'leave', 'enter'];
+    const events = ['mousemove', 'click', 'contextmenu', 'mousedown', 'mouseup', 'mouseout', 'mouseenter'];
     const callback = (evName) => (ev) => {
       if ( this.engine && this.engine.running ) {
         this[`on${evName}`](ev);
       }
     };
 
-    events.forEach((evName) => window.addEventListener(evName, callback(evName)));
+    events.forEach((evName) => document.addEventListener(evName, callback(evName)));
 
     if ( typeof window.MouseEvent !== 'undefined' ) {
       this.bindTouchClick(window);
       this.bindTouchMove(window);
     }
 
-    this.onenter();
+    this.onmouseenter();
 
     console.log('Mouse::constructor()');
   }
@@ -86,6 +86,11 @@ export default class Mouse {
    * Reset states
    */
   reset() {
+    const {vw, vh} = this.engine.getViewport();
+
+    this.x = Math.round(vw / 2);
+    this.y = Math.round(vh / 2);
+
     this.update(0);
     this.buttonsDown = {};
     this.panX = null;
@@ -117,7 +122,8 @@ export default class Mouse {
     const s = this.engine.getConfig('scale');
     const x = ev.clientX / s;
     const y = ev.clientY / s;
-    return {x, y};
+    const button = (ev.touches ? ev.detail : ev.which) || MOUSE_LEFT;
+    return {x, y, button};
   }
 
   /**
@@ -130,20 +136,32 @@ export default class Mouse {
 
   /**
    * Check if button was clicked
-   * @param {String} buttonName Button name
+   * @param {String} [buttonName] Button name
    * @return {Object|Boolean} False on no
    */
   buttonClicked(buttonName) {
+    if ( !buttonName ) {
+      return Object.values(this.buttonsPressed).find((v) => {
+        return !!v;
+      }) || false;
+    }
+
     buttonName = String(buttonName).toUpperCase();
     return this.buttonsPressed[buttonName] || false;
   }
 
   /**
    * Check if button was pressed
-   * @param {String} buttonName Button name
+   * @param {String} [buttonName] Button name
    * @return {Object|Boolean} False on no
    */
   buttonDown(buttonName) {
+    if ( !buttonName ) {
+      return Object.values(this.buttonsDown).find((v) => {
+        return !!v;
+      }) || false;
+    }
+
     buttonName = String(buttonName).toUpperCase();
     return this.buttonsDown[buttonName] || false;
   }
@@ -264,7 +282,7 @@ export default class Mouse {
    * On Mouse Enter
    * @param {Event} ev Browser Event
    */
-  onenter(ev) {
+  onmouseenter(ev) {
     this.captured = true;
   }
 
@@ -272,7 +290,7 @@ export default class Mouse {
    * On Mouse Leave
    * @param {Event} ev Browser Event
    */
-  onleave(ev) {
+  onmouseout(ev) {
     this.captured = false;
   }
 

@@ -3,7 +3,7 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import {TILE_SIZE} from '../engine/globals';
+import {TILE_SIZE} from './globals';
 
 /**
  * Game Map Fog Class

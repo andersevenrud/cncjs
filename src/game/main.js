@@ -17,9 +17,12 @@ import RectElement from './ui/rect';
 import TextElement from './ui/text';
 import SpriteElement from './ui/sprite';
 import ButtonElement from './ui/button';
+import SliderElement from './ui/slider';
 
 import Engine from '../engine/main';
 import {queryParameter} from '../engine/util';
+
+import {UPDATE_RATE} from './globals';
 
 export default class Game extends Engine {
 
@@ -29,6 +32,8 @@ export default class Game extends Engine {
     options.scale = parseInt(queryParameter('scale'), 10);
 
     super(canvas, {
+      updateRate: UPDATE_RATE,
+
       keymap: {
         CANCEL: 'ESC',
         PAN_UP: ['W', 'UP'],
@@ -59,7 +64,8 @@ export default class Game extends Engine {
         rect: RectElement,
         sprite: SpriteElement,
         button: ButtonElement,
-        text: TextElement
+        text: TextElement,
+        slider: SliderElement
       }
     }, options));
   }

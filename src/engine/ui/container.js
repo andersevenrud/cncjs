@@ -28,7 +28,7 @@ export default class UIContainer {
       if ( map[obj.type] ) {
         const ClassRef = map[obj.type];
         delete obj.type;
-        return new ClassRef(obj);
+        return new ClassRef(engine, obj);
       } else if ( obj.instance ) {
         const instance = obj.instance;
         delete obj.instance;
@@ -113,22 +113,35 @@ export default class UIContainer {
     }
   }
 
+  _event(name, pos) {
+    let clicked;
+
+    for ( let i = 0; i < this.elements.length; i++ ) {
+      const el = this.elements[i];
+      if ( el.isVisible() && el[name](pos) ) {
+        clicked = true;
+      }
+    }
+
+    return clicked;
+  }
+
+  /**
+   * Checks if a press collides with elements
+   * @param {Object} press A mouse press
+   * @return {Boolean}
+   */
+  press(press) {
+    return this._event('press', press);
+  }
+
   /**
    * Checks if a click collides with elements
    * @param {Object} click A mouse click
    * @return {Boolean}
    */
   click(click) {
-    let clicked;
-
-    for ( let i = 0; i < this.elements.length; i++ ) {
-      const el = this.elements[i];
-      if ( el.isVisible() && el.click(click) ) {
-        clicked = true;
-      }
-    }
-
-    return clicked;
+    return this._event('click', click);
   }
 
 }

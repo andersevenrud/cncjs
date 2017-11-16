@@ -4,19 +4,8 @@
  * @license MIT
  */
 import EngineObject from '../engine/object';
-import {pointFromTile} from '../engine/physics';
-import {TILE_SIZE} from '../engine/globals';
-
-const ZINDEX = {
-  smudge: 0,
-  structure: 1,
-  overlay: 2,
-  unit: 10,
-  infantry: 10,
-  terrain: 20,
-  effect: 30,
-  projectile: 100
-};
+import {pointFromTile} from './physics';
+import {TILE_SIZE, ZINDEX} from './globals';
 
 export default class MapObject extends EngineObject {
 
@@ -24,6 +13,12 @@ export default class MapObject extends EngineObject {
     options = options || {};
 
     super(engine, args.id);
+
+    this.sprite = this.sprite || {
+      width: TILE_SIZE,
+      height: TILE_SIZE,
+      count: 0
+    };
 
     this.id = args.id;
     this.type = args.type;
@@ -40,14 +35,12 @@ export default class MapObject extends EngineObject {
     this.health = options.HitPoints || 255;
     this.destroying = false;
     this.destroyed = false;
-    this.currentAnimationTime = 0;
-    this.currentAnimation = null;
-    this.currentAnimationOffset = 0;
-    this.currentAnimationIndex = 0;
+    this.repairing = false; // TODO
+    this.orders = [];
 
     const startPos = pointFromTile(args.tileX, args.tileY);
-    this.x = startPos.x;
-    this.y = startPos.y;
+    this.x = typeof args.x === 'number' ? args.x : startPos.x;
+    this.y = typeof args.y === 'number' ? args.y : startPos.y;
     this.xOffset = args.yOffset || 0;
     this.yOffset = args.yOffset || 0;
     this.spriteSheet = this.team;
@@ -67,7 +60,7 @@ export default class MapObject extends EngineObject {
   select(toggle = true) {
     console.log('Select', toggle, this);
 
-    if ( !this.canSelect() ) {
+    if ( !this.isSelectable() ) {
       return false;
     }
 
@@ -84,8 +77,14 @@ export default class MapObject extends EngineObject {
    * Updates the internal states
    */
   update() {
-    if ( this.health <= 0 ) {
-      this.destroying = true;
+    this.destroying = this.health <= 0;
+
+    if ( this.destroying ) {
+      if ( this.animation && !this.animation.loop ) {
+        this.destroyed = this.animation.isFinished();
+      } else {
+        this.destroyed = true;
+      }
     }
 
     if ( this.destroyed ) {
@@ -93,35 +92,7 @@ export default class MapObject extends EngineObject {
       return;
     }
 
-    let found = false;
-    if ( this.animations ) {
-      const animationName = this.currentAnimation;
-      const animation = this.animations[animationName];
-
-      if ( animation ) {
-        this.currentAnimationOffset = animation.offset || 0;
-        this.currentAnimationOffset += animation.multi !== 0 ? (Math.round(this.direction || 0) * animation.frames) : animation.frames;
-
-        if ( this.currentAnimationTime / 2 >= 4 ) { // FIXME
-          const next = this.currentAnimationIndex + 1;
-
-          if ( this.destroying && next >= animation.frames - 1 ) {
-            this.destroyed = true;
-          }
-
-          this.currentAnimationIndex = next % animation.frames;
-          this.currentAnimationTime = 0;
-        }
-
-        this.spriteFrame = this.currentAnimationOffset + this.currentAnimationIndex;
-        found = true;
-      }
-      this.currentAnimationTime++;
-    }
-
-    if ( !found ) {
-      this.destroyed = this.destroying;
-    }
+    super.update();
   }
 
   /**
@@ -149,7 +120,7 @@ export default class MapObject extends EngineObject {
     super.render(...arguments);
 
     if ( debug && this.selected ) {
-      const debugLine = `${this.tileX}x${this.tileY}x${this.tileS} (${this.x.toFixed(2)}x${this.y.toFixed(2)}) - ${this.currentAnimation} - ${this.spriteFrame} (${this.currentAnimationOffset} / ${this.currentAnimationIndex}) | ${this.direction}`;
+      const debugLine = `${this.tileX}x${this.tileY}x${this.tileS} (${this.x.toFixed(2)}x${this.y.toFixed(2)}) - n:${this.animation.name} o:${this.animation.offset} f:${this.animation.frame} d:${this.direction} q:${this.orders.length}`;
       target.font = '8px monospace';
       target.fillStyle = '#ff0000';
       target.fillText(debugLine, x + w, y + h);
@@ -280,6 +251,34 @@ export default class MapObject extends EngineObject {
   }
 
   /**
+   * Gets the rectangle of the object
+   * @param {Boolean} [world=false] Use game coordinates
+   * @return {Object}
+   */
+  getRect(world = false) {
+    const w = this.sprite.width;
+    const h = this.sprite.height;
+    const [x, y] = this.getPosition(world);
+
+    // FIXME!
+    const clip = this.sprite.clip;
+    const x1 = clip ? x + this.xOffset : x;
+    const x2 = clip ? x1 + TILE_SIZE : x1 + w;
+    const y1 = clip ? y + this.yOffset : y;
+    const y2 = clip ? y1 + TILE_SIZE : y1 + h;
+
+    return {w, h, x, y, x1, x2, y1, y2};
+  }
+
+  /**
+   * Check if object can attack
+   * @return {Boolean}
+   */
+  canAttack() {
+    return this.options && (this.options.PrimaryWeapon || this.options.SecondaryWeapon);
+  }
+
+  /**
    * Checks if this is an overlay type instance
    * @return {Boolean}
    */
@@ -328,33 +327,35 @@ export default class MapObject extends EngineObject {
     return !this.isFriendly();
   }
 
+  isSellable() {
+    return false;
+  }
+
+  isRepairable() {
+    return false;
+  }
+
   isBlocking() {
     // FIXME
-    return !this.destroying && !this.options.Tiberium && this.type !== 'smudge';
+    return !this.destroying
+      && !this.options.Tiberium
+      && ['smudge', 'projectile', 'effect'].indexOf(this.type) === -1;
   }
 
-  /**
-   * Check if object can be selected
-   * @return {Boolean}
-   */
-  canSelect() {
-    return false; // TODO
+  isSelectable() {
+    return this.isUnit() || this.options.Selectable === true;
   }
 
-  /**
-   * Check if object can be moved
-   * @return {Boolean}
-   */
-  canMove() {
-    return this.options && this.options.Speed;
+  isAttackable() {
+    return this.isSelectable() && !this.isFriendly();
   }
 
-  /**
-   * Check if object can attack
-   * @return {Boolean}
-   */
-  canAttack() {
-    return this.options && (this.options.PrimaryWeapon || this.options.SecondaryWeapon);
+  isMovable() {
+    return this.options && this.options.Speed && this.isFriendly();
+  }
+
+  isExpandable() {
+    return this.id === 'mcv'; // FIXM
   }
 
 }

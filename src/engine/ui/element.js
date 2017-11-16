@@ -15,6 +15,7 @@ export default class UIElement {
    *
    * Use either a rectangle or dimension/position.
    *
+   * @param {Engine} engine Game Engine reference
    * @param {Object} options Element options
    * @param {Boolean} [options.visible] Visibility
    * @param {Number} [options.x1] Left position
@@ -27,10 +28,12 @@ export default class UIElement {
    * @param {Number} [options.h] Height
    * @param {Function} [options.cb] A callback function
    */
-  constructor(options) {
+  constructor(engine, options) {
+    this.engine = engine;
     this.callback = null;
     this.options = null;
     this.rect = null;
+    this.pressed = false;
     this.setOptions(options);
 
     console.debug('Created UI Element', this);
@@ -89,6 +92,25 @@ export default class UIElement {
     return target && this.isVisible() && this.rect;
   }
 
+  _event(pos) {
+    if ( this.isVisible() && collidePoint(pos, this.rect) ) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Checks if a press collides with element
+   * @param {Object} press A mouse press
+   * @return {Boolean}
+   */
+  press(press) {
+    this.pressed = this._event(press);
+
+    return this.pressed;
+  }
+
   /**
    * Checks if a click collides with element
    * @param {Object} click A mouse click
@@ -96,7 +118,7 @@ export default class UIElement {
    * @return {Boolean}
    */
   click(click, emit = true) {
-    if ( this.isVisible() && collidePoint(click, this.rect) ) {
+    if ( this._event(click) ) {
       console.info('Clicked UI element', this);
 
       if ( emit && this.callback ) {
