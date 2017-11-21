@@ -8,20 +8,41 @@ Please note that there are some `TODO` and `FIXME` markers spread around the cod
 
 Also, these version maps are not final and might change at any point.
 
+### Engine (all)
+
+I might have gone a bit overboard, so this game contains an entirely separate game-engine:
+
+* [x] Variable rendering loop
+* [x] Variable tick rates
+* [x] Scaling
+* [x] Scenes
+* [x] Scene queue and switching
+* [x] Keyboard
+* [x] Mouse
+* [x] Mouse Caputure
+* [x] Sounds & Music
+* [x] Audio contexts
+* [x] UI Elements
+* [x] UI Containers
+* [x] Positional Audio
+* [x] Zip Support
+* [x] Preloading of assets (caches)
+* [x] Sprites
+* [x] Animations
+* [x] Debugging support
+* [ ] Touch support (*partially complete*)
+* [ ] Autoscaling
+* [x] Relative base element support
+* [x] Progress indication
+* [x] Physics utilities
+* [x] Misc utilities
+* [ ] Ogg/MP3 support (currently WAV only)
+
 ### v0.1.0
 
 * [x] Tools: Building and packing
 * [x] Tools: Data conversion
 * [x] Tools: Object palette conversion
-* [x] Engine: Rendering
-* [x] Engine: Scaling
-* [x] Engine: Scenes
-* [x] Engine: Keyboard
-* [x] Engine: Mouse
-* [x] Engine: Sounds & Music
-* [x] Engine: Data via compressed archive
-* [x] Engine: Sprites and animations
-* [x] Engine: Debugging support
 * [x] UI: Cursor support
 * [x] UI: Basic theatre
 * [x] Map: Level Loading
@@ -46,26 +67,38 @@ Also, these version maps are not final and might change at any point.
 
 ### v0.5.0 (current goal)
 
-* [ ] Map: Overlays (*partially complete*)
-* [ ] Map: Projectiles (*partially complete*)
-* [ ] Map: Building (*partially complete*)
+* [x] Map: Building
 * [ ] Map: Optimized path-finding
-* [ ] Objects: Units, Infantry and Aircraft (*partially complete*)
-* [ ] Objects: Structures (*partially complete*)
-* [ ] Objects: Animations (*partially complete*)
-* [ ] Objects: Turrets
-* [ ] Objects: Transports
-* [ ] Scene: Main Menu (*partially complete*)
-* [ ] Scene: Theatre (*partially complete*)
-* [ ] Scene: Level selection (*partially complete*)
-* [ ] Scene: Scores (*partially complete*)
+* [ ] Sprites: Animations (**partially complete**)
+* [ ] Sprites: Complete set (**partially complete**)
+* [x] Objects: Overlays
+* [x] Objects: Projectiles
+* [x] Objects: Units
+* [x] Objects: Infantry
+* [ ] Objects: Aircraft
+* [x] Objects: Structures
+* [x] Scene: Main Menu
+* [x] Scene: Theatre
+* [ ] Scene: Level selection (**partially complete**)
+* [ ] Scene: Scores (**partially complete**)
 * [ ] Order: Guarding
 * [ ] Order: Harvesting
-* [ ] UI: Set scale based on screen resoulution
-* [ ] Misc: Handle credits
+* [x] UI: Theatre
+* [ ] UI: Handle tech-levels (**partially complete**)
+* [x] UI: Original font sprites
+* [ ] Misc: Handle turrets
+* [ ] Misc: Handle projectiles and warheads (**partially complete**)
+* [ ] Misc: Handle transports
+* [x] Misc: Handle credits
 * [ ] Misc: Handle power
-* [ ] Misc: Handle selling (*partially complete*)
-* [ ] Misc: Handle repair (*partially complete*)
+* [x] Misc: Handle selling
+* [ ] Misc: Handle repair (**partially complete**)
+* [ ] Misc: Handle damage models (**partially complete**)
+* [x] Misc: Speech
+* [x] Misc: SFX
+* [x] Misc: Music (themes)
+* [ ] Misc: Make units spawn in their respective construction buildings
+* [ ] Misc: Handle tiberium growth and spread
 * [ ] Misc: **Some sprites are hitting the canvas size limit! These needs to be split into columns**
 * [ ] AI: Enemy
 * [ ] AI: Collision
@@ -77,8 +110,6 @@ Also, these version maps are not final and might change at any point.
 
 * [ ] Tools: Windows build support
 * [ ] Tools: Conversion of original formats
-* [ ] Engine: Touch support (*partially complete*)
-* [ ] UI: Original font sprites
 * [ ] Electron binary with automated data build process
 * [ ] Optimize
 * [ ] Multiplayer

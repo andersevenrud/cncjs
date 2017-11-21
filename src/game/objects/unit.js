@@ -11,7 +11,9 @@ import {TILE_SIZE} from '../globals';
 export default class UnitObject extends MapObject {
 
   constructor(engine, args) {
-    super(engine, args, engine.mix.getObject(args.id));
+    super(engine, args, args.type === 'infantry'
+      ? engine.data.infantry[args.id]
+      : engine.data.units[args.id]);
 
     this.orders = [];
     this.rofCooldown = 0;
@@ -23,8 +25,11 @@ export default class UnitObject extends MapObject {
     this.sizeX = 1;
     this.sizeY = 1;
     this.targetDirection = null;
+    this.targetTurretDirection = null;
     this.directions = this.type === 'infantry' ? 8 : 32;
     this.direction = (args.direction || 0) / this.directions;
+    this.turretDirection = this.direction;
+
     this.spriteColor = this.isFriendly() ? '#00ff00' : '#ff0000';
     this.animation = new Animation({});
 
@@ -60,6 +65,31 @@ export default class UnitObject extends MapObject {
     }
   }
 
+  render(target) {
+    super.render(...arguments);
+
+    if ( this.engine.options.debug && this.orders ) {
+      const {offsetX, offsetY} = this.engine.getOffset();
+
+      target.fillStyle = 'rgba(0, 255, 0, .1)';
+
+      this.orders.forEach((o) => {
+        target.fillRect(
+          -offsetX + o.x,
+          -offsetY + o.y,
+          TILE_SIZE, TILE_SIZE);
+      });
+    }
+
+    if ( this.options.HasTurret ) {
+      const rect = this.getRect(true);
+      const {x, y} = rect;
+
+      // FIXME
+      this.sprite.render(target, x, y, 32 + Math.round(this.turretDirection), this.spriteSheet);
+    }
+  }
+
   /**
    * Update entity
    */
@@ -82,9 +112,9 @@ export default class UnitObject extends MapObject {
           this.setAnimation('Die1', {
             loop: false
           });
-          this.engine.sounds.playSound('nuyell');
+          this.engine.sounds.playSound('nuyell', {source: this});
         } else {
-          this.engine.sounds.playSound('xplos');
+          this.engine.sounds.playSound('xplos', {source: this});
           this.destroyed = true;
         }
       }
@@ -116,6 +146,11 @@ export default class UnitObject extends MapObject {
       }
 
       this.direction = cd;
+
+      if ( this.options.HasTurret ) {
+        this.turretDirection = this.direction; // FIXME
+      }
+
       if ( this.direction === this.targetDirection ) {
         this.targetDirection = null;
       } else {
@@ -179,7 +214,7 @@ export default class UnitObject extends MapObject {
 
         if ( weapon && this.rofCooldown === 0 ) {
           if ( sound ) {
-            this.engine.sounds.playSound(sound);
+            this.engine.sounds.playSound(sound, {source: this});
           }
 
           if ( weapon.Projectile.Unknown5 === 12 ) { // FIXME
@@ -242,7 +277,7 @@ export default class UnitObject extends MapObject {
   select(t, report) {
     if ( super.select(t) ) {
       if ( report && this.isFriendly() ) {
-        this.engine.sounds.playSound('await1');
+        this.engine.sounds.playSound('await1', {source: this});
       }
       return true;
     }
@@ -269,7 +304,7 @@ export default class UnitObject extends MapObject {
     this.rofCooldown = 0;
 
     if ( report ) {
-      this.engine.sounds.playSound('ackno');
+      this.engine.sounds.playSound('ackno', {source: this});
     }
 
     return true;

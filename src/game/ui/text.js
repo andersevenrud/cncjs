@@ -4,19 +4,41 @@
  * @license MIT
  */
 import UIElement from '../../engine/ui/element';
-import {drawText, drawWrappedText} from '../../engine/ui/util';
+import {createFontSprite} from './font';
 
 export default class TextElement extends UIElement {
 
   constructor(engine, options) {
     super(engine, Object.assign({}, {
-      font: 'cnc',
       underline: false,
       center: false,
-      color: '#ffffff',
-      size: 12,
       text: 'Text'
     }, options));
+
+    this.label = [];
+  }
+
+  drawText(target, str, line) {
+    const {x, y, w} = this.rect;
+
+    if ( !this.label[line] ) {
+      this.label[line] = createFontSprite(str, 0, '6point');
+    }
+
+    const label = this.label[line];
+    const px = this.options.center ? x + Math.round((w / 2) - (label.width / 2)) : x;
+    const py = y + (line * label.height);
+
+    target.drawImage(label, Math.round(px), Math.round(py));
+
+    if ( this.options.underline ) {
+      target.strokeStyle = '#3c9838';
+      target.beginPath();
+      target.moveTo(px, py + label.height);
+      target.lineTo(px + label.width, py + label.height);
+      target.stroke();
+      target.closePath();
+    }
   }
 
   render(target) {
@@ -24,23 +46,12 @@ export default class TextElement extends UIElement {
       return;
     }
 
-    const {x, y, w, h} = this.rect;
-    const opts = {
-      fillStyle: this.options.color,
-      font: String(this.options.size) + 'px ' + this.options.font,
-      lineHeight: this.options.size + 2,
-      center: this.options.center,
-      underline: this.options.underline,
-      left: x,
-      top: y,
-      width: w,
-      height: h
-    };
-
     if ( this.options.text instanceof Array ) {
-      drawText(target, this.options.text, opts);
+      for ( let i = 0; i < this.options.text.length; i++ ) {
+        this.drawText(target, this.options.text[i], i);
+      }
     } else {
-      drawWrappedText(target, this.options.text, opts, w);
+      this.drawText(target, this.options.text, 0);
     }
   }
 

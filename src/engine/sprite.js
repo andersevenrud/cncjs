@@ -37,7 +37,7 @@ export default class Sprite {
    * @return {Boolean}
    */
   async load(engine, type) {
-    const asset = await engine.mix.getDataFile(this.filename);
+    const asset = await engine.zip.getDataFile(this.filename);
     const url = URL.createObjectURL(asset);
     const img = await loadImage(url);
 
@@ -171,6 +171,7 @@ export default class Sprite {
 
   /**
    * Loads given sprite from file
+   *
    * @param {Engine} engine Engine reference
    * @param {String} name Sprite name
    * @param {String} [sub] Sub-folder
@@ -180,7 +181,7 @@ export default class Sprite {
     sub = sub ? `/${sub}` : '';
 
     if ( !CACHE[name] ) {
-      const found = engine.mix.data.sprites[name];
+      const found = engine.spriteLibrary[name];
 
       if ( found ) {
         const {type, size, clip, count} = found;

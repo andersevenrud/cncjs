@@ -21,7 +21,7 @@ export default class Scene {
     this.gameX = 0;
     this.gameY = 0;
     this.gui = [];
-    this.guiClicked = false;
+    this.guiHit = false;
     this.destroying = false;
     this.debugOutput = [];
 
@@ -61,7 +61,7 @@ export default class Scene {
         console.error('Failed to load sprite', loadSprites[i], e);
       }
 
-      this.engine.toggleLoading(true, (i / list.length) * 100);
+      this.engine.toggleLoading(true, (i / list.length) * 100, `Loading sprite '${loadSprites[i]}'`);
     }
 
     for ( let i = 0; i < loadAudio.length; i++ ) {
@@ -73,35 +73,30 @@ export default class Scene {
         console.error('Failed to load audio', name, e);
       }
 
-      this.engine.toggleLoading(true, ((i + loadSprites.length) / list.length) * 100);
+      this.engine.toggleLoading(true, ((i + loadSprites.length) / list.length) * 100, `Loading audio '${name}'`);
     }
 
+    this.engine.toggleLoading(true, 100, 'Please Stand By');
   }
 
   /**
    * Updates the Scene
    */
   update() {
-    let clicked = false;
+    let hit = false;
 
     if ( this.gui.length ) {
-      const click = this.engine.mouse.buttonClicked();
-      const press = this.engine.mouse.buttonDown();
       const viewport = this.engine.getViewport();
 
       for ( let i = 0; i < this.gui.length; i++ ) {
         const gui = this.gui[i];
         gui.update(viewport);
 
-        gui.press(press);
-
-        if ( !clicked && click ) {
-          clicked = gui.click(click) === true;
-        }
+        hit = !!gui.clicked || !!gui.pressed;
       }
     }
 
-    this.guiClicked = clicked;
+    this.guiHit = hit;
   }
 
   /**
@@ -118,7 +113,7 @@ export default class Scene {
   /**
    * When viewport is resized
    */
-  resize() {
+  onresize() {
 
   }
 

@@ -10,8 +10,7 @@ export default class MovieScene extends GameScene {
   constructor(engine, options) {
     super(...arguments);
 
-    this.$container = document.createElement('div');
-    this.$container.id = 'movie';
+    this.$video = null;
     this.failed = false;
   }
 
@@ -20,9 +19,9 @@ export default class MovieScene extends GameScene {
       return;
     }
 
-    if ( this.$container ) {
-      this.$container.remove();
-      this.$container = null;
+    if ( this.$video ) {
+      this.$video.remove();
+      this.$video = null;
     }
 
     super.destroy();
@@ -42,10 +41,10 @@ export default class MovieScene extends GameScene {
     }
   }
 
-  resize() {
+  onresize() {
     if ( this.$video ) {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
+      const vw = this.engine.$root.offsetWidth;
+      const vh = this.engine.$root.offsetHeight;
       const height = this.$video.videoHeight;
       const width = this.$video.videoWidth;
       const ratio = width / height;
@@ -73,15 +72,16 @@ export default class MovieScene extends GameScene {
     const video = this.options.movie;
     console.info('Playing movie', video);
     this.$video = document.createElement('video');
+    this.$video.volume = this.engine.sounds.soundEnabled ? this.engine.sounds.soundVolume : 0;
 
     this.$video.addEventListener('error', (err) => {
       console.error(err);
-      this.$container.remove();
+      this.$video.remove();
       this.failed = true;
     });
 
     this.$video.addEventListener('canplay', () => {
-      this.resize();
+      this.onresize();
       this.$video.play();
     });
 
@@ -90,8 +90,7 @@ export default class MovieScene extends GameScene {
     });
 
     this.$video.src = `movies/${video}.webm`;
-    this.$container.appendChild(this.$video);
-    document.body.appendChild(this.$container);
+    this.engine.canvas.parentNode.appendChild(this.$video);
   }
 
   update() {

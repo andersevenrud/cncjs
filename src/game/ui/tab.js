@@ -4,27 +4,31 @@
  * @license MIT
  */
 import SpriteElement from './sprite';
+import {createFontSprite} from './font';
 
 export default class TabElement extends SpriteElement {
   constructor(engine, options) {
     super(engine, Object.assign({}, {
+      pressIndex: 1,
       label: 'Tab',
       name: 'htabs'
     }, options));
+
+    this.label = null;
+    this.lastText = null;
   }
 
   render(target) {
     if ( super.render(target) ) {
-      target.fillStyle = '#eeeeee';
-      target.font = '12px cnc';
+      const txt = typeof this.options.label === 'function' ? this.options.label() : this.options.label;
 
-      const label = typeof this.options.label === 'function' ? this.options.label() : this.options.label;
+      if ( !this.label || txt !== this.lastText ) {
+        this.label = createFontSprite(txt, 0);
+      }
 
-      const mw = target.measureText(label).width;
-
-      target.fillText(label,
-                      this.rect.x + (this.rect.w / 2) - (mw / 2),
-                      this.rect.y + 11);
+      target.drawImage(this.label,
+                       Math.round(this.rect.x + (this.rect.w / 2) - (this.label.width / 2)),
+                       Math.round(this.rect.y + (this.rect.h / 2) - (this.label.height / 2) + 1));
     }
   }
 }

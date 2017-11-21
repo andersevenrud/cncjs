@@ -32,8 +32,6 @@ export default class Game extends Engine {
     options.scale = parseInt(queryParameter('scale'), 10);
 
     super(canvas, {
-      updateRate: UPDATE_RATE,
-
       keymap: {
         CANCEL: 'ESC',
         PAN_UP: ['W', 'UP'],
@@ -50,6 +48,9 @@ export default class Game extends Engine {
         DEBUG_DESTROY: 'DELETE'
       }
     }, Object.assign({}, {
+      cursorLock: debugType <= 0,
+      updateRate: UPDATE_RATE,
+      //positionalAudio: true,
       scenes: {
         title: TitleScene,
         choose: ChooseScene,
@@ -68,30 +69,50 @@ export default class Game extends Engine {
         slider: SliderElement
       }
     }, options));
+
+    this.data = {};
+  }
+
+  async load() {
+    await super.load(...arguments);
+
+    console.group('Game::load()');
+    const data = await this.zip.getDataFile('mix.json');
+
+    this.data = Object.freeze(data);
+
+    Object.keys(this.data).forEach((k) => console.log(k, this.data[k]));
+
+    this.spriteLibrary = this.data.sprites;
+    console.groupEnd();
   }
 
   async run() {
-    // FIXME
-    const map = queryParameter('map');
-    const movie = queryParameter('movie');
-    const globe = queryParameter('globe');
-    const score = queryParameter('score');
-    if ( this.options.debugMode && movie ) {
-      this.pushScene('movie', {movie});
-    } else if ( this.options.debugMode && score ) {
-      this.pushScene('score', {score});
-    } else if ( this.options.debugMode && globe ) {
-      this.pushScene('globe', {globe});
-    } else if ( this.options.debugMode && map ) {
-      this.pushScene('theater', {map});
-    } else {
+    if ( this.options.debugMode ) {
+      const map = queryParameter('map');
+      const movie = queryParameter('movie');
+      const globe = queryParameter('globe');
+      const score = queryParameter('score');
+
+      if ( movie ) {
+        this.pushScene('movie', {movie});
+      } else if ( score ) {
+        this.pushScene('score', {score});
+      } else if ( globe ) {
+        this.pushScene('globe', {globe});
+      } else if ( map ) {
+        this.pushScene('theater', {map});
+      }
+    }
+
+    if ( !this.sceneQueue.length ) {
       this.pushScene('title');
     }
 
     try {
       await super.run(...arguments);
     } catch ( e ) {
-      if ( !this.options.debugMode ) { // Webpack global
+      if ( !this.options.debugMode ) {
         alert('Failed to run: ' + e);
       }
       console.error(e);

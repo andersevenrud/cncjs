@@ -3,7 +3,6 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import {collidePoint} from '..//physics';
 
 /**
  * GUI Element base class
@@ -34,6 +33,8 @@ export default class UIElement {
     this.options = null;
     this.rect = null;
     this.pressed = false;
+    this.clicked = false;
+    this.hovering = false;
     this.setOptions(options);
 
     console.debug('Created UI Element', this);
@@ -78,6 +79,15 @@ export default class UIElement {
   }
 
   /**
+   * Resets internals
+   */
+  reset() {
+    this.pressed = false;
+    this.hovering = false;
+    this.clicked = false;
+  }
+
+  /**
    * Updates element
    */
   update() {
@@ -92,43 +102,33 @@ export default class UIElement {
     return target && this.isVisible() && this.rect;
   }
 
-  _event(pos) {
-    if ( this.isVisible() && collidePoint(pos, this.rect) ) {
-      return true;
-    }
-
-    return false;
-  }
-
   /**
-   * Checks if a press collides with element
-   * @param {Object} press A mouse press
-   * @return {Boolean}
+   * On hover event
+   * @param {Object} pos A mouse position
    */
-  press(press) {
-    this.pressed = this._event(press);
-
-    return this.pressed;
+  onhover(pos) {
+    this.hovering = pos;
   }
 
   /**
-   * Checks if a click collides with element
+   * On press event
+   * @param {Object} press A mouse press
+   */
+  onpress(press) {
+    this.pressed = press;
+  }
+
+  /**
+   * On click event
    * @param {Object} click A mouse click
    * @param {Boolean} [emit=true] Emit callback
-   * @return {Boolean}
    */
-  click(click, emit = true) {
-    if ( this._event(click) ) {
-      console.info('Clicked UI element', this);
-
-      if ( emit && this.callback ) {
-        this.callback();
-      }
-
-      return true;
+  onclick(click, emit = true) {
+    console.debug('Clicked UI element', this);
+    if ( emit && this.callback ) {
+      this.callback();
     }
-
-    return false;
+    this.clicked = click;
   }
 
   /**

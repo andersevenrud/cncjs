@@ -4,6 +4,7 @@
  * @license MIT
  */
 import MapObject from '../mapobject';
+import {WALLS} from '../globals';
 
 export default class OverlayObject extends MapObject {
 
@@ -15,28 +16,19 @@ export default class OverlayObject extends MapObject {
       tileY: args.tileY,
       xOffset: args.xOffset,
       yOffset: args.yOffset
-    }, engine.mix.getOverlay(args.id));
+    }, engine.data.overlays[args.id]);
 
-    this.tiberium = this.options.Tiberium ? 12 : 0;
     this.spriteColor = '#669999';
-    this.isWall = ['sbag', 'cycl', 'brik', 'wood'].indexOf(this.id) !== -1;
+    this.isWall = WALLS.indexOf(this.id) !== -1;
+    this.isTiberium = this.options.Tiberium;
   }
 
   update() {
-    let f = 0;
     if ( this.isWall ) {
-      const map = this.engine.scene.map;
-      const top = map.queryGrid(this.tileX, this.tileY - 1, 'id', this.id, true);
-      const bottom = map.queryGrid(this.tileX, this.tileY + 1, 'id', this.id, true);
-      const left = map.queryGrid(this.tileX - 1, this.tileY, 'id', this.id, true);
-      const right = map.queryGrid(this.tileX + 1, this.tileY, 'id', this.id, true);
-
-      // FIXME
-      f = (true ? 0 : 16) + (top ? 1 : 0) + (right ? 2 : 0) + (bottom ? 4 : 0) + (left ? 8 : 0);
-    } else {
-      f = this.options.Tiberium ? (this.tiberium - 1) : this.spriteFrame; // FIXME
+      const {left, right, bottom, top} = this.checkSurrounding();
+      this.spriteFrame = (true ? 0 : 16) + (top ? 1 : 0) + (right ? 2 : 0) + (bottom ? 4 : 0) + (left ? 8 : 0); // FIXME
+    } else if ( this.isTiberium ) {
+      this.spriteFrame = 11; // FIXME
     }
-
-    this.spriteFrame = f;
   }
 }

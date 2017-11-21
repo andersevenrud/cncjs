@@ -6,6 +6,7 @@
 import PF from 'pathfinding';
 import Fog from './fog';
 import MapObject from './mapobject';
+import Bib from './objects/bib';
 import TileObject from './objects/tile';
 import UnitObject from './objects/unit';
 import OverlayObject from './objects/overlay';
@@ -71,6 +72,10 @@ export default class Map {
   async load(data) {
     console.group('Map::load()');
     console.info(data);
+
+    for ( let i = 1; i < 4; i++ ) {
+      Bib.preload(i);
+    }
 
     this.id = data.id;
     this.tilesX = data.width;
@@ -138,6 +143,11 @@ export default class Map {
     this._sortObjects();
 
     console.groupEnd();
+  }
+
+  destroy() {
+    Bib.destroyCache();
+    super.destroy(...arguments);
   }
 
   /**
@@ -245,6 +255,10 @@ export default class Map {
    * @param {MapObject} obj Object
    */
   _addObject(obj) {
+    if ( this.loaded ) {
+      console.info('Adding object', obj);
+    }
+
     this.objects.push(obj);
     this._sortObjects();
   }

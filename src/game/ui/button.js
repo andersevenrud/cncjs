@@ -3,15 +3,17 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
+import {createFontSprite} from './font';
 import Sprite from '../../engine/sprite';
 import UIElement from '../../engine/ui/element';
 
 export default class ButtonElement extends UIElement {
   constructor(engine, options) {
     super(engine, Object.assign({}, {
-      color: '#50f850', // #50af20
       label: 'Label'
     }, options));
+
+    this.label = null;
   }
 
   render(target) {
@@ -19,7 +21,7 @@ export default class ButtonElement extends UIElement {
       return;
     }
 
-    const {x, y, w, h, ratio} = this.rect;
+    const {x, y, w, h} = this.rect;
     const sprite = Sprite.instance('options');
     const backTexture = sprite ? Sprite.instance('btexture').createImage(1) : null;
     const ptrn = backTexture ? target.createPattern(backTexture, 'repeat') : null;
@@ -55,10 +57,12 @@ export default class ButtonElement extends UIElement {
       target.closePath();
     }
 
-    target.fillStyle = this.options.color;
-    target.font = String(h) + 'px cnc';
+    if ( !this.label ) {
+      this.label = createFontSprite(this.options.label, 0, '6point');
+    }
 
-    const textOffset = target.measureText(this.options.label).width;
-    target.fillText(this.options.label, x + (w / 2) - textOffset / 2, y + (h / 2) + (4 * ratio));
+    target.drawImage(this.label,
+                     Math.round(x + (w / 2) - (this.label.width / 2)),
+                     Math.round(y + (h / 2) - (this.label.height / 2)));
   }
 }

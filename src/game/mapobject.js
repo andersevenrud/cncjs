@@ -36,7 +36,6 @@ export default class MapObject extends EngineObject {
     this.destroying = false;
     this.destroyed = false;
     this.repairing = false; // TODO
-    this.orders = [];
 
     const startPos = pointFromTile(args.tileX, args.tileY);
     this.x = typeof args.x === 'number' ? args.x : startPos.x;
@@ -101,30 +100,7 @@ export default class MapObject extends EngineObject {
    * @param {Number} delta Render delta time
    */
   render(target, delta) {
-    const rect = this.getRect(true);
-    const {x, y, w, h} = rect;
-    const {offsetX, offsetY} = this.engine.getOffset();
-    const debug = this.engine.options.debug;
-
-    if ( debug && this.orders ) {
-      target.fillStyle = 'rgba(0, 255, 0, .1)';
-
-      this.orders.forEach((o) => {
-        target.fillRect(
-          -offsetX + o.x,
-          -offsetY + o.y,
-          TILE_SIZE, TILE_SIZE);
-      });
-    }
-
     super.render(...arguments);
-
-    if ( debug && this.selected ) {
-      const debugLine = `${this.tileX}x${this.tileY}x${this.tileS} (${this.x.toFixed(2)}x${this.y.toFixed(2)}) - n:${this.animation.name} o:${this.animation.offset} f:${this.animation.frame} d:${this.direction} q:${this.orders.length}`;
-      target.font = '8px monospace';
-      target.fillStyle = '#ff0000';
-      target.fillText(debugLine, x + w, y + h);
-    }
   }
 
   /**
@@ -268,6 +244,21 @@ export default class MapObject extends EngineObject {
     const y2 = clip ? y1 + TILE_SIZE : y1 + h;
 
     return {w, h, x, y, x1, x2, y1, y2};
+  }
+
+  /**
+   * Queries the map for the surrounding grid objects and checks
+   * if they are surrounded by an object of this type.
+   * @return {Object}
+   */
+  checkSurrounding() {
+    const map = this.engine.scene.map;
+    const top = map.queryGrid(this.tileX, this.tileY - 1, 'id', this.id, true);
+    const bottom = map.queryGrid(this.tileX, this.tileY + 1, 'id', this.id, true);
+    const left = map.queryGrid(this.tileX - 1, this.tileY, 'id', this.id, true);
+    const right = map.queryGrid(this.tileX + 1, this.tileY, 'id', this.id, true);
+
+    return {top, left, bottom, right};
   }
 
   /**

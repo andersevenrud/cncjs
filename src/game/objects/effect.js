@@ -11,7 +11,7 @@ export default class EffectObject extends MapObject {
   constructor(engine, args) {
     super(engine, Object.assign({}, args, {
       type: 'effect'
-    }), engine.mix.getOverlay(args.id));
+    }), engine.data.overlays[args.id]);
 
     this.spriteColor = '#ff9900';
     this.animation = new Animation({

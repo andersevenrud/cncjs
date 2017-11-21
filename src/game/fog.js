@@ -91,7 +91,7 @@ export default class Fog {
     }
     fow.globalCompositeOperation = 'source-over';
 
-    if ( this.visible ) {
+    if ( !this.engine.options.debugMode || this.visible ) {
       const {vx, vy, vw, vh} = this.engine.getViewport();
       const {offsetX, offsetY} = this.engine.getOffset();
       target.drawImage(this.map.fog.canvas, offsetX, offsetY, vw, vh, vx, vy, vw, vh);

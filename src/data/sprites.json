@@ -1,9 +1,35 @@
 [
   {
+    "type": "font",
+    "name": "6point",
+    "size": [14, 16],
+    "count": 94
+  },
+  {
+    "type": "font",
+    "name": "8point",
+    "size": [10, 11],
+    "count": 94
+  },
+  {
+    "type": "font",
+    "name": "vcr",
+    "size": [17, 16],
+    "count": 94
+  },
+
+  {
     "type": "cursor",
     "name": "mouse",
     "size": [30, 24],
     "count": 178
+  },
+
+  {
+    "type": "ui",
+    "name": "htitle",
+    "size": [640, 400],
+    "count": 1
   },
 
   {

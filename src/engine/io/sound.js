@@ -5,6 +5,8 @@
  */
 
 const WebAudioAPI = window.AudioContext || window.webkitAudioContext || window.mozAudioContext;
+const MUSIC_VOLUME = 1.0;
+const SOUND_VOLUME = 0.9;
 
 /**
  * Sound Manager Class
@@ -13,22 +15,45 @@ export default class Sound {
 
   /**
    * @param {Engine} engine Game Engine reference
+   * @param {Object} [options] Sound Options
+   * @param {String} [options.path=audio] Sound path
+   * @param {String} [options.format=wav] Sound format
+   * @param {Boolean} [options.positionalAudio=false] Positional audio feature
    */
-  constructor(engine) {
+  constructor(engine, options = {}) {
+    this.options = Object.assign({}, {
+      path: 'audio',
+      format: 'wav',
+      positionalAudio: false
+    }, options);
+
     this.engine = engine;
     this.soundEnabled = false;
-    this.soundVolume = 0.9;
+    this.soundVolume = SOUND_VOLUME;
     this.soundsPlaying = 0;
     this.musicEnabled = false;
-    this.musicVolume = 1.0;
+    this.musicVolume = MUSIC_VOLUME;
     this.musicElement = null;
     this.soundQueue = [];
     this.soundHandler = null;
+    this.audio = {};
+    this.soundsContextCounter = 0;
+    this.soundsContexts = {};
 
     this.context = WebAudioAPI ? new WebAudioAPI() : null;
-    this.audio = {};
+    this.soundGain = null;
+    this.soundPan = null;
 
-    console.log('Sound::constructor()');
+    if ( this.context ) {
+      this.soundGain = this.context.createGain();
+      this.soundGain.connect(this.context.destination);
+
+      this.setSoundVolume(this.soundVolume);
+
+      console.info('Audio Context was found');
+    }
+
+    console.log('Sound::constructor()', this.options);
   }
 
   /**
@@ -36,10 +61,10 @@ export default class Sound {
    * @param {String} name Audio name
    */
   async preload(name) {
-    const src = `audio/${name}.wav`;
+    const src = `${this.options.path}/${name}.${this.options.format}`;
 
     try {
-      const raw = await this.engine.mix.getDataFile(src);
+      const raw = await this.engine.zip.getDataFile(src);
       const buffer = await this.context.decodeAudioData(raw.buffer);
       this.audio[name] = buffer;
     } catch ( e ) {
@@ -51,6 +76,21 @@ export default class Sound {
    * Updates internals
    */
   update() {
+    if ( this.context && this.options.positionalAudio ) {
+      const {vw, vh} = this.engine.getViewport();
+
+      let x = 0;
+      let y = 0;
+
+      if ( this.engine.scene ) {
+        const {offsetX, offsetY} = this.engine.scene.getOffset();
+        x = offsetX + (vw / 2);
+        y = offsetY + (vh / 2);
+      }
+
+      this.context.listener.setPosition(x, y, 0);
+    }
+
     if ( this.soundQueue.length && !this.soundsPlaying ) {
       const [soundId, options, cb] = this.soundQueue.shift();
 
@@ -71,6 +111,9 @@ export default class Sound {
       this.musicElement.load();
       this.musicElement = null;
     }
+
+    this.setSoundVolume(SOUND_VOLUME);
+    this.setMusicVolume(MUSIC_VOLUME);
 
     this.soundHandler = null;
     this.audio = {};
@@ -132,6 +175,10 @@ export default class Sound {
    */
   setSoundVolume(v) {
     this.soundVolume = parseFloat(v);
+    if ( this.soundGain ) {
+      this.soundGain.gain.value = this.soundVolume;
+    }
+
     console.info('Sound volume now', this.soundVolume);
   }
 
@@ -159,7 +206,7 @@ export default class Sound {
       }
     }
 
-    const src = `audio/${filename}.wav`;
+    const src = `${this.options.path}/${filename}.${this.options.format}`;
     console.debug('Requesting song', src);
 
     this.musicElement = new Audio(src);
@@ -195,6 +242,9 @@ export default class Sound {
    * @param {String} soundId Sound ID
    * @param {Object} [options] Options
    * @param {Float} [options.volume] Sound Volume
+   * @param {Object} [options.source] Sound position source
+   * @param {Number} [options.source.x] Sound source X
+   * @param {Number} [options.source.y] Sound source Y
    * @param {Function} [cb] Callback when done
    */
   playSound(soundId, options = {}, cb = null) {
@@ -202,6 +252,7 @@ export default class Sound {
     cb = cb || function() {};
 
     if ( !this.context || !this.soundEnabled ) {
+      // TODO: Fallback to regular Audio with URL
       cb(false);
       return;
     }
@@ -225,24 +276,63 @@ export default class Sound {
       return;
     }
 
-    console.debug('Playing sound', id);
+    const contextId = this.soundsContextCounter;
+    const volume = options.volume || 1.0;
 
-    const volume = options.volume || this.soundVolume;
+    console.debug('Playing sound %s (%d) @ %s', id, contextId, volume);
 
     const gainNode = this.context.createGain();
     gainNode.gain.value = volume;
-    gainNode.connect(this.context.destination);
+    gainNode.connect(this.soundGain);
 
     const source = this.context.createBufferSource();
     source.buffer = this.audio[id];
-    source.connect(gainNode);
+
+    if ( typeof options.source !== 'undefined' && this.options.positionalAudio ) {
+      const panNode = this.createPanNode(options.source);
+      panNode.connect(gainNode);
+      source.connect(panNode);
+
+      this.soundsContexts[contextId] = panNode;
+    } else {
+      source.connect(gainNode);
+    }
+
     source.addEventListener('ended', () => {
       this.soundsPlaying = Math.max(0, this.soundsPlaying - 1);
+
+      delete this.soundsContexts[contextId];
+
       cb(true);
     });
 
+    this.soundsContextCounter++;
     this.soundsPlaying++;
+
     source.start(0);
+  }
+
+  /**
+   * Creates a new panner used for positional audio
+   * @param {Object} options Options
+   * @param {Number} objects.x X position
+   * @param {Number} objects.y Y position
+   * @return {PannerNode}
+   */
+  createPanNode(options) {
+    const panner = this.context.createPanner();
+    panner.panningModel = 'HRTF';
+    panner.maxDistance = 10000;
+    panner.refDistance = 100;
+
+    const x = options.x;
+    const y = options.y;
+
+    console.debug('Positional sound @', [x, y]);
+
+    panner.setPosition(x, y, 0);
+
+    return panner;
   }
 
   /**

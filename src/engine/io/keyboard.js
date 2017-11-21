@@ -62,11 +62,13 @@ export default class Keyboard {
 
   /**
    * @param {Engine} engine Game Engine
+   * @param {Object} [options] Options
    */
-  constructor(engine) {
+  constructor(engine, options = {}) {
     this.engine = engine;
     this.keysDown = {};
     this.keysPressed = {};
+    this.options = Object.assign({}, options);
 
     const events = ['keydown', 'keyup', 'keypress'];
     const callback = (evName) => (ev) => {
@@ -77,7 +79,7 @@ export default class Keyboard {
 
     events.forEach((evName) => window.addEventListener(evName, callback(evName)));
 
-    console.log('Keyboard::constructor()');
+    console.log('Keyboard::constructor()', this.options);
   }
 
   /**

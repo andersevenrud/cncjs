@@ -6,6 +6,7 @@
 
 const MOUSE_LEFT = 1;
 const MOUSE_RIGHT = 2;
+const SUPPORTS_LOCK = 'pointerLockElement' in document;
 
 /**
  * Makes a fake mouse event
@@ -38,10 +39,15 @@ export default class Mouse {
 
   /**
    * @param {Engine} engine Game Engine
+   * @param {Object} [options] Mouse options
+   * @param {Boolean} [options.cursorLock=false] Cursor lock
    */
-  constructor(engine) {
-    this.engine = engine;
+  constructor(engine, options = {}) {
+    this.options = Object.assign({}, {
+      cursorLock: false
+    }, options);
 
+    this.engine = engine;
     this.x = 0;
     this.y = 0;
     this.panX = null;
@@ -58,19 +64,19 @@ export default class Mouse {
     this.rect = null;
     this.buttonsDown = {};
     this.buttonsPressed = {};
+    this.locked = false;
 
-    this.options = { // TODO
-      capture: false
-    };
-
-    const events = ['mousemove', 'click', 'contextmenu', 'mousedown', 'mouseup', 'mouseout', 'mouseenter'];
     const callback = (evName) => (ev) => {
       if ( this.engine && this.engine.running ) {
         this[`on${evName}`](ev);
       }
     };
 
-    events.forEach((evName) => document.addEventListener(evName, callback(evName)));
+    ['mousemove']
+      .forEach((evName) => document.addEventListener(evName, callback(evName)));
+
+    ['mouseout', 'mouseenter', 'click', 'contextmenu', 'mousedown', 'mouseup']
+      .forEach((evName) => this.engine.$root.addEventListener(evName, callback(evName)));
 
     if ( typeof window.MouseEvent !== 'undefined' ) {
       this.bindTouchClick(window);
@@ -79,7 +85,21 @@ export default class Mouse {
 
     this.onmouseenter();
 
-    console.log('Mouse::constructor()');
+    if ( SUPPORTS_LOCK ) {
+      console.info('Supports mouse locking');
+
+      if ( this.options.cursorLock ) {
+        document.addEventListener('pointerlockchange', () => {
+          const el = document.pointerLockElement ||
+            document.mozPointerLockElement ||
+            document.webkitPointerLockElement;
+
+          this.locked = el === this.engine.canvas;
+        }, false);
+      }
+    }
+
+    console.log('Mouse::constructor()', this.options);
   }
 
   /**
@@ -106,24 +126,37 @@ export default class Mouse {
   }
 
   /**
+   * Locks the mouse to canvas
+   */
+  lock() {
+    if ( !SUPPORTS_LOCK || !this.options.cursorLock || this.locked ) {
+      return;
+    }
+
+    const {canvas} = this.engine;
+    canvas.requestPointerLock();
+    this.locked = true;
+  }
+
+  /**
+   * Un-locks the mouse from canvas
+   */
+  unlock() {
+    if ( !SUPPORTS_LOCK || !this.options.cursorLock || !this.locked ) {
+      return;
+    }
+
+    const {canvas} = this.engine;
+    canvas.exitPointerLock();
+    this.locked = false;
+  }
+
+  /**
    * Updates the Mouse
    */
   update() {
     this.buttonsPressed = {};
     this.rect = null;
-  }
-
-  /**
-   * Get real mouse position
-   * @param {Event} ev Browser event
-   * @return {Object}
-   */
-  getMousePosition(ev) {
-    const s = this.engine.getConfig('scale');
-    const x = ev.clientX / s;
-    const y = ev.clientY / s;
-    const button = (ev.touches ? ev.detail : ev.which) || MOUSE_LEFT;
-    return {x, y, button};
   }
 
   /**
@@ -171,10 +204,20 @@ export default class Mouse {
    * @param {Event} ev Browser Event
    */
   onmousemove(ev) {
-    const {x, y} = this.getMousePosition(ev);
+    if ( SUPPORTS_LOCK && this.options.cursorLock && !this.locked ) {
+      return;
+    }
 
-    this.x = x;
-    this.y = y;
+    const s = this.engine.getConfig('scale');
+
+    if ( this.locked ) {
+      this.x += ev.movementX / s;
+      this.y += ev.movementY / s;
+    } else {
+      this.x = (ev.clientX - this.engine.$rootLeft) / s;
+      this.y = (ev.clientY - this.engine.$rootTop) / s;
+    }
+
     this.moved = true;
 
     if ( this.pressed === MOUSE_LEFT ) {
@@ -187,8 +230,8 @@ export default class Mouse {
       }
       this.panning = true;
 
-      const deltaX = this.startX - x;
-      const deltaY = this.startY - y;
+      const deltaX = this.startX - this.x;
+      const deltaY = this.startY - this.y;
 
       this.panX = Math.round(this.tmpGameX + deltaX);
       this.panY = Math.round(this.tmpGameY + deltaY);
@@ -202,21 +245,27 @@ export default class Mouse {
   onmousedown(ev) {
     ev.preventDefault();
 
-    const pos = this.getMousePosition(ev);
-
     this.moved = false;
     this.panX = null;
     this.panY = null;
-    this.startX = pos.x;
-    this.startY = pos.y;
+    this.startX = this.x;
+    this.startY = this.y;
 
     const which = (ev.touches ? ev.detail : ev.which) || MOUSE_LEFT;
     if ( which === MOUSE_LEFT ) {
       this.pressed = MOUSE_LEFT;
-      this.buttonsDown.LEFT = pos;
+      this.buttonsDown.LEFT = {
+        x: this.x,
+        y: this.y,
+        button: which
+      };
     } else {
       this.pressed = MOUSE_RIGHT;
-      this.buttonsDown.RIGHT = pos;
+      this.buttonsDown.RIGHT = {
+        x: this.x,
+        y: this.y,
+        button: which
+      };
     }
   }
 
@@ -225,10 +274,8 @@ export default class Mouse {
    * @param {Event} ev Browser Event
    */
   onmouseup(ev) {
-    const {x, y} = this.getMousePosition(ev);
-
     if ( this.dragging ) {
-      this.rect = this.getCurrentRect(x, y);
+      this.rect = this.getCurrentRect(this.x, this.y);
     }
 
     if ( !this.dragging && !this.panning ) {
@@ -307,6 +354,7 @@ export default class Mouse {
    * @param {Event} ev Browser Event
    */
   onclick(ev) {
+    this.lock();
   }
 
   /**

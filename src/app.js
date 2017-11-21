@@ -9,8 +9,6 @@ import Game from './game/main';
 window.addEventListener('DOMContentLoaded', () => {
   const canvas = document.querySelector('canvas');
   const e = new Game(canvas, {
-    loading: document.getElementById('loading'),
-    loadingBar: document.getElementById('loading-progress'),
     version: VERSION, // webpack global
     debugMode: DEBUG // webpack global
   });

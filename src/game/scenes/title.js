@@ -4,6 +4,7 @@
  * @license MIT
  */
 import GameScene from '../scene';
+import Sprite from '../../engine/sprite';
 import UIContainer from '../../engine/ui/container';
 import {loadImage} from '../../engine/util';
 
@@ -65,33 +66,34 @@ export default class TitleScene extends GameScene {
 
   async load() {
     await super.load([
-      'sprite:options'
+      'sprite:options',
+      'sprite:htitle'
     ]);
 
-    let img;
     try {
-      const src = require('!file-loader!../../data/UPDATE.MIX/htitle.png');
-      img = await loadImage(src);
+      // FIXME: Move to sprite
+      const asset = await this.engine.zip.getDataFile('sprites/htitle.png');
+      const url = URL.createObjectURL(asset);
+      this.titleImage = await loadImage(url);
+      URL.revokeObjectURL(url);
     } catch ( e ) {
       console.warn(e);
     }
 
     this.engine.sounds.playSong('map1', {loop: true});
 
-    this.titleImage = img;
-
     this.guiContainers = [
       new UIContainer(this.engine, [
-        {type: 'box', corners: true, x: 171, y: 0, w: 301, h: 271},
-        {type: 'button', label: 'Start new game', x: 195, y: 50, w: 250, h: 18, cb: () => this.destroy()},
-        {type: 'button', label: 'About', x: 195, y: 90, w: 250, h: 18, cb: () => (this.currentGUI = 1)}
-      ], {scaleTo: this.titleImage}),
+        {type: 'box', corners: true, x: 0, y: 0, w: 300, h: 270},
+        {type: 'button', label: 'Start new game', x: 25, y: 50, w: 250, h: 18, cb: () => this.destroy()},
+        {type: 'button', label: 'About', x: 25, y: 90, w: 250, h: 18, cb: () => (this.currentGUI = 1)}
+      ], {center: {dir: 'x', width: 300, height: 270}}),
 
       new UIContainer(this.engine, [
-        {type: 'box', corners: true, x: 171, y: 0, w: 301, h: 271},
-        {type: 'text', text: ABOUT_TEXT, x: 195, y: 50, w: 250, h: 200, size: 16, center: true},
-        {type: 'button', label: 'Back', x: 195, y: 240, w: 250, h: 18, cb: () => (this.currentGUI = 0)}
-      ], {scaleTo: this.titleImage})
+        {type: 'box', corners: true, x: 0, y: 0, w: 300, h: 270},
+        {type: 'text', text: ABOUT_TEXT, x: 25, y: 30, w: 250, h: 200, size: 16, center: true},
+        {type: 'button', label: 'Back', x: 25, y: 240, w: 250, h: 18, cb: () => (this.currentGUI = 0)}
+      ], {center: {dir: 'x', width: 300, height: 270}})
     ];
   }
 }

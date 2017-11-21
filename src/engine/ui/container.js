@@ -3,6 +3,7 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
+import {collidePoint} from '../physics';
 
 /**
  * GUI Element Container base class
@@ -15,6 +16,8 @@ export default class UIContainer {
    * @param {Object} [options] Options
    */
   constructor(engine, elements, options) {
+    this.clicked = false;
+    this.engine = engine;
     this.options = Object.assign({}, {
       x: null,
       y: null,
@@ -39,7 +42,7 @@ export default class UIContainer {
       return null;
     }).filter(iter => !!iter);
 
-    console.log(this.elements);
+    console.debug('Created UI container', this.elements);
   }
 
   /**
@@ -50,8 +53,8 @@ export default class UIContainer {
     const {vw, vh} = viewport;
 
     let ratio = 1;
-    let left = this.options.x === null ? 0 : this.options.x;
-    let top = this.options.y === null ? 0 : this.options.y;
+    let left = typeof this.options.x === 'number' ? this.options.x : 0;
+    let top = typeof this.options.y === 'number' ? this.options.y : 0;
 
     if ( left < 0 ) {
       left = vw - Math.abs(left);
@@ -67,14 +70,28 @@ export default class UIContainer {
       ratio = Math.min(vw / width, vh / height);
       left = (vw - (width * ratio)) / 2;
     } else if ( this.options.center ) {
-      const {width, height} = this.options.center;
+      const {width, height, dir} = this.options.center;
 
-      left = (vw / 2) - (width / 2);
-      top = (vh / 2) - (height / 2);
+      if ( !dir || dir === 'x' ) {
+        left = (vw / 2) - (width / 2);
+      }
+
+      if ( !dir || dir === 'y' ) {
+        top = (vh / 2) - (height / 2);
+      }
     }
+
+    const click = this.engine.mouse.buttonClicked();
+    const press = this.engine.mouse.buttonDown();
+    const pos = this.engine.mouse.getPosition();
+    const mousePos = {x: pos[0], y: pos[1]};
+    let hit = false;
 
     for ( let i = 0; i < this.elements.length; i++ ) {
       const el = this.elements[i];
+
+      el.reset();
+
       if ( !el.isVisible() ) {
         continue;
       }
@@ -96,8 +113,24 @@ export default class UIContainer {
         y2: y + h
       };
 
+      const emit = (name, data) => el['on' + name](data);
+
+      if ( click && collidePoint(click, el.rect) ) {
+        emit('click', click);
+      } else if ( press && collidePoint(press, el.rect) ) {
+        emit('press', press);
+      }
+
+      hit = el.clicked || el.pressed;
+
+      if ( collidePoint(mousePos, el.rect) ) {
+        emit('hover', mousePos); // NOTE: Last!
+      }
+
       el.update();
     }
+
+    this.clicked = hit;
   }
 
   /**
@@ -113,35 +146,18 @@ export default class UIContainer {
     }
   }
 
-  _event(name, pos) {
-    let clicked;
-
+  /**
+   * Propagates an event to elements
+   * @param {String} name Event name
+   * @param {Object} data Event data
+   */
+  _event(name, data) {
     for ( let i = 0; i < this.elements.length; i++ ) {
       const el = this.elements[i];
-      if ( el.isVisible() && el[name](pos) ) {
-        clicked = true;
+      if ( el.isVisible() ) {
+        el['on' + name](data);
       }
     }
-
-    return clicked;
-  }
-
-  /**
-   * Checks if a press collides with elements
-   * @param {Object} press A mouse press
-   * @return {Boolean}
-   */
-  press(press) {
-    return this._event('press', press);
-  }
-
-  /**
-   * Checks if a click collides with elements
-   * @param {Object} click A mouse click
-   * @return {Boolean}
-   */
-  click(click) {
-    return this._event('click', click);
   }
 
 }

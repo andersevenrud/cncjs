@@ -13,7 +13,7 @@ export default class TerrainObject extends MapObject {
       type: 'terrain',
       tileX: args.tileX,
       tileY: args.tileY
-    }, engine.mix.getTerrain(args.id));
+    }, engine.data.terrain[args.id]);
 
     this.spriteColor = '#663300';
   }

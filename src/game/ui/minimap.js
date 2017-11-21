@@ -63,7 +63,7 @@ export default class MiniMap extends UIElement {
     }
 
     const [mx, my] = this.scale;
-    const {vw, vh} = this.engine.getViewport();
+    const {vw, vh} = this.engine.scene.getViewport();
     const {width, height, objects} = this.map;
     const {gameX, gameY} = this.engine.scene;
 
@@ -110,23 +110,21 @@ export default class MiniMap extends UIElement {
     target.drawImage(this.canvas, this.rect.x, this.rect.y);
   }
 
-  click(click) {
-    if ( click && this.rect && super.click(click, false) ) {
+  onhover(pos) {
+    if ( this.pressed ) {
       const {vw, vh} = this.engine.getViewport();
       const {width, height} = this.map;
-      const relX = click.x - this.rect.x;
-      const relY = click.y - this.rect.y;
+      const relX = pos.x - this.rect.x;
+      const relY = pos.y - this.rect.y;
       const absX = relX / MINIMAP_SIZE[0];
       const absY = relY / MINIMAP_SIZE[1];
       const ox = Math.round(width * absX) - (vw / 2);
       const oy = Math.round(height * absY) - (vh / 2);
 
       this.engine.setOffset(ox, oy);
-
-      return true;
     }
 
-    return false;
+    super.onhover(...arguments);
   }
 
 }

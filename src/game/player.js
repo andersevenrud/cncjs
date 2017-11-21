@@ -17,6 +17,32 @@ export default class Player {
     this.current = current === true;
   }
 
+  addPower(p) {
+    this.power += parseInt(p, 10);
+  }
+
+  removePower(p) {
+    this.power -= parseInt(p, 10);
+  }
+
+  setPower(p) {
+    this.power = parseInt(p, 10);
+  }
+
+  addCredits(c) {
+    this.credits += parseInt(c, 10);
+  }
+
+  removeCredits(c) {
+    const drain = Math.min(this.credits, parseInt(c, 10));
+    this.credits -= drain;
+    return drain;
+  }
+
+  setCredits(c) {
+    this.credits = parseInt(c, 10);
+  }
+
   static createAll(opts, current) {
     const players = PLAYER_NAMES.map((name) => new Player(name, opts[name], name === current));
     console.log('Players', players);

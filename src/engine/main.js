@@ -7,7 +7,7 @@
 import Mouse from './io/mouse';
 import Keyboard from './io/keyboard';
 import Sound from './io/sound';
-import MIX from './io/mix';
+import Zip from './io/zip';
 import Sprite from './sprite';
 import Configuration from './configuration';
 
@@ -28,31 +28,44 @@ export default class Engine {
    * @param {Object} [options.gui] GUI Element map
    * @param {Object} [options.scenes] Scene map
    * @param {Boolean} [options.debugMode=false] Debug mode
+   * @param {Boolean} [options.cursorLock=false] Cursor Locking feature
+   * @param {Boolean} [options.positionalAudio=false] Positional audio feature
    */
   constructor(canvas, configuration, options = {}) {
+    console.group('Engine::constructor()');
+
     this.options = Object.assign({}, {
       gui: {},
       scenes: {},
       debug: false,
       version: '0.0.0',
-      loading: null,
-      loadingBar: null,
       debugMode: false,
       dataFile: 'data.zip',
-      updateRate: 1000 / 30
+      cursorLock: false,
+      updateRate: 1000 / 30,
+      positionalAudio: false
     }, options);
+
+    this.$root = canvas.parentNode;
+    this.$rootTop = 0;
+    this.$rootLeft = 0;
 
     this.canvas = canvas;
     this.context = this.canvas.getContext('2d');
 
-    this.mix = new MIX(this, this.options.dataFile);
-    this.mouse = new Mouse(this);
+    this.zip = new Zip(this, this.options.dataFile);
+    this.mouse = new Mouse(this, {
+      cursorLock: this.options.cursorLock
+    });
     this.keyboard = new Keyboard(this);
-    this.sounds = new Sound(this);
+    this.sounds = new Sound(this, {
+      positionalAudio: options.positionalAudio
+    });
     this.configuration = new Configuration(options, configuration);
     this.scene = null;
 
     this.sceneQueue = [];
+    this.spriteLibrary = {};
     this.running = false;
     this.started = false;
     this.width = 0;
@@ -65,18 +78,19 @@ export default class Engine {
     this.pauseTick = false;
     this.paused = false;
     this.wasPaused = false;
-    this.$loading = options.loading;
-    this.$loadingBar = options.loadingBar;
 
     let debounce;
+    const onresize = () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(() => this.onresize(), 100);
+    };
+
     window.addEventListener('blur', () => this.pause());
     window.addEventListener('focus', () => this.unpause());
-    window.addEventListener('resize', () => {
-      clearTimeout(debounce);
-      debounce = setTimeout(() => this.resize(), 100);
-    });
+    window.addEventListener('resize', () => onresize());
+    window.addEventListener('scroll', () => onresize());
 
-    console.log('Engine::constructor()', this.options);
+    console.groupEnd();
   }
 
   /**
@@ -93,12 +107,13 @@ export default class Engine {
   async load() {
     console.group('Engine::load()');
 
+    this.setScale(this.getConfig('scale'));
+
     this.toggleLoading(true);
 
     await this.configuration.load();
-    await this.mix.load();
+    await this.zip.load();
 
-    this.setScale(this.getConfig('scale'));
     this.toggleDebug(this.options.debug);
     this.sounds.setSoundVolume(this.getConfig('soundVolume'));
     this.sounds.setMusicVolume(this.getConfig('musicVolume'));
@@ -259,9 +274,9 @@ export default class Engine {
   /**
    * Handles resize of screen
    */
-  resize() {
-    const w = Math.max(640, window.innerWidth);
-    const h = Math.max(535, window.innerHeight);
+  onresize() {
+    const w = Math.max(640, this.$root.offsetWidth);
+    const h = Math.max(535, this.$root.offsetHeight);
     const s = this.getConfig('scale');
 
     this.width = Math.round(w / s);
@@ -271,8 +286,13 @@ export default class Engine {
     this.canvas.height = this.height;
 
     if ( this.scene ) {
-      this.scene.resize();
+      this.scene.onresize();
     }
+
+    // FIXME: Does not take scroll into account
+    const {left, top} = this.$root.getBoundingClientRect();
+    this.$rootTop = top;
+    this.$rootLeft = left;
 
     console.info('Resized to', [this.width, this.height]);
   }
@@ -282,7 +302,7 @@ export default class Engine {
    * @param {Object} [args] Arguments to pass on
    */
   async nextScene() {
-    console.info('Going to next scene', this.started);
+    console.group('Engine::nextScene()');
 
     Sprite.destroyCache();
 
@@ -312,6 +332,7 @@ export default class Engine {
 
     this.paused = false;
     this.toggleLoading(false);
+    console.groupEnd();
   }
 
   /**
@@ -321,7 +342,7 @@ export default class Engine {
    */
   pushScene(sceneName, options) {
     const ClassRef = this.options.scenes[sceneName];
-    console.info('Pushing Scene', sceneName, ClassRef);
+    console.info('Pushing Scene', sceneName);
 
     this.sceneQueue.push(() => {
       return new ClassRef(this, options);
@@ -332,20 +353,46 @@ export default class Engine {
    * Toggle DOM loading indication
    * @param {Boolean} t State
    * @param {Number} [p] Percentage in progress
+   * @param {String} [s] Show text
    */
-  toggleLoading(t, p) {
-    if ( !this.$loading ) {
-      return;
-    }
+  toggleLoading(t, p, s) {
 
-    this.$loading.style.display = t ? 'block' : 'none';
+    this.canvas.style.backgroundColor = t ? 'transparent' : '#000000';
 
-    if ( this.$loadingBar ) {
-      if ( !t || typeof p === 'undefined' ) {
-        this.$loadingBar.style.display = 'none';
-      } else {
-        this.$loadingBar.style.display = 'block';
-        this.$loadingBar.style.width = String(Math.round(p || 0)) + '%';
+    if ( t ) {
+      s = s || 'Loading...';
+
+      const outerMargin = 80;
+      const innerMargin = 2;
+      const outerWidth = (this.width - (outerMargin * 2));
+      const fullWidth = outerWidth - (innerMargin * 2);
+      const width = Math.round(fullWidth * (p / 100));
+
+      let height = 20;
+      let left = outerMargin;
+      let top = (this.height / 2) - (height / 2);
+
+      this.context.clearRect(0, 0, this.width, this.height);
+
+      this.context.fillStyle = '#222222';
+      this.context.fillRect(left, top, outerWidth, height);
+
+      left += innerMargin;
+      top += innerMargin;
+      height -= (innerMargin * 2);
+
+      this.context.fillStyle = '#089118';
+      this.context.fillRect(left, top, width, height);
+
+      if ( s ) {
+        const ts = height - 4;
+        const tw = this.context.measureText(s).width;
+        const y = top + ts;
+        const x = left + (fullWidth / 2) - (tw / 2);
+
+        this.context.font = String(ts) + 'px monospace';
+        this.context.fillStyle = '#ffffff';
+        this.context.fillText(s, x, y);
       }
     }
   }
@@ -356,7 +403,7 @@ export default class Engine {
    */
   setScale(scale) {
     this.configuration.setConfig('scale', scale);
-    this.resize();
+    this.onresize();
     this.canvas.className = scale > 1 ? 'sharpen' : '';
   }
 

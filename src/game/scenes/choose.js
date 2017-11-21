@@ -21,7 +21,7 @@ export default class ChooseScene extends GameScene {
     }
 
     const mapName = options.team === 'GDI' ? 'scg01ea' : 'scb01ea';
-    const level = this.engine.mix.getLevel(mapName);
+    const level = this.engine.data.levels[mapName];
     const brief = level.info.Brief;
 
     this.engine.pushScene('movie', {

@@ -5,8 +5,8 @@
  */
 import Scene from '../engine/scene';
 import Sprite from '../engine/sprite';
+import Cursor from './ui/cursor';
 import {drawText} from '../engine/ui/util';
-import {CURSOR_SPRITES} from './globals';
 
 /**
  * Base Game Scene class
@@ -20,16 +20,8 @@ export default class GameScene extends Scene {
   constructor(engine, options) {
     super(engine, options);
 
-    this.cursorName = 'default';
+    this.cursor = new Cursor(engine);
     this.loaded = false;
-    this.mouse = {
-      sprite: null,
-      left: 0,
-      top: 0,
-      index: 0,
-      offset: 0,
-      timer: 0
-    };
   }
 
   /**
@@ -37,14 +29,22 @@ export default class GameScene extends Scene {
    * @param {String[]} [additional] Additional assets to load
    */
   async load(additional = []) {
+    console.group('Scene::load()');
+
     const list = [
       'sprite:btexture',
-      'sprite:mouse'
+      'sprite:mouse',
+      'sprite:3point',
+      'sprite:6point',
+      'sprite:8point',
+      'sprite:vcr'
     ].concat(additional);
 
     await super.load(list);
 
-    this.mouse.sprite = Sprite.instance('mouse');
+    await this.cursor.load();
+
+    console.groupEnd();
   }
 
   /**
@@ -65,22 +65,8 @@ export default class GameScene extends Scene {
       this.engine.sounds.toggleMusic();
     }
 
-    // Sprites
-    const found = CURSOR_SPRITES[this.cursorName];
-    let spriteOffset = typeof found === 'number' ? found : found[0];
-    let spriteCount = typeof found === 'number' ? 0 : found[1];
-    let spriteIndex = spriteCount ? this.mouse.index : 0;
-
-    if ( spriteCount && this.mouse.timer === 0 ) {
-      spriteIndex = (spriteIndex + 1) % spriteCount;
-    }
-
     // Mouse
-    this.mouse.index = spriteIndex;
-    this.mouse.offset = spriteOffset;
-    this.mouse.left = this.cursorName === 'default' ? 0 : this.mouse.sprite.width / 2;
-    this.mouse.top = this.cursorName === 'default' ? 0 : this.mouse.sprite.height / 2;
-    this.mouse.timer = (this.mouse.timer + 1) % 4;
+    this.cursor.update();
 
     super.update(...arguments);
   }
@@ -93,16 +79,8 @@ export default class GameScene extends Scene {
   render(target, delta) {
     super.render(...arguments);
 
-    // Mouse
-    if ( this.mouse.sprite ) {
-      const [mouseX, mouseY] = this.engine.mouse.getPosition();
-      this.mouse.sprite.render(target,
-                               Math.round(mouseX - this.mouse.left),
-                               Math.round(mouseY - this.mouse.top),
-                               Math.round(this.mouse.index) + this.mouse.offset);
-    }
+    this.cursor.render(target);
 
-    // Debug info
     if ( this.engine.options.debug ) {
       const {vw, vh} = this.getViewport();
       const km = this.engine.getConfig('keymap');

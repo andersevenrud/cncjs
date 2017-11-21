@@ -64,7 +64,6 @@ export default class EngineObject {
     } else if ( this.sprite && this.sprite.render ) {
       this.sprite.render(target, x, y, this.spriteFrame, this.spriteSheet);
     } else {
-      target.font = '10px Monospace';
       target.fillStyle = this.spriteColor;
       target.fillRect(x, y, w, h);
       target.fillStyle = '#ffffff';

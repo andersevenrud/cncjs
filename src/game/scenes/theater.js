@@ -9,15 +9,16 @@ import Player from '../player';
 import Triggers from '../triggers';
 import TickerElement from '../ui/ticker';
 import MiniMap from '../ui/minimap';
+import ConstructObject from '../objects/construct';
 import UIContainer from '../../engine/ui/container';
 import Sprite from '../../engine/sprite';
-import {randomInteger} from '../../engine/util';
+import {sort, randomInteger} from '../../engine/util';
 import {tileFromPoint} from '../physics';
 import {TILE_SIZE, ICONS, SOUNDS, THEMES} from '../globals';
 
 const TICK_LENGTH = 80; // FIXME
 const DEFAULT_THEME = 5; // FIXME
-const SCROLL_MARGIN = 10; // FIXME
+const SCROLL_MARGIN = 4; // FIXME
 const SCROLL_SPEED = 3; // FIXME
 
 export default class TheaterScene extends GameScene {
@@ -40,8 +41,9 @@ export default class TheaterScene extends GameScene {
     this.sidebarVisible = true;
     this.tickerBuildings = null;
     this.tickerUnits = null;
+    this.cursorName = 'default';
+    this.constructObject = null;
 
-    this.buildObject = null;
     this.player = null;
     this.buildables = {
       structures: [],
@@ -53,8 +55,8 @@ export default class TheaterScene extends GameScene {
     console.info('Loading Theater', this.options);
 
     const mapName = this.options.map;
-    const level = this.engine.mix.getLevel(mapName);
-    const buildables = this.engine.mix.getBuildables();
+    const level = this.engine.data.levels[mapName];
+    const buildables = this.getBuildables();
 
     const tmap = {desert: 'DESERT.MIX', winter: 'WINTER.MIX'};
     const theatre = tmap[level.theater] || 'TEMPERAT.MIX';
@@ -178,6 +180,11 @@ export default class TheaterScene extends GameScene {
         {type: 'tab', x: -320, y: 0, label: () => {
           const mp = this.getMainPlayer();
           return String(mp.credits);
+        }, cb: () => {
+          if ( this.engine.options.debugMode ) {
+            const mp = this.getMainPlayer();
+            mp.addCredits(1000);
+          }
         }},
         {type: 'tab', x: -160, y: 0, label: 'Sidebar', cb: () => this.toggleSidebar()}
       ]),
@@ -196,15 +203,15 @@ export default class TheaterScene extends GameScene {
         {type: 'sprite', name: 'hstripdn', pressIndex: 1, x: 70 + 20 + 33, y: 357, cb: () => this.tickerUnits.down()},
         {instance: this.tickerBuildings, x: 20, y: 164, cb: (e, cb) => this.clickBuildable(e, cb)},
         {instance: this.tickerUnits, x: 20 + 64 + 6, y: 164, cb: (e, cb) => this.clickBuildable(e, cb)},
-        {instance: this.minimap, visible: () => this.minimapVisible}
+        {instance: this.minimap, visible: () => this.sidebarVisible && this.minimapVisible}
       ], {x: -160, y: 14}),
 
       new UIContainer(this.engine, [
         {type: 'box', corners: true, x: 0, y: 0, w: 450, h: 270},
-        {type: 'text', text: ['Menu'], x: 30, y: 15, w: 390, h: 20, color: '#50f850', underline: true, center: true},
-        {type: 'button', label: 'Load Mission', color: '#555555', x: 135, y: 80, w: 180, h: 18},
-        {type: 'button', label: 'Save Mission', color: '#555555', x: 135, y: 110, w: 180, h: 18},
-        {type: 'button', label: 'Delete Mission', color: '#555555', x: 135, y: 140, w: 180, h: 18},
+        {type: 'text', text: ['Menu'], x: 30, y: 15, w: 390, h: 20, underline: true, center: true},
+        {type: 'button', label: 'Load Mission', x: 135, y: 80, w: 180, h: 18},
+        {type: 'button', label: 'Save Mission', x: 135, y: 110, w: 180, h: 18},
+        {type: 'button', label: 'Delete Mission', x: 135, y: 140, w: 180, h: 18},
         {type: 'button', label: 'Game Controls', x: 135, y: 50, w: 180, h: 18, cb: () => (this.currentGUI = 2)},
         {type: 'button', label: 'Abort Mission', x: 135, y: 170, w: 180, h: 18, cb: () => {
           this.engine.pushScene('title');
@@ -215,25 +222,25 @@ export default class TheaterScene extends GameScene {
       ], {center: {width: 450, height: 270}}),
 
       new UIContainer(this.engine, [
-        {type: 'box', corners: true, x: 0, y: 0, w: 400, h: 130},
-        {type: 'text', text: ['Mission Statement'], x: 30, y: 15, w: 340, h: 20, color: '#50f850', underline: true, center: true},
-        {type: 'text', text: level.brief, x: 30, y: 40, w: 130, h: 100, color: '#50f850'},
-        {type: 'button', label: 'Options', x: 110, y: 100, w: 180, h: 18, cb: () => (this.currentGUI = 0)}
-      ], {center: {width: 400, height: 130}}),
+        {type: 'box', corners: true, x: 0, y: 0, w: 620, h: 130},
+        {type: 'text', text: ['Mission Statement'], x: 30, y: 15, w: 550, h: 20, underline: true, center: true},
+        {type: 'text', text: level.brief, x: 30, y: 40, w: 130, h: 100},
+        {type: 'button', label: 'Options', x: 220, y: 100, w: 180, h: 18, cb: () => (this.currentGUI = 0)}
+      ], {center: {width: 620, height: 130}}),
 
       new UIContainer(this.engine, [
         {type: 'box', corners: true, x: 0, y: 0, w: 400, h: 300},
-        {type: 'text', text: ['Game Controls'], x: 30, y: 15, w: 340, h: 20, color: '#50f850', underline: true, center: true},
+        {type: 'text', text: ['Game Controls'], x: 30, y: 15, w: 340, h: 20, underline: true, center: true},
 
-        {type: 'text', text: ['GAME SPEED:'], x: 30, y: 50, w: 340, h: 20, color: '#50f850'},
-        {type: 'slider', x: 30, y: 60, w: 340, h: 18, value: 0.5}, // TODO
-        {type: 'text', text: ['Slower'], x: 30, y: 90, w: 50, h: 20, color: '#50f850'},
-        {type: 'text', text: ['Faster'], x: 340, y: 90, w: 50, h: 20, color: '#50f850'},
+        {type: 'text', text: ['GAME SPEED:'], x: 30, y: 50, w: 340, h: 20},
+        {type: 'slider', x: 30, y: 65, w: 340, h: 18, value: 0.5}, // TODO
+        {type: 'text', text: ['Slower'], x: 30, y: 90, w: 50, h: 20},
+        {type: 'text', text: ['Faster'], x: 330, y: 90, w: 50, h: 20},
 
-        {type: 'text', text: ['SCROLL RATE:'], x: 30, y: 130, w: 340, h: 20, color: '#50f850'},
-        {type: 'slider', x: 30, y: 140, w: 340, h: 18, value: 0.5}, // TODO
-        {type: 'text', text: ['Slower'], x: 30, y: 170, w: 50, h: 20, color: '#50f850'},
-        {type: 'text', text: ['Faster'], x: 340, y: 170, w: 50, h: 20, color: '#50f850'},
+        {type: 'text', text: ['SCROLL RATE:'], x: 30, y: 130, w: 340, h: 20},
+        {type: 'slider', x: 30, y: 145, w: 340, h: 18, value: 0.5}, // TODO
+        {type: 'text', text: ['Slower'], x: 30, y: 170, w: 50, h: 20},
+        {type: 'text', text: ['Faster'], x: 330, y: 170, w: 50, h: 20},
 
         {type: 'button', label: 'Visual Controls', x: 30, y: 200, w: 340, h: 18, cb: () => (this.currentGUI = 3)},
         {type: 'button', label: 'Sound Controls', x: 30, y: 230, w: 340, h: 18, cb: () => (this.currentGUI = 4)},
@@ -244,14 +251,14 @@ export default class TheaterScene extends GameScene {
       // TODO
       new UIContainer(this.engine, [
         {type: 'box', corners: true, x: 0, y: 0, w: 450, h: 270},
-        {type: 'text', text: ['Visual Controls'], x: 30, y: 15, w: 390, h: 20, color: '#50f850', underline: true, center: true},
+        {type: 'text', text: ['Visual Controls'], x: 30, y: 15, w: 390, h: 20, underline: true, center: true},
         {type: 'button', label: 'Game Controls', x: (450 - 180 - 24), y: 230, w: 180, h: 18, cb: () => (this.currentGUI = 2)}
       ], {center: {width: 450, height: 270}}),
 
       // TODO
       new UIContainer(this.engine, [
         {type: 'box', corners: true, x: 0, y: 0, w: 450, h: 270},
-        {type: 'text', text: ['Sound Controls'], x: 30, y: 15, w: 390, h: 20, color: '#50f850', underline: true, center: true},
+        {type: 'text', text: ['Sound Controls'], x: 30, y: 15, w: 390, h: 20, underline: true, center: true},
         {type: 'button', label: 'Game Controls', x: (450 - 180 - 24), y: 230, w: 180, h: 18, cb: () => (this.currentGUI = 2)}
       ], {center: {width: 450, height: 270}})
 
@@ -269,16 +276,21 @@ export default class TheaterScene extends GameScene {
 
     super.update();
 
-    if ( !this.guiClicked && !busy ) {
-      this.handleMouse();
+    this.handleMouse();
+    this.handleKeyboard();
+
+    if ( this.constructObject ) {
+      this.constructObject.update();
     }
 
-    this.handleKeyboard();
+    this.updateScroll();
+
+    this.cursorName = this.getCursor();
 
     this.engine.pauseTick = busy; // FIXME: This needs a better solution
 
     if ( this.loaded ) {
-      this.cursorName = this.getCursor();
+      this.cursor.setCursor(this.cursorName);
 
       if ( !busy ) {
         this.map.update();
@@ -294,148 +306,111 @@ export default class TheaterScene extends GameScene {
     return true;
   }
 
+  updateScroll() {
+    if ( this.guiHit ) {
+      return;
+    }
+
+    const mouse = this.engine.mouse;
+    const kbd = this.engine.keyboard;
+    const cfg = this.engine.configuration;
+    const {vw, vh} = this.engine.getViewport();
+    const [mouseX, mouseY] = mouse.getPosition();
+
+    let scrollX = 0;
+    let scrollY = 0;
+
+    if ( kbd.keyDown(cfg.getKey('PAN_UP')) ||
+        (mouse.captured && mouseY <= SCROLL_MARGIN) ) {
+      scrollY = -SCROLL_SPEED;
+    } else if ( kbd.keyDown(cfg.getKey('PAN_DOWN')) ||
+               (mouse.captured && mouseY >= (vh - SCROLL_MARGIN)) ) {
+      scrollY = SCROLL_SPEED;
+    }
+
+    if ( kbd.keyDown(cfg.getKey('PAN_LEFT')) ||
+        (mouse.captured && mouseX <= SCROLL_MARGIN) ) {
+      scrollX = -SCROLL_SPEED;
+    } else if ( kbd.keyDown(cfg.getKey('PAN_RIGHT')) ||
+               (mouse.captured && mouseX >= (vw - SCROLL_MARGIN)) ) {
+      scrollX = SCROLL_SPEED;
+    }
+
+    this.moveMap(scrollX, scrollY);
+  }
+
+  handleSelectionRect() {
+    if ( this.guiHit ) {
+      return;
+    }
+
+    const mouse = this.engine.mouse;
+    const rect = mouse.getRect();
+
+    if ( rect ) {
+      const {x1, x2, y1, y2} = rect;
+      if ( (x2 - x1) > 5 && (y2 - y1) > 5 ) {
+        const {offsetX, offsetY} = this.engine.getOffset();
+
+        const selection = {
+          x1: x1 + offsetX,
+          x2: x2 + offsetX,
+          y1: y1 + offsetY,
+          y2: y2 + offsetY
+        };
+
+        console.log('select rectangle', selection);
+
+        const objects = this.map.getObjectsFromRect(selection)
+          .filter((obj) => obj.isSelectable() && obj.isFriendly() && obj.isUnit());
+
+        this.map.select(objects);
+      }
+    }
+  }
+
   handleMouse() {
     const mouse = this.engine.mouse;
+    const {vw} = this.getViewport();
     const [mouseX, mouseY] = mouse.getPosition();
     const {offsetX, offsetY} = this.engine.getOffset();
-    const [panX, panY] = mouse.getPan();
-    const {vw, vh} = this.engine.getViewport();
 
-    if ( mouse.captured ) {
-      if ( mouseY <= SCROLL_MARGIN ) {
-        this.moveMap(0, -SCROLL_SPEED);
+    if ( (mouseY > 14 && mouseX < vw) ) {
+      const leftClick = mouse.buttonClicked('LEFT');
+      if ( leftClick ) {
+        this.clickViewport(leftClick);
       }
-      if ( mouseX <= SCROLL_MARGIN ) {
-        this.moveMap(-SCROLL_SPEED, 0);
+
+      const rightClick = mouse.buttonClicked('RIGHT');
+      if ( rightClick ) {
+        if ( this.mode ) {
+          this.setMode(null);
+        } else {
+          this.map.unselect();
+        }
       }
-      if ( mouseY >= (vh - SCROLL_MARGIN) ) {
-        this.moveMap(0, SCROLL_SPEED);
-      }
-      if ( mouseX >= (vw - SCROLL_MARGIN) ) {
-        this.moveMap(SCROLL_SPEED, 0);
+
+      if ( this.mode === 'build' ) {
+        if ( this.constructObject ) {
+          this.constructObject.move(
+            (Math.floor((mouseX + offsetX) / TILE_SIZE) * TILE_SIZE) - offsetX,
+            (Math.floor((mouseY + offsetY) / TILE_SIZE) * TILE_SIZE) - offsetY
+          );
+        }
+      } else if ( !this.mode ) {
+        this.handleSelectionRect();
       }
     }
 
+    const [panX, panY] = mouse.getPan();
     if ( panX !== null && panY !== null ) {
       this.engine.setOffset(panX, panY);
-    }
-
-    if ( !this.mode ) {
-      const rect = mouse.getRect();
-      if ( rect ) {
-        const {x1, x2, y1, y2} = rect;
-        if ( (x2 - x1) > 5 && (y2 - y1) > 5 ) {
-          const {offsetX, offsetY} = this.engine.getOffset();
-
-          const selection = {
-            x1: x1 + offsetX,
-            x2: x2 + offsetX,
-            y1: y1 + offsetY,
-            y2: y2 + offsetY
-          };
-
-          console.log('select rectangle', selection);
-
-          const objects = this.map.getObjectsFromRect(selection)
-            .filter((obj) => obj.isSelectable() && obj.isFriendly() && obj.isUnit());
-
-          this.map.select(objects);
-        }
-      }
-    }
-
-    const click = mouse.buttonClicked('LEFT');
-    const right = mouse.buttonClicked('RIGHT');
-
-    if ( this.mode === 'build' ) {
-      if ( this.buildObject ) {
-        this.buildObject.x = (Math.floor((mouseX + offsetX) / TILE_SIZE) * TILE_SIZE) - offsetX;
-        this.buildObject.y = (Math.floor((mouseY + offsetY) / TILE_SIZE) * TILE_SIZE) - offsetY;
-      }
-    } else {
-      if ( right ) {
-        this.map.unselect();
-      }
-    }
-
-    if ( click ) {
-      this.clickViewport(click);
-    }
-
-    if ( right ) {
-      this.setMode(null);
-    }
-
-    if ( this.buildObject ) {
-      const {x, y, entry} = this.buildObject;
-
-      if ( x !== null && y !== null ) {
-        const pattern = entry.OccupyList ? [...entry.OccupyList] : [[1]];
-        const {offsetX, offsetY} = this.engine.getOffset();
-        const {tileX, tileY} = tileFromPoint(x + offsetX, y + offsetY);
-
-        if ( pattern ) {
-          if ( entry.HasBib ) {
-            pattern.push(Array(pattern[0].length).fill(1));
-          }
-
-          const result = [];
-          for ( let row = 0; row < pattern.length; row++ ) {
-            for ( let col = 0; col < pattern[row].length; col++ ) {
-              const num = pattern[row][col];
-              if ( num > 0 ) {
-                let spriteImage;
-
-                const valid = this.map.queryGrid(tileX + col, tileY + row, 'value') === 0;
-                if ( valid ) {
-                  if ( num === 2 ) {
-                    spriteImage = Sprite.instance('trans').createImage(1);
-                  } else {
-                    spriteImage = Sprite.instance('trans').createImage(0);
-                  }
-                } else {
-                  spriteImage = Sprite.instance('trans').createImage(2);
-                }
-
-                result.push({
-                  valid,
-                  sprite: spriteImage,
-                  x: x + (col * TILE_SIZE),
-                  y: y + (row * TILE_SIZE),
-                  w: TILE_SIZE,
-                  h: TILE_SIZE
-                });
-              }
-            }
-          }
-
-          this.buildObject.pattern = result;
-          this.buildObject.valid = result.filter(iter => iter.valid === false).length === 0;
-        } else {
-          // FIXME
-          this.buildObject.pattern = null;
-          this.buildObject.valid = true;
-        }
-      }
     }
   }
 
   handleKeyboard() {
     const kbd = this.engine.keyboard;
     const cfg = this.engine.configuration;
-
-    if ( kbd.keyDown(cfg.getKey('PAN_UP')) ) {
-      this.moveMap(0, -SCROLL_SPEED);
-    }
-    if ( kbd.keyDown(cfg.getKey('PAN_LEFT')) ) {
-      this.moveMap(-SCROLL_SPEED, 0);
-    }
-    if ( kbd.keyDown(cfg.getKey('PAN_DOWN')) ) {
-      this.moveMap(0, SCROLL_SPEED);
-    }
-    if ( kbd.keyDown(cfg.getKey('PAN_RIGHT')) ) {
-      this.moveMap(SCROLL_SPEED, 0);
-    }
 
     if ( kbd.keyClicked(cfg.getKey('THEME_PREV')) ) {
       this.prevTheme();
@@ -447,22 +422,12 @@ export default class TheaterScene extends GameScene {
       this.map.unselect();
     }
 
-    // FIXME: Debugging
-    if ( kbd.keyClicked(cfg.getKey('DEBUG_DESTROY')) ) {
-      this.map.selectedObjects.forEach((o) => (o.health = 0)); // FIXME
-    } else if ( kbd.keyClicked(cfg.getKey('DEBUG_FOG')) ) {
-      this.map.fog.visible = !this.map.fog.visible;
-    }
-
-    if ( this.engine.options.debug ) {
-      const mp = this.getMainPlayer();
-
-      this.debugOutput = [
-        `Objects: ${this.map.objects.length} (${this.map.visibleObjects})`,
-        `Tick: ${this.engine.currentTick} (${this.gameTick})`,
-        `Map: ${this.map.id} - ${this.map.tilesX}x${this.map.tilesY} (${this.map.width}x${this.map.height})`,
-        `Player: ${mp.playerName} - ${mp.teamName} c:${mp.credits} p:${mp.power}`
-      ];
+    if ( this.engine.options.debugMode ) {
+      if ( kbd.keyClicked(cfg.getKey('DEBUG_DESTROY')) ) {
+        this.map.selectedObjects.forEach((o) => (o.health = 0));
+      } else if ( kbd.keyClicked(cfg.getKey('DEBUG_FOG')) ) {
+        this.map.fog.visible = !this.map.fog.visible;
+      }
     }
   }
 
@@ -474,20 +439,12 @@ export default class TheaterScene extends GameScene {
     this.map.render(target, delta);
 
     // Building overlay
-    if ( this.buildObject ) {
-      const {x, y, pattern} = this.buildObject;
-
-      if ( x !== null && y !== null ) {
-        for ( let i = 0; i < pattern.length; i++ ) {
-          const p = pattern[i];
-          target.fillStyle = target.createPattern(p.sprite, 'repeat');
-          target.fillRect(p.x, p.y, p.w, p.h);
-        }
-      }
+    if ( this.constructObject ) {
+      this.constructObject.render(target);
     }
 
     // Drag rectangle
-    if ( this.currentGUI === -1 ) {
+    if ( this.currentGUI === -1 && !this.guiHit ) {
       if ( this.engine.mouse.dragging ) {
         const {x1, x2, y1, y2} = this.engine.mouse.getCurrentRect();
         target.strokeStyle = '#00ff00';
@@ -498,6 +455,24 @@ export default class TheaterScene extends GameScene {
     }
 
     super.render(target, delta);
+
+    if ( this.engine.options.debug ) {
+      const mp = this.getMainPlayer();
+      let selected = '';
+
+      if ( this.map.selectedObjects.length === 1 ) {
+        let obj = this.map.selectedObjects[0];
+        selected = `${obj.tileX}x${obj.tileY}x${obj.tileS} (${Math.round(obj.x)}x${Math.round(obj.y)}) ${obj.animation.name} o:${obj.animation.offset} f:${obj.animation.frame} d:${obj.direction}`;
+      }
+
+      this.debugOutput = [
+        `Objects: ${this.map.objects.length} (${this.map.visibleObjects})`,
+        `Tick: ${this.engine.currentTick} (${this.gameTick})`,
+        `Map: ${this.map.id} - ${this.map.tilesX}x${this.map.tilesY} (${this.map.width}x${this.map.height})`,
+        `Player: ${mp.playerName} - ${mp.teamName} c:${mp.credits} p:${mp.power}`,
+        `Selected: (${this.map.selectedObjects.length}) ${selected}`
+      ];
+    }
   }
 
   clickViewport({x, y}) {
@@ -510,10 +485,10 @@ export default class TheaterScene extends GameScene {
       return;
     }
 
-    console.log('clicked real position', [clickX, clickY], [tileX, tileY], [x, y]);
+    console.debug('clicked viewport', [clickX, clickY], [tileX, tileY], [x, y]);
 
-    if ( this.mode === 'build' && this.buildObject ) {
-      const {entry, valid, cb} = this.buildObject;
+    if ( this.mode === 'build' && this.constructObject ) {
+      const {entry, valid, cb} = this.constructObject;
       if ( valid ) {
         cb();
 
@@ -536,9 +511,21 @@ export default class TheaterScene extends GameScene {
     }
 
     if ( found.length ) {
-      if ( this.mode === 'sell' && found[0].isSellable() ) {
-        found[0].sell(); // TODO: Add credits to player
-        return;
+      if ( this.mode === 'sell' ) {
+        const mp = this.getMainPlayer();
+        let sold = false;
+        for ( let i = 0; i < found.length; i++ ) {
+          const o = found[i];
+          if ( o.isSellable() ) {
+            const refund = found[0].sell();
+            mp.addCredits(refund);
+            sold = true;
+          }
+        }
+
+        if ( sold ) {
+          return;
+        }
       }
     }
 
@@ -571,17 +558,25 @@ export default class TheaterScene extends GameScene {
   }
 
   setOffset(x, y) {
-    const {width, height} = this.map;
-    const {vw, vh} = this.getViewport();
-    const border = Math.round(vw / 2);
+    const {xb, yb, mx, my} = this.getScrollBounds();
 
-    const mx = width - vw + border;
-    const my = height - vh + border;
-
-    const newX = Math.min(Math.max(-border, x), mx);
-    const newY = Math.min(Math.max(-border, y), my);
+    const newX = Math.min(Math.max(-xb, x), mx);
+    const newY = Math.min(Math.max(-yb, y), my);
 
     super.setOffset(newX, newY);
+
+    return [newX, newY];
+  }
+
+  getScrollBounds() {
+    const {width, height} = this.map;
+    const {vw, vh} = this.getViewport();
+    const xb = Math.round(vw / 2);
+    const yb = Math.round(vh / 2);
+    const mx = width - vw + xb;
+    const my = height - vh + yb;
+
+    return {xb, yb, mx, my};
   }
 
   // FIXME: Surely, there's a better name for this
@@ -597,21 +592,54 @@ export default class TheaterScene extends GameScene {
     return this.players.find(p => p.team === playerTeam);
   }
 
-  setMode(mode, arg) {
+  setMode(mode, options, cb) {
     this.mode = mode;
-    this.buildObject = null;
+    this.constructObject = null;
 
     if ( mode === 'build' ) {
-      this.buildObject = arg;
+      this.constructObject = new ConstructObject(this.engine, options, cb);
     }
   }
 
   moveMap(deltaX, deltaY) {
+    if ( deltaX === 0 && deltaY === 0 ) {
+      return;
+    }
+
     const {offsetX, offsetY} = this.getOffset();
-    this.setOffset(
+    const {xb, yb, mx, my} = this.getScrollBounds();
+
+    const [newX, newY] = this.setOffset(
       Math.round(offsetX + deltaX),
       Math.round(offsetY + deltaY)
     );
+
+    let reachedEndX = (newX <= -xb || newX >= mx);
+    let reachedEndY = (newY <= -yb || newY >= my);
+
+    let cursorName = '';
+    let reached = [];
+
+    if ( deltaY < 0 ) {
+      cursorName += 'n';
+      reached.push(reachedEndY);
+    } if ( deltaY > 0 ) {
+      cursorName += 's';
+      reached.push(reachedEndY);
+    }
+
+    if ( deltaX < 0 ) {
+      cursorName += 'w';
+      reached.push(reachedEndX);
+    } if ( deltaX > 0 ) {
+      cursorName += 'e';
+      reached.push(reachedEndX);
+    }
+
+    if ( cursorName ) {
+      let reachedEnd = reached.filter(i => !!i).length === cursorName.length;
+      this.cursorName = reachedEnd ? 'cannotPan' + cursorName : 'pan' + cursorName;
+    }
   }
 
   getViewport(engine) {
@@ -664,25 +692,16 @@ export default class TheaterScene extends GameScene {
 
     console.info('Build', entry);
 
-    const sprite = Sprite.instance(this.engine, entry.Id);
-    if ( !sprite ) {
+    if ( !Sprite.instance(this.engine, entry.Id) ) {
       console.warn('Sprite was not found for this entry', entry);
     }
 
-    if ( this.buildObject ) {
+    if ( this.constructObject ) {
       this.engine.sounds.playSound('bldg1');
       return;
     }
 
-    this.setMode('build', {
-      cb,
-      sprite,
-      entry,
-      pattern: null,
-      valid: false,
-      x: null,
-      y: null
-    });
+    this.setMode('build', entry, cb);
   }
 
   getCursor() {
@@ -722,6 +741,51 @@ export default class TheaterScene extends GameScene {
     }
 
     return 'default';
+  }
+
+  getBuildables(buildLevel = -1, techLevel = -1) {
+    const data = this.engine.data;
+    const levelFilter = (iter) => iter.TechLevel >= techLevel;
+    const buildFilter = (iter) => iter.BuildLevel >= buildLevel;
+
+    const filter = (iter) => {
+      return !!iter.Icon;
+      /*
+      return typeof iter.TechLevel === 'undefined'
+        ? false
+        : (iter.BuildLevel < 90 && iter.TechLevel < 90);
+        */
+    };
+
+    const getData = (s) => {
+      const iter = data.structures[s] || data.units[s] || data.infantry[s] || data.aircraft[s];
+      return iter;
+    };
+
+    const structureKeys = Object.keys(data.structures).filter(s => filter(data.structures[s]));
+    const unitKeys = Object.keys(data.infantry).filter(s => filter(data.infantry[s]))
+      .concat(Object.keys(data.units).filter(s => filter(data.units[s])))
+      .concat(Object.keys(data.aircraft).filter(s => filter(data.aircraft[s])));
+
+    const result = {
+      structures: structureKeys.map(getData),
+      units: unitKeys.map(getData)
+    };
+
+    sort(result.structures, 'BuildLevel');
+    sort(result.units, 'BuildLevel');
+
+    if ( techLevel >= 0 ) {
+      result.structures = result.structures.filter(levelFilter);
+      result.units = result.units.filter(levelFilter);
+    }
+
+    if ( buildLevel >= 0 ) {
+      result.structures = result.structures.filter(buildFilter);
+      result.units = result.units.filter(buildFilter);
+    }
+
+    return result;
   }
 
   playSound(soundId, cb) {
