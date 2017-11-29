@@ -7,7 +7,7 @@ const DEFAULTS = {
   name: null,
   frames: 0,
   offset: 0,
-  step: 0.5,
+  step: 1,
   loop: false,
   reverse: false,
   sprite: null
@@ -23,9 +23,28 @@ export default class Animation {
    * @see setOptions
    */
   constructor(options) {
+    /**
+     * Frame index (offset)
+     * @type {Number}
+     */
     this.index = 0;
+
+    /**
+     * Frame index (absolute)
+     * @type {Number}
+     */
     this.frame = 0;
+
+    /**
+     * Done state
+     * @type {Boolean}
+     */
     this.done = false;
+
+    /**
+     * Options
+     * @type {Object}
+     */
     this.options = {};
 
     this.setOptions(options);
@@ -37,7 +56,7 @@ export default class Animation {
    * @param {String} [options.name] A name
    * @param {Boolean} [options.loop=false] Loop animation
    * @param {Boolean} [options.reverse=fase] Reverse animation
-   * @param {Number} [options.step=0.5] Number of steps each update
+   * @param {Number} [options.step=1] Number of steps each update
    * @param {Number} [options.frames=<auto>] Number of total frames
    * @param {Number} [options.offset=0] Sprite offset
    * @param {Sprite} [options.sprite] The sprite

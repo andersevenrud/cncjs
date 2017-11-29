@@ -19,7 +19,7 @@ const INI = require('ini');
 ///////////////////////////////////////////////////////////////////////////////
 
 const ATTRIBUTE_TYPES = {
-  Verses: 'array',
+  Verses: 'integer[]',
   Owner: 'array',
   TurningSpeed: 'integer',
   MovementType: 'integer',
@@ -148,6 +148,8 @@ const INI_FILES = [
 
 const INIS = {};
 const TREE = {
+  fonts: {},
+  cursors: {},
   themes: {},
   aircraft: {},
   units: {},
@@ -174,6 +176,10 @@ function tileFromIndex(index, tilesX) {
   const tileX = index % tilesX;
   const tileY = parseInt(index / tilesX, 10);
   return {tileX, tileY};
+}
+
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -207,16 +213,16 @@ const parseObjectAttributeValue = (name, value) => {
   return (lcValues.indexOf(name) !== -1 && typeof value === 'string' ? value.toLowerCase() : value);
 };
 
-const parseObjectAttributes = (attributes, allow = []) => {
+const parseObjectAttributes = (attributes, allow = [], capitalize = false) => {
   const result = {};
   if ( attributes ) {
     Object.keys(attributes).forEach((name) => {
       if ( name.match(/^Unknown/) && allow.indexOf(name) === -1 ) {
         return;
       }
-
-      const value = parseObjectAttributeValue(name, attributes[name]);
-      result[name] = value;
+      const newName = capitalize ? capitalizeFirstLetter(name) : name;
+      const value = parseObjectAttributeValue(newName, attributes[name]);
+      result[newName] = value;
     });
   }
 
@@ -236,10 +242,10 @@ const parseObjectWeapon = (options, key) => {
       const warhead = INIS.warheads[warheadName];
 
       result = parseObjectAttributes(INIS.weapons[weaponName]);
-      result.Projectile = parseObjectAttributes(projectile, ['Unknown5']);
+      result.Projectile = parseObjectAttributes(projectile, ['Unknown5'], true);
 
       if ( result.Projectile ) {
-        result.Projectile.Warhead = parseObjectAttributes(warhead);
+        result.Projectile.Warhead = parseObjectAttributes(warhead, [], true);
       }
     }
   }
@@ -301,7 +307,8 @@ const parseObjectOptions = (rawOptions, anims, iterName) => {
     const strAnims = INIS[anims];
     if ( strAnims ) {
       const found = Object.values(strAnims.StructureAnimations).filter((n) => {
-        return strAnims[n].Structure === iterName;
+        const id = strAnims[n].Structure || strAnims[n].StructureID;
+        return id === iterName;
       });
 
       if ( found.length ) {
@@ -616,6 +623,41 @@ const parseLevels = () => {
 // OBJECTS
 ///////////////////////////////////////////////////////////////////////////////
 
+const applySequenceInfo = (name, options) => {
+  const anims = options.SequenceInfo;
+  if ( anims ) {
+    let assignAnimations = {};
+
+    let temp = {};
+    Object.values(anims).forEach((a) => {
+      temp[a.offset] = Math.max(a.frames, temp[a.offset] || 0);
+    });
+
+    const damageOffset = Object.values(temp).reduce((total, item) => total + item, 0);
+
+    Object.keys(anims).forEach((k) => {
+      const a = anims[k];
+
+      assignAnimations[k + '-Damaged'] = {
+        frames: a.frames,
+        offset: a.offset + damageOffset,
+        delay: a.delay
+      };
+    });
+
+    Object.keys(anims).forEach((k) => {
+      const a = anims[k];
+      assignAnimations[k + '-Destroyed'] = {
+        frames: 1,
+        offset: a.offset + (damageOffset * 2),
+        delay: a.delay
+      };
+    });
+
+    options.SequenceInfo = Object.assign({}, options.SequenceInfo, assignAnimations);
+  }
+};
+
 const parseObjectList = (treeName, type, key, anims) => {
   const names = Object.values(INIS[type][key]);
   names.forEach((name) => {
@@ -627,6 +669,10 @@ const parseObjectList = (treeName, type, key, anims) => {
     options.Type = treeName.replace(/s$/, '');
     if ( buildFilter(options) ) {
       options.Icon = realName + 'icnh';
+    }
+
+    if ( type === 'structs' ) {
+      applySequenceInfo(name, options);
     }
 
     TREE[treeName][realName] = options;
@@ -693,205 +739,18 @@ const getSpriteInfo = (name, sx, sy, type, pixels) => {
     return {
       type,
       size: [objWidth, objHeight],
-      count: height / objHeight
+      count: Math.ceil(height / objHeight)
     };
   }
 
   return null;
 };
 
-const generateSpriteList = () => {
-  const base = JSON.parse(fs.readFileSync(path.join(SRC, 'sprites.json'), 'utf8'));
-  base.forEach((iter) => {
-    const info = getSpriteInfo(iter.name, iter.size[0], iter.size[1], iter.type, true);
-    TREE.sprites[iter.name] = {
-      type: iter.type,
-      size: iter.size,
-      count: iter.count || (info ? info.count : 0) || 1
-    };
-  });
-
-  // FIXME: Load counds from image instead
-  // Loads infantry entity thingies
-  // We can sort of automate this since they all share some common
-  // attributes
-  const infantry = {
-    e: [532, 660, 548, 660, 248],
-    c: [375, 375, 375, 375, 375, 375, 375, 375, 375, 375],
-    chan: 375,
-    delphi: 375,
-    moebius: 257,
-    rmbo: 468
-  };
-
-  Object.keys(infantry).forEach((k) => {
-    let counts = infantry[k];
-    if ( typeof counts === 'number' ) {
-      TREE.sprites[k] = {
-        type: 'infantry',
-        size: [50, 39],
-        clip: [26, 16], //[16, 16, 6, 16],
-        count: counts
-      };
-    } else {
-      for ( let i = 0; i < counts.length; i++ ) {
-        TREE.sprites[k + String(i + 1)] = {
-          type: 'infantry',
-          size: [50, 39],
-          clip: [26, 16, 6, 16], //[16, 16, 6, 16],
-          count: counts[i]
-        };
-      }
-    }
-  });
-
-  // FIXME: Load count from sprite instead
-  // Civilian buildings
-  for ( let i = 0; i < 18; i++ ) {
-    TREE.sprites['v' + String(i + 1).padStart(2, 0)] = {
-      type: 'structure',
-      size: i < 4 ? [48, 48] : (i < 7 ? [48, 24] : [24, 24]),
-      count: 3
-    };
-  }
-
-  // FIXME: Load count from sprite instead
-  // Loads some effects
-  const directions = ['e', 'n', 'ne', 'nw', 's', 'e', 'se', 'sw', 'w'];
-  const effects = ['chem', 'flame'];
-
-  effects.forEach((e) => {
-    directions.forEach((d) => {
-      TREE.sprites[`${e}-${d}`] = {
-        type: 'overlay',
-        size: [79, 79],
-        count: 13
-      };
-    });
-  });
-
-  const makeCounts = {
-    atwr: 14,
-    afld: 14,
-    bio: 16,
-    fact: 32,
-    pump: 32,
-    sam: 30,
-    tmpl: 36
-  };
-
-  Object.keys(TREE.structures).forEach((name) => {
-    const [sx, sy] = TREE.structures[name].Dimensions.split('x');
-    const buildable =  TREE.structures[name].Buildable;
-    const info = getSpriteInfo(name, parseInt(sx, 10), parseInt(sy, 10));
-    if ( info ) {
-      TREE.sprites[name] = info;
-      if ( buildable ) {
-        TREE.sprites[name + 'make'] = {
-          type: 'overlay',
-          name: name + 'make',
-          size: info.size,
-          count: makeCounts[name] || 20
-        };
-      }
-    }
-  });
-
-  Object.keys(TREE.overlays).forEach((name) => {
-    if ( !TREE.sprites[name] ) {
-      const size = SPRITE_SIZES[name] || [24, 24];
-      const info = getSpriteInfo(name, size[0], size[1], 'overlay', true);
-      if ( info ) {
-        TREE.sprites[name] = info;
-      }
-    }
-  });
-
-  Object.keys(TREE.tiles).forEach((name) => {
-    if ( !TREE.sprites[name] ) {
-      const td = TREE.tiles[name];
-      TREE.sprites[name] = {
-        type: 'tile',
-        size: [24, 24],
-        count: name === 'clear1' ? (4 * 4) : parseInt(td.X, 10) * parseInt(td.Y, 10)
-      };
-    }
-  });
-
-  ['TEMPERAT.MIX', 'DESERT.MIX', 'WINTER.MIX'].forEach((mix) => {
-    Object.keys(TREE.terrain).forEach((name) => {
-      if ( !TREE.sprites[name] ) {
-        let size = [24, 24];
-        let num = parseInt(name.replace(/[A-z]/g, ''), 10);
-
-        if ( name.match(/^t\d+/) ) {
-          size = num === 8 ? [48, 24] :  [48, 48];
-        } else if ( name.match(/^split/) ) {
-          size = [48, 48];
-        } else if ( name.match(/^tc/) ) {
-          size = [72, 48];
-          if ( num > 3 ) {
-            size = [96, 72];
-          }
-        }
-
-        const info = getSpriteInfo(`${mix}/${name}`, size[0], size[1], 'terrain', true);
-        if ( info ) {
-          TREE.sprites[name] = info;
-        }
-      }
-    });
-
-    Object.keys(TREE.overlays).forEach((name) => {
-      if ( !TREE.sprites[name] ) {
-        const size = SPRITE_SIZES[name] || [24, 24];
-        const info = getSpriteInfo(`${mix}/${name}`, size[0], size[1], 'overlay', true);
-        if ( info ) {
-          TREE.sprites[name] = info;
-        }
-      }
-    });
-  });
-
-  Object.keys(TREE.units).forEach((name) => {
-    if ( !TREE.sprites[name] ) {
-      let size = SPRITE_SIZES[name] || [24, 24];
-      if ( SMALL_UNITS.indexOf(name) !== -1 ) {
-        size = [24, 24];
-      } else if ( LARGE_UNITS.indexOf(name) !== -1 ) {
-        size = [48, 48];
-      }
-
-      const info = getSpriteInfo(name, size[0], size[1], 'unit', true);
-      if ( info ) {
-        TREE.sprites[name] = info;
-      }
-    }
-  });
-
-  // Icons
-  ['structures', 'units', 'infantry', 'aircraft'].forEach((key) => {
-    Object.keys(TREE[key]).forEach((name) => {
-      const iconName = TREE[key][name].Icon;
-      if ( iconName && !TREE.sprites[iconName] ) {
-        TREE.sprites[iconName] = {
-          type: 'ui',
-          name: iconName,
-          size: [64, 48],
-          count: 1
-        };
-      }
-    });
-  });
-
-  // UI Stuff
-  ['gdi', 'jp', 'nod'].forEach((team) => {
-    TREE.sprites[`hradar_${team}`] = {
-      type: 'ui',
-      size: [160, 142],
-      count: 43
-    };
-  });
+const importLists = () => {
+  TREE.cursors = JSON.parse(fs.readFileSync(path.join(SRC, 'cursors.json'), 'utf8'));
+  TREE.sprites = JSON.parse(fs.readFileSync(path.join(SRC, 'sprites.json'), 'utf8'));
+  TREE.themes = JSON.parse(fs.readFileSync(path.join(SRC, 'themes.json'), 'utf8'));
+  TREE.fonts = JSON.parse(fs.readFileSync(path.join(SRC, 'fonts.json'), 'utf8'));
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -913,8 +772,8 @@ module.exports = function() {
   parseTileList();
   console.log('Parsing levels');
   parseLevels();
-  console.log('Generating sprite list');
-  generateSpriteList();
+  console.log('Importing lists');
+  importLists();
 
   const dest = path.join(DEST, 'mix.json');
   console.log('Writing', dest);

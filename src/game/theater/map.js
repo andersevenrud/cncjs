@@ -6,24 +6,26 @@
 import PF from 'pathfinding';
 import Fog from './fog';
 import MapObject from './mapobject';
-import Bib from './objects/bib';
-import TileObject from './objects/tile';
-import UnitObject from './objects/unit';
-import OverlayObject from './objects/overlay';
-import TerrainObject from './objects/terrain';
-import StructureObject from './objects/structure';
-import EffectObject from './objects/effect';
-import ProjectileObject from './objects/projectile';
-import Sprite from '../engine/sprite';
-import {copy} from '../engine/util';
-import {TILE_SIZE} from './globals';
-import {pointFromTile, tileFromPoint, tileFromIndex} from './physics';
-import {collideAABB, collidePoint} from '../engine/physics';
+import Bib from 'game/objects/bib';
+import TileObject from 'game/objects/tile';
+import InfantryObject from 'game/objects/infantry';
+import UnitObject from 'game/objects/unit';
+import VehicleObject from 'game/objects/vehicle';
+import OverlayObject from 'game/objects/overlay';
+import TerrainObject from 'game/objects/terrain';
+import StructureObject from 'game/objects/structure';
+import EffectObject from 'game/objects/effect';
+import ProjectileObject from 'game/objects/projectile';
+import Sprite from 'engine/sprite';
+import {copy} from 'engine/util';
+import {TILE_SIZE, WAYPOINT_NAMES} from 'game/globals';
+import {pointFromTile} from 'game/physics';
+import {collideAABB, collidePoint} from 'engine/physics';
 
 const ObjectMap = {
   structure: StructureObject,
-  unit: UnitObject,
-  infantry: UnitObject,
+  unit: VehicleObject,
+  infantry: InfantryObject,
   aircraft: UnitObject,
   terrain: TerrainObject,
   overlay: OverlayObject,
@@ -59,8 +61,12 @@ export default class Map {
     this.previousGrid = [];
     this.objects = [];
     this.selectedObjects = [];
-    this.cellTriggers = [];
     this.loaded = false;
+
+    this.gridFinder = new PF.AStarFinder({
+      heuristic: PF.Heuristic.chebyshev,
+      allowDiagonal: true
+    });
 
     console.log('Map::constructor()');
   }
@@ -84,15 +90,6 @@ export default class Map {
     this.height = (this.tilesY * TILE_SIZE);
     this.grid = Array(...Array(this.tilesY)).map(() => Array(this.tilesX));
     this.previousGrid = Array(...Array(this.tilesY)).map(() => Array(this.tilesX));
-    this.cellTriggers = Object.keys(data.cellTriggers).map((p) => {
-      const {tileX, tileY} = tileFromIndex(p, data.width);
-      return {
-        tileX,
-        tileY,
-        name: data.cellTriggers[p]
-      };
-    });
-
     this.canvas.width = this.width;
     this.canvas.height = this.height;
 
@@ -203,6 +200,23 @@ export default class Map {
       o.renderHealthBar(target);
     }
 
+    if ( this.engine.options.debug > 1 ) {
+      target.strokeStyle = 'rgba(200, 0, 0, 1)';
+      target.fillStyle = '#ffffff';
+
+      const waypoints = this.engine.scene.level.waypoints;
+      for ( let i = 0; i < waypoints.length; i++ ) {
+        const wp = waypoints[i];
+        if ( wp ) {
+          const [tx, ty] = wp;
+          const cr = pointFromTile(tx, ty);
+          const name = WAYPOINT_NAMES[i] || String(i);
+          target.strokeRect(-offsetX + cr.x, -offsetY + cr.y, TILE_SIZE, TILE_SIZE);
+          target.fillText(name, -offsetX + cr.x, -offsetY + cr.y + 10);
+        }
+      }
+    }
+
     this.fog.render(target, delta);
 
     this.visibleObjects = objects.length;
@@ -255,11 +269,7 @@ export default class Map {
    * @param {MapObject} obj Object
    */
   _addObject(obj) {
-    if ( this.loaded ) {
-      console.info('Adding object', obj);
-    }
-
-    this.objects.push(obj);
+    obj._index = this.objects.push(obj) - 1;
     this._sortObjects();
   }
 
@@ -275,17 +285,9 @@ export default class Map {
   /**
    * Adds a effect (overlay) object to the map
    * @param {Object} args Arguments
-   * @param {MapObject} [targetObject] Apply effect on an object
    */
-  async addEffect(args, targetObject) {
+  async addEffect(args) {
     await Sprite.preload(this.engine, args.id);
-
-    args = targetObject ? Object.assign({}, args, {
-      tileX: targetObject.tileX,
-      tileY: targetObject.tileY,
-      xOffset: -targetObject.xOffset,
-      yOffset: -targetObject.yOffset
-    }) : args;
 
     this._addObject(new EffectObject(this.engine, args));
   }
@@ -325,10 +327,6 @@ export default class Map {
 
     try {
       await Sprite.preload(this.engine, args.id, col);
-
-      if ( args.type === 'structure' ) {
-        await Sprite.preload(this.engine, args.id + 'make', 0); // FIXME: Are these colored in conversion ?
-      }
     } catch ( e ) {}
 
     const obj = new ObjectMap[type](this.engine, args);
@@ -356,48 +354,29 @@ export default class Map {
   }
 
   /**
-   * Peforms an action on given Point
-   * @param {String} action Action name
-   * @param {*} args Args
+   * Creates a new path grid
+   * @param {Number} sourceTileX Source tile X
+   * @param {Number} sourceTileY Source tile Y
+   * @param {Number} tileX Dest tile X
+   * @param {Number} tileY Dest tile Y
+   * @param {Function} [cb] Callback to modify grid before compile
+   * @return {PF.Grid}
    */
-  action(action, args) {
-    // FIXME
-    console.log('Map::action()', action, args);
-
-    let d = tileFromPoint(args.x, args.y);
-    const objs = this.selectedObjects.filter((obj) => obj.isFriendly());
-    const finder = new PF.AStarFinder({
-      heuristic: PF.Heuristic.chebyshev,
-      allowDiagonal: true
-    });
-
-    const grid = this.grid.map((row) => row.map((col) => {
-      if ( action === 'attack' ) {
-        const obj = col.object;
-        return obj && obj.isPlayerObject() ? 0 : col.value;
-      }
-
+  createPathGrid(sourceTileX, sourceTileY, tileX, tileY, cb) {
+    let grid = this.grid.map((row) => row.map((col) => {
       return col.value;
     }));
 
-    if ( action === 'attack' ) {
-      grid[d.tileY][d.tileX] = 0;
+    if ( typeof cb === 'function' ) {
+      grid = cb(grid);
     }
 
-    objs.forEach((obj) => {
-      const s = tileFromPoint(obj.x, obj.y);
-      const finderGrid = new PF.Grid(grid);
-      const path = finder.findPath(s.tileX, s.tileY, d.tileX, d.tileY, finderGrid)
-        .map((p) => pointFromTile(p[0], p[1]));
+    const finderGrid = new PF.Grid(grid);
 
-      obj.setTarget(null);
+    const path = this.gridFinder.findPath(sourceTileX, sourceTileY, tileX, tileY, finderGrid)
+      .map((p) => pointFromTile(p[0], p[1]));
 
-      if ( obj.setPath(path, true) ) {
-        if ( args instanceof MapObject ) {
-          obj.setTarget(args);
-        }
-      }
-    });
+    return path;
   }
 
   /**
@@ -431,7 +410,18 @@ export default class Map {
    */
   getObjectsFromTile(x, y, first = false) {
     const method = first ? 'find' : 'filter';
-    const result = this.objects[method]((obj) => obj.tileX === x && obj.tileY === y);
+    const result = this.objects[method]((obj) => {
+      const sx = obj.sizeX - 1;
+      const sy = obj.sizeY - 1;
+
+      return collidePoint({x, y}, {
+        x1: obj.tileX,
+        y1: obj.tileY,
+        x2: obj.tileX + sx,
+        y2: obj.tileY + sy
+      });
+    });
+
     return first ? (result ? [result] : []) : result;
   }
 

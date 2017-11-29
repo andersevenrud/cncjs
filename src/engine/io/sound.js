@@ -21,27 +21,104 @@ export default class Sound {
    * @param {Boolean} [options.positionalAudio=false] Positional audio feature
    */
   constructor(engine, options = {}) {
+    /**
+     * Options
+     * @type {Object}
+     */
     this.options = Object.assign({}, {
       path: 'audio',
       format: 'wav',
       positionalAudio: false
     }, options);
 
+    /**
+     * Game Engine reference
+     * @type {Engine}
+     */
     this.engine = engine;
+
+    /**
+     * Sound enabled state
+     * @type {Boolean}
+     */
     this.soundEnabled = false;
+
+    /**
+     * Sound volume
+     * @type {Float}
+     */
     this.soundVolume = SOUND_VOLUME;
+
+    /**
+     * Sounds playing count
+     * @type {Number}
+     */
     this.soundsPlaying = 0;
+
+    /**
+     * Sound enabled state
+     * @type {Boolean}
+     */
     this.musicEnabled = false;
+
+    /**
+     * Sound volume
+     * @type {Float}
+     */
     this.musicVolume = MUSIC_VOLUME;
+
+    /**
+     * Music DOM Element
+     * @type {HTMLAudioElement}
+     */
     this.musicElement = null;
+
+    /**
+     * Sound queue
+     * @type {Object[]}
+     */
     this.soundQueue = [];
+
+    /**
+     * Sound handler callback
+     * @type {Function}
+     */
     this.soundHandler = null;
+
+    /**
+     * Preloads
+     * @type {Object}
+     */
     this.audio = {};
+
+    /**
+     * Sound context counter (internal)
+     * @type {Number}
+     */
     this.soundsContextCounter = 0;
+
+    /**
+     * Sound contexts (internal)
+     * @type {Object}
+     */
     this.soundsContexts = {};
 
+    /**
+     * Sound context
+     * @type {AudioContext}
+     */
     this.context = WebAudioAPI ? new WebAudioAPI() : null;
+
+    /**
+     * Sound gain context
+     * @type {GainNode}
+     */
     this.soundGain = null;
+
+    /**
+     * Sound pan context
+     * @type {PanNode}
+     */
     this.soundPan = null;
 
     if ( this.context ) {
@@ -65,8 +142,10 @@ export default class Sound {
 
     try {
       const raw = await this.engine.zip.getDataFile(src);
-      const buffer = await this.context.decodeAudioData(raw.buffer);
-      this.audio[name] = buffer;
+      if ( raw ) {
+        const buffer = await this.context.decodeAudioData(raw.buffer);
+        this.audio[name] = buffer;
+      }
     } catch ( e ) {
       console.warn('Failed to preload audio', src, e);
     }

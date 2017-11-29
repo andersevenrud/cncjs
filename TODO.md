@@ -69,7 +69,7 @@ I might have gone a bit overboard, so this game contains an entirely separate ga
 
 * [x] Map: Building
 * [ ] Map: Optimized path-finding
-* [ ] Sprites: Animations (**partially complete**)
+* [x] Sprites: Animations
 * [ ] Sprites: Complete set (**partially complete**)
 * [x] Objects: Overlays
 * [x] Objects: Projectiles
@@ -84,27 +84,27 @@ I might have gone a bit overboard, so this game contains an entirely separate ga
 * [ ] Order: Guarding
 * [ ] Order: Harvesting
 * [x] UI: Theatre
-* [ ] UI: Handle tech-levels (**partially complete**)
+* [x] UI: Handle build-levels etc.
 * [x] UI: Original font sprites
-* [ ] Misc: Handle turrets
-* [ ] Misc: Handle projectiles and warheads (**partially complete**)
+* [x] Misc: Handle turrets
+* [x] Misc: Handle projectiles
 * [ ] Misc: Handle transports
 * [x] Misc: Handle credits
 * [ ] Misc: Handle power
 * [x] Misc: Handle selling
 * [ ] Misc: Handle repair (**partially complete**)
-* [ ] Misc: Handle damage models (**partially complete**)
+* [x] Misc: Handle damage models
+* [ ] Misc: Handle weapon spread
 * [x] Misc: Speech
 * [x] Misc: SFX
 * [x] Misc: Music (themes)
 * [ ] Misc: Make units spawn in their respective construction buildings
 * [ ] Misc: Handle tiberium growth and spread
 * [ ] Misc: **Some sprites are hitting the canvas size limit! These needs to be split into columns**
-* [ ] AI: Enemy
 * [ ] AI: Collision
-* [ ] AI: Grouping
-* [ ] AI: Triggers and Waypoints (*partially complete*)
-* [ ] AI: Automatically attack when within range
+* [ ] AI: Grouping (**partially complete**)
+* [ ] AI: Triggers and Waypoints (**partially complete**)
+* [x] AI: Automatically attack when within range
 
 ### v1.0.0
 

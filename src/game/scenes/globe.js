@@ -3,8 +3,11 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import GameScene from '../scene';
-import Sprite from '../../engine/sprite';
+import Level from 'game/theater/level';
+import GameScene from 'game/scene';
+import Sprite from 'engine/sprite';
+import UIContainer from 'engine/ui/container';
+import {LEVELS} from 'game/globals';
 
 export default class GlobeScene extends GameScene {
 
@@ -18,6 +21,7 @@ export default class GlobeScene extends GameScene {
 
   async load() {
     const spriteNames = [
+      'sprite:options',
       'sprite:e-bwtocl', // spinning earth
       'sprite:greyerth', // spinning earth
       'sprite:hbosnia', // zoom on bosnia
@@ -40,9 +44,37 @@ export default class GlobeScene extends GameScene {
 
     await super.load(spriteNames);
 
-    this.engine.sounds.playSong('loopie6m', {loop: true});
+    const levels = LEVELS[this.options.player.teamName.toLowerCase()];
+    const from = this.options.level;
+    const current = levels.indexOf(from);
+    const matcher = /([a-z]+)(\d+)([a-z]+)/;
 
-    console.log(this);
+    const currentStage = parseInt(from.match(matcher)[2], 10);
+    const list = levels.filter((name, index) => {
+      if ( index < current ) {
+        return false;
+      }
+
+      const stage = parseInt(name.match(matcher)[2], 10);
+      return stage === currentStage + 1;
+    });
+
+    const buttons = list.map((name, index) => {
+      return {type: 'button', label: name, x: 24, y: 24 + (index * 22), w: 152, h: 18, cb: () => {
+        this.destroy({
+          map: name,
+          team: this.options.team
+        });
+      }};
+    });
+
+    const ui = new UIContainer(this.engine, [
+      {type: 'box', corners: true, x: 0, y: 0, w: 200, h: 200},
+      ...buttons
+    ], {center: {width: 200, height: 200}});
+
+    this.gui = [ui];
+    this.engine.sounds.playSong('loopie6m', {loop: true});
   }
 
   update() {
@@ -52,6 +84,10 @@ export default class GlobeScene extends GameScene {
       this.sprite = this.stage === 0
         ? Sprite.instance('e-bwtocl')
         : Sprite.instance('hearth_e');
+
+      if ( !this.sprite ) {
+        return;
+      }
 
       const index = Math.round(this.spriteIndex);
       if ( index < this.sprite.count - 1 ) {
@@ -64,15 +100,13 @@ export default class GlobeScene extends GameScene {
       }
     }
 
+    /*
     if ( this.stage >= 2 ) {
       // TODO
       this.spriteIndex = 0;
       this.sprite = Sprite.instance('europe');
-
-      if ( this.engine.mouse.buttonDown('LEFT') || this.engine.keyboard.keyDown() ) {
-        this.destroy();
-      }
     }
+    */
   }
 
   render(target, delta) {
@@ -82,18 +116,13 @@ export default class GlobeScene extends GameScene {
       this.sprite.renderFilled(target, vw, vh, Math.round(this.spriteIndex));
     }
 
-    if ( this.stage === 2 ) {
-      // FIXME
-      const text = 'Sorry this is not done. Press any key to continue...';
-
-      target.fillStyle = '#ff0000';
-      target.font = '12px Monospace';
-      target.textBaseline = 'middle';
-      target.textAlign = 'center';
-      target.fillText(text, vw / 2, vh / 2);
-    }
-
     super.render(...arguments);
+  }
+
+  ondestroy(options) {
+    Level.queue(this.engine, options.map, {
+      team: options.team
+    });
   }
 
 }

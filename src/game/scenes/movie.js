@@ -3,7 +3,7 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import GameScene from '../scene';
+import GameScene from 'game/scene';
 
 export default class MovieScene extends GameScene {
 
@@ -12,19 +12,6 @@ export default class MovieScene extends GameScene {
 
     this.$video = null;
     this.failed = false;
-  }
-
-  destroy() {
-    if ( this.destroying ) {
-      return;
-    }
-
-    if ( this.$video ) {
-      this.$video.remove();
-      this.$video = null;
-    }
-
-    super.destroy();
   }
 
   render(target, delta) {
@@ -38,6 +25,13 @@ export default class MovieScene extends GameScene {
       target.textBaseline = 'middle';
       target.textAlign = 'center';
       target.fillText(text, vw / 2, vh / 2);
+    }
+  }
+
+  ondestroy() {
+    if ( this.$video ) {
+      this.$video.remove();
+      this.$video = null;
     }
   }
 

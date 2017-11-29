@@ -29,12 +29,13 @@ export default class UIElement {
    */
   constructor(engine, options) {
     this.engine = engine;
-    this.callback = null;
     this.options = null;
     this.rect = null;
     this.pressed = false;
     this.clicked = false;
     this.hovering = false;
+    this.visible = true;
+    this.disabled = false;
     this.setOptions(options);
 
     console.debug('Created UI Element', this);
@@ -46,20 +47,17 @@ export default class UIElement {
    */
   setOptions(options) {
     const merged = Object.assign({}, {
+      disabled: false,
       visible: true
     }, options);
 
     this.options = this.options ? Object.assign(this.options, merged) : merged;
 
-    if ( typeof this.options.visible === 'function' ) {
-      this.visible = this.options.visible();
-    } else {
-      this.visible = this.options.visible === true;
-    }
-
-    if ( this.options.cb ) {
-      this.callback = this.options.cb;
-    }
+    ['visible', 'disabled'].forEach((k) => {
+      this[k] = typeof this.options[k] === 'function'
+        ? this.options[k]()
+        : this.options[k] === true;
+    });
 
     this.updateRect();
   }
@@ -103,32 +101,53 @@ export default class UIElement {
   }
 
   /**
+   * Trigger event
+   * @param {String} name Event name
+   * @param {Object} data Event data
+   * @param {Boolean} [fire=true] Fires callback
+   */
+  emit(name, data, fire = true) {
+    this[name + 'ed'] = data;
+    this['on' + name](data);
+
+    if ( name === 'click' && fire && this.options.cb ) {
+      console.debug('Clicked UI element', this);
+      this.options.cb();
+    }
+  }
+
+  /**
    * On hover event
    * @param {Object} pos A mouse position
    */
-  onhover(pos) {
-    this.hovering = pos;
-  }
+  onhover(pos) {}
 
   /**
    * On press event
    * @param {Object} press A mouse press
    */
-  onpress(press) {
-    this.pressed = press;
-  }
+  onpress(press) {}
 
   /**
    * On click event
    * @param {Object} click A mouse click
-   * @param {Boolean} [emit=true] Emit callback
    */
-  onclick(click, emit = true) {
-    console.debug('Clicked UI element', this);
-    if ( emit && this.callback ) {
-      this.callback();
+  onclick(click) {}
+
+  _checkIs(k) {
+    if ( typeof this.options[k] === 'function' ) {
+      return this.options[k]();
     }
-    this.clicked = click;
+
+    return this[k];
+  }
+
+  /**
+   * Check if element is disabled
+   * @return {Boolean}
+   */
+  isDisabled() {
+    return this._checkIs('disabled');
   }
 
   /**
@@ -136,11 +155,7 @@ export default class UIElement {
    * @return {Boolean}
    */
   isVisible() {
-    if ( typeof this.options.visible === 'function' ) {
-      return this.options.visible();
-    }
-
-    return this.visible;
+    return this._checkIs('visible');
   }
 
 }

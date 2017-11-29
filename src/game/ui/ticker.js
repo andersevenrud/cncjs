@@ -3,40 +3,55 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import Sprite from '../../engine/sprite';
-import UIElement from '../../engine/ui/element';
+
+import Sprite from 'engine/sprite';
+import UIElement from 'engine/ui/element';
 import {createFontSprite} from './font';
-import {collidePoint} from '../../engine/physics';
+import {collidePoint} from 'engine/physics';
 
 export default class TickerElement extends UIElement {
   constructor(engine, type, options) {
     super(engine, Object.assign({}, {
       w: 64,
       h: 48 * 4,
-      offset: 0,
-      buildables: []
+      offset: 0
     }, options));
 
     this.type = type;
     this.offset = this.options.offset;
-    this.buildables = this.options.buildables;
     this.labelSprite = Sprite.instance('hpips');
     this.clockSprite = Sprite.instance('hclock');
+    this.buildables = [];
     this.elements = [];
     this.building = {};
     this.tooltipSprite = null;
+    this.updateTick = 0;
+    this.player = engine.scene.level.getMainPlayer();
+    this.level = engine.scene.level;
   }
 
   up() {
+    if ( this.buildables.length < 5 ) {
+      return;
+    }
+
     this.offset = Math.max(0, this.offset - 1);
 
     this.engine.sounds.playSound('button', {volume: 0.5});
   }
 
   down() {
+    if ( this.buildables.length < 5 ) {
+      return;
+    }
+
     this.offset = Math.min(this.offset + 1, this.buildables.length - 5);
 
     this.engine.sounds.playSound('button', {volume: 0.5});
+  }
+
+  emit(name, data) {
+    super.emit(name, data, false);
   }
 
   onclick(click) {
@@ -50,17 +65,12 @@ export default class TickerElement extends UIElement {
 
       if ( busy ) {
         if ( click.button !== 1 ) {
-          const refund = busy.cost - busy.current;
-          const mp = this.engine.scene.getMainPlayer();
-          mp.addCredits(refund);
-
-          this.engine.sounds.playSound('cancel1');
-          delete this.building[obj.Id];
+          this.cancel(obj.Id);
           return;
         }
 
         if ( busy.done ) {
-          this.callback(obj, () => {
+          this.options.cb(obj, () => {
             delete this.building[obj.Id];
           });
         }
@@ -79,16 +89,33 @@ export default class TickerElement extends UIElement {
   }
 
   update() {
+    if ( this.buildables.length < 5 ) {
+      this.offset = 0;
+    }
+
+    const building = Object.keys(this.building);
+    for ( let i = 0; i < building.length; i++ ) {
+      const key = building[i];
+      const found = this.buildables.find(iter => iter.Id === key);
+
+      if ( !found ) {
+        this.cancel(key);
+      }
+    }
+
     const {x, y} = this.rect;
-    const max = Math.min(4, this.buildables.length - 1 - this.offset);
+    const max = Math.min(4, this.buildables.length - this.offset);
     const sounds = this.engine.sounds;
-    const mp = this.engine.scene.getMainPlayer();
     const elements = [];
 
     let createTooltip = false;
     for ( let i = 0; i < max; i++ ) {
       const o = this.buildables[i + this.offset];
       const s = Sprite.instance(o.Icon);
+
+      if ( !s ) {
+        continue;
+      }
 
       const busy = this.building[o.Id];
       const b = busy ? this.clockSprite : null;
@@ -97,7 +124,7 @@ export default class TickerElement extends UIElement {
         : 0;
 
       if ( busy && !busy.done ) {
-        const drain = mp.removeCredits(10);
+        const drain = this.player.removeCredits(10);
         busy.current = Math.max(0, busy.current - drain);
 
         if ( busy.current <= 0 ) {
@@ -133,10 +160,17 @@ export default class TickerElement extends UIElement {
     }
 
     this.tooltipSprite = createTooltip
-      ? createFontSprite(`Cost: ${createTooltip.Cost}`)
+      ? createFontSprite(this.engine, `Cost: ${createTooltip.Cost}`)
       : null;
 
     this.elements = elements;
+
+    if ( this.updateTick <= 0 ) {
+      this.buildables = this.level.getBuildables(this.type);
+      this.updateTick = 30;
+    } else {
+      this.updateTick--;
+    }
   }
 
   render(target) {
@@ -168,5 +202,14 @@ export default class TickerElement extends UIElement {
         target.drawImage(this.tooltipSprite, dx + b, y + b);
       }
     }
+  }
+
+  cancel(id) {
+    const busy = this.building[id];
+    const refund = busy.cost - busy.current;
+    this.player.addCredits(refund);
+
+    this.engine.sounds.playSound('cancel1');
+    delete this.building[id];
   }
 }

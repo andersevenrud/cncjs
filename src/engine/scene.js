@@ -16,13 +16,53 @@ export default class Scene {
    * @param {Object} options Options
    */
   constructor(engine, options) {
+
+    /**
+     * Game Engine reference
+     * @type {Engine}
+     */
     this.engine = engine;
+
+    /**
+     * Scene options
+     * @type {Object}
+     */
     this.options = options;
+
+    /**
+     * Game X position
+     * @type {Number}
+     */
     this.gameX = 0;
+
+    /**
+     * Game Y position
+     * @type {Number}
+     */
     this.gameY = 0;
+
+    /**
+     * GUI Containers
+     * @type {UIContainer[]}
+     */
     this.gui = [];
+
+    /**
+     * GUI Was hit last update
+     * @type {Boolean}
+     */
     this.guiHit = false;
+
+    /**
+     * Scene is currently destroying
+     * @type {Boolean}
+     */
     this.destroying = false;
+
+    /**
+     * Scene debug output text
+     * @type {String[]}
+     */
     this.debugOutput = [];
 
     console.log('scene::construct()');
@@ -30,11 +70,15 @@ export default class Scene {
 
   /**
    * Destroys the scene
-   * @param {Object} [args] Arguments to pass on
    */
-  destroy(args) {
+  destroy() {
+    if ( !this.destroying ) {
+      this.ondestroy(...arguments);
+
+      this.engine.nextScene();
+    }
+
     this.destroying = true;
-    this.engine.nextScene();
   }
 
   /**
@@ -111,19 +155,20 @@ export default class Scene {
   }
 
   /**
-   * When viewport is resized
+   * When scene is destroyed
    */
-  onresize() {
+  ondestroy() {}
 
-  }
+  /**
+   * When scene is resized
+   */
+  onresize() {}
 
   /**
    * When game is paused
    * @param {Boolean} paused Paused state
    */
-  pause(paused) {
-
-  }
+  pause(paused) {}
 
   /**
    * Sets the game world position

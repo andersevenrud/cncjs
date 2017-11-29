@@ -4,9 +4,9 @@
  * @license MIT
  */
 
-import Sprite from '../../engine/sprite';
-import {tileFromPoint} from '../physics';
-import {TILE_SIZE} from '../globals';
+import Sprite from 'engine/sprite';
+import {tileFromPoint} from 'game/physics';
+import {TILE_SIZE} from 'game/globals';
 
 /**
  * Construction "Pattern" Object
@@ -16,6 +16,7 @@ export default class ConstructObject {
   constructor(engine, entry, cb) {
     this.engine = engine;
     this.entry = entry;
+    this.map = engine.scene.level.map;
     this.cb = cb;
     this.valid = false;
     this.pattern = null;
@@ -43,7 +44,6 @@ export default class ConstructObject {
       }
 
       const result = [];
-      const map = this.engine.scene.map;
 
       for ( let row = 0; row < pattern.length; row++ ) {
         for ( let col = 0; col < pattern[row].length; col++ ) {
@@ -51,7 +51,7 @@ export default class ConstructObject {
           if ( num > 0 ) {
             let spriteImage;
 
-            const valid = map.queryGrid(tileX + col, tileY + row, 'value') === 0;
+            const valid = this.map.queryGrid(tileX + col, tileY + row, 'value') === 0;
             if ( valid ) {
               if ( num === 2 ) {
                 spriteImage = Sprite.instance('trans').createImage(1);

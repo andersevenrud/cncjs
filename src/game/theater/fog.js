@@ -3,7 +3,8 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import {TILE_SIZE} from './globals';
+
+import {TILE_SIZE} from 'game/globals';
 
 /**
  * Game Map Fog Class
@@ -50,7 +51,9 @@ export default class Fog {
             const dy = Math.min(tilesY - 1, Math.max(0, o.tileY + y));
             const dx = Math.min(tilesX - 1, Math.max(0, o.tileX + x));
 
-            this.grid[dy][dx] = 1;
+            if ( this.grid[dy] ) {
+              this.grid[dy][dx] = 1;
+            }
           }
         }
       }

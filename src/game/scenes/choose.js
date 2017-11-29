@@ -3,9 +3,11 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import Sprite from '../../engine/sprite';
-import GameScene from '../scene';
-import {collidePoint} from '../../engine/physics';
+import Sprite from 'engine/sprite';
+import Level from 'game/theater/level';
+import GameScene from 'game/scene';
+import {LEVELS} from 'game/globals';
+import {collidePoint} from 'engine/physics';
 
 export default class ChooseScene extends GameScene {
 
@@ -13,27 +15,6 @@ export default class ChooseScene extends GameScene {
     super(...arguments);
     this.spriteIndex = 0;
     this.selected = false;
-  }
-
-  destroy(options) {
-    if ( this.destroying ) {
-      return;
-    }
-
-    const mapName = options.team === 'GDI' ? 'scg01ea' : 'scb01ea';
-    const level = this.engine.data.levels[mapName];
-    const brief = level.info.Brief;
-
-    this.engine.pushScene('movie', {
-      movie: brief
-    });
-
-    this.engine.pushScene('theater', {
-      team: options.team,
-      map: mapName
-    });
-
-    super.destroy();
   }
 
   update() {
@@ -107,6 +88,11 @@ export default class ChooseScene extends GameScene {
     };
 
     this.engine.sounds.playSong(`${teamName}_slct`, {}, (el) => done());
+  }
+
+  ondestroy(options) {
+    const mapName = LEVELS[options.team.toLowerCase()][0];
+    Level.queue(this.engine, mapName, options);
   }
 
 }

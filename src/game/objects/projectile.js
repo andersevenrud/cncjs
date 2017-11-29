@@ -3,10 +3,10 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import MapObject from '../mapobject';
-import Animation from '../../engine/animation';
-import {getDirection} from '../physics';
-import {TILE_SIZE} from '../globals';
+import MapObject from 'game/theater/mapobject';
+import Animation from 'engine/animation';
+import {getDirection} from 'game/physics';
+import {TILE_SIZE} from 'game/globals';
 
 export default class ProjectileObject extends MapObject {
 
@@ -14,8 +14,8 @@ export default class ProjectileObject extends MapObject {
     super(engine, {
       id: weapon.Projectile.Image,
       type: 'projectile',
-      tileX: from.tileX,
-      tileY: from.tileY
+      x: from.x,
+      y: from.y
     }, {});
 
     this.spriteColor = '#ffff00';
@@ -24,11 +24,16 @@ export default class ProjectileObject extends MapObject {
     this.trailCounter = 0;
     this.explosion = weapon.Projectile.Explosion;
     this.damage = weapon.Damage;
+    this.versus = weapon.Projectile.Warhead.Verses;
     this.invisible = weapon.Projectile.Invisible;
     this.from = from;
+    this.effectDest = {
+      x: to.x + (to.width / 2),
+      y: to.y + (to.height / 2)
+    };
     this.dest = {
-      x: to.x,
-      y: to.y,
+      x: to.x + (to.width / 2) - (this.width / 2),
+      y: to.y + (to.height / 2) - (this.height / 2),
       tileX: to.tileX,
       tileY: to.tileY
     };
@@ -67,26 +72,34 @@ export default class ProjectileObject extends MapObject {
   reachedDestination() {
     // TODO: Splash damage
     if ( this.explosion !== 'none' ) {
-      this.engine.scene.map.addEffect({
-        id: this.explosion
-      }, this.dest);
+      this.engine.sounds.playSound(this.explosion, {source: this});
+
+      this.map.addEffect({
+        id: this.explosion,
+        x: this.effectDest.x,
+        y: this.effectDest.y
+      });
     }
 
-    const objects = this.engine.scene.map.getObjectsFromTile(this.dest.tileX, this.dest.tileY);
+    const objects = this.map.getObjectsFromTile(this.dest.tileX, this.dest.tileY);
     for ( let i = 0; i < objects.length; i++ ) {
-      objects[i].health -= this.damage;
+      const objArmor = objects[i].options.Armor;
+      const dmg = objArmor ? this.damage * this.versus[objArmor] / 100 : this.damage;
+
+      if ( !isNaN(dmg) ) {
+        objects[i].health -= dmg;
+      }
     }
 
     this.destroy();
   }
 
   addTrail() {
-
     if ( !(this.trailCounter % 5) ) {
-      this.engine.scene.map.addEffect({
+      this.map.addEffect({
         id: 'smokey',
-        x: this.x,
-        y: this.y
+        x: this.x + (this.width / 2),
+        y: this.y + (this.height / 2)
       });
     }
 

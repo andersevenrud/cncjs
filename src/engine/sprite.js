@@ -21,12 +21,46 @@ export default class Sprite {
   constructor(filename, size, clip, count = 1) {
     const [w, h] = size;
 
+    /**
+     * Sprite canvas
+     * @type {HTMLCanvasElement}
+     */
     this.canvas = document.createElement('canvas');
+
+    /**
+     * Sprite Filename
+     * @type {String}
+     */
     this.filename = filename;
+
+    /**
+     * Sprite frame count
+     * @type {Number}
+     */
     this.count = count;
+
+    /**
+     * Sprite frame width
+     * @type {Number}
+     */
     this.width = w;
+
+    /**
+     * Sprite frame height
+     * @type {Number}
+     */
     this.height = h;
+
+    /**
+     * Sprite clip parameters
+     * @type {Number[]}
+     */
     this.clip = clip;
+
+    /**
+     * Sprite image caches
+     * @type {Image[]}
+     */
     this.imageCache = [];
   }
 

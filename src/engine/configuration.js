@@ -16,6 +16,10 @@ export default class Configuration {
   constructor(options, config) {
     config = config || {};
 
+    /**
+     * Configuration tree
+     * @type {Object}
+     */
     this.configuration = Object.assign({}, {
       soundVolume: 0.9,
       musicVolume: 1.0,

@@ -4,8 +4,7 @@
  * @license MIT
  */
 
-import Sprite from '../../engine/sprite';
-import {FONTS} from '../globals';
+import Sprite from 'engine/sprite';
 
 function calculateString(str, font) {
   const letters = str.split('');
@@ -31,9 +30,10 @@ function calculateString(str, font) {
   return {width, height, calculated};
 }
 
-function createImage(str, fontName, color) {
+function createImage(engine, str, fontName, color) {
+  const fonts = engine.data.fonts;
   const sprite = Sprite.instance(fontName);
-  const font = FONTS[fontName];
+  const font = fonts[fontName];
   const {calculated, width, height} = calculateString(str, font);
 
   const canvas = document.createElement('canvas');
@@ -55,11 +55,12 @@ function createImage(str, fontName, color) {
 
 /**
  * Creates a new Font sprite with given text
+ * @param {Engine} engine Game engine reference
  * @param {String} str Text
  * @param {Number} [color=0] Color (0=Green)
  * @param {String} [fontName=8point] Font sprite name
  * @return {HTMLCanvasElement}
  */
-export function createFontSprite(str, color = 0, fontName = '8point') {
-  return createImage(str, fontName, color);
+export function createFontSprite(engine, str, color = 0, fontName = '8point') {
+  return createImage(engine, str, fontName, color);
 }

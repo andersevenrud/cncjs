@@ -3,7 +3,7 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import MapObject from '../mapobject';
+import MapObject from 'game/theater/mapobject';
 
 export default class TerrainObject extends MapObject {
 

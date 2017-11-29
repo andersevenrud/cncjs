@@ -3,9 +3,9 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import UIElement from '../../engine/ui/element';
 
-import {MINIMAP_SIZE} from '../globals';
+import UIElement from 'engine/ui/element';
+import {MINIMAP_SIZE} from 'game/globals';
 
 /**
  * Game MiniMap Class
@@ -58,7 +58,7 @@ export default class MiniMap extends UIElement {
    * @param {CanvasRenderingContext2D} target Render context
    */
   render(target) {
-    if ( !this.rect || !this.visible ) {
+    if ( !this.rect || !this.isVisible() ) {
       return;
     }
 

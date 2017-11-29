@@ -4,8 +4,8 @@
  * @license MIT
  */
 
-import Sprite from '../../engine/sprite';
-import {TILE_SIZE} from '../globals';
+import Sprite from 'engine/sprite';
+import {TILE_SIZE} from 'game/globals';
 
 let CACHE = {};
 
@@ -61,7 +61,7 @@ export default class Bib {
    * @param {Number} id Bib Id
    */
   static preload(id) {
-    console.log('Creating new bib', id);
+    console.debug('Creating new bib', id);
     CACHE[id] = new Bib(id);
   }
 

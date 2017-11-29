@@ -5,11 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "eslint": "eslint src/*.js src/**/*.js",
+    "eslint": "eslint src/*.js src/game src/engine src/cli",
     "stylelint": "stylelint src/**/*.scss",
     "build": "webpack",
     "watch": "webpack --watch",
-    "mix": "node bin/mix.js"
+    "mix": "node bin/mix.js",
+    "start:dev": "webpack-dev-server"
   },
   "author": "Anders Evenrud <andersevenrud@gmail.com>",
   "license": "MIT",
@@ -37,6 +38,7 @@
     "stylelint": "^8.1.1",
     "stylelint-config-standard": "^17.0.0",
     "webpack": "^3.8.1",
+    "webpack-dev-server": "^2.9.4",
     "webpack-notifier": "^1.5.0"
   }
 }

@@ -3,90 +3,46 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import MapObject from '../mapobject';
-import Animation from '../../engine/animation';
-import {getDirection} from '../physics';
-import {TILE_SIZE} from '../globals';
+import MapObject from 'game/theater/mapobject';
+import Animation from 'engine/animation';
+import {getDirection} from 'game/physics';
+import {TILE_SIZE} from 'game/globals';
 
-export default class UnitObject extends MapObject {
+/*abstract*/ export default class UnitObject extends MapObject {
 
-  constructor(engine, args) {
-    super(engine, args, args.type === 'infantry'
-      ? engine.data.infantry[args.id]
-      : engine.data.units[args.id]);
+  constructor(engine, args, data) {
+    super(engine, args, data);
 
     this.orders = [];
     this.rofCooldown = 0;
     this.targetObject = null;
-    this.moving = false;
-    this.attacking = false;
     this.targetX = null;
     this.targetY = null;
-    this.sizeX = 1;
-    this.sizeY = 1;
+    this.directions = 0;
+    this.direction = 0;
+    this.attacking = false;
     this.targetDirection = null;
-    this.targetTurretDirection = null;
-    this.directions = this.type === 'infantry' ? 8 : 32;
-    this.direction = (args.direction || 0) / this.directions;
-    this.turretDirection = this.direction;
-
+    this.hasFired = false;
+    this.aiTick = 0;
     this.spriteColor = this.isFriendly() ? '#00ff00' : '#ff0000';
     this.animation = new Animation({});
-
-    if ( !Object.keys(this.animations).length ) {
-      this.animations = { // FIXME
-        Ready: {frames: 1},
-        Walk: {frames: 1}
-      };
-    }
-
-    if ( this.type === 'infantry' ) {
-      const [cx, cy, cw, ch] = this.sprite.clip;
-      this.xOffset = cx - (TILE_SIZE / 2);
-      this.yOffset = cy - (TILE_SIZE / 2);
-
-      // FIXME!!!
-      if ( this.tileS === 1 ) {
-        this.x -= cw / 2;
-        this.y -= ch / 2;
-      } else if  ( this.tileS === 2 ) {
-        this.x += cw / 2;
-        this.y -= ch / 2;
-      } else if  ( this.tileS === 3 ) {
-        this.x -= cw / 2;
-        this.y += ch / 2;
-      } else if ( this.tileS === 4 ) {
-        this.x += cw / 2;
-        this.y += ch / 2;
-      }
-    } else {
-      this.sizeX = Math.floor(this.sprite.width / TILE_SIZE);
-      this.sizeY = Math.floor(this.sprite.height / TILE_SIZE);
-    }
+    this.currentPath = [];
   }
 
   render(target) {
     super.render(...arguments);
 
-    if ( this.engine.options.debug && this.orders ) {
+    if ( this.engine.options.debug && this.currentPath.length ) {
       const {offsetX, offsetY} = this.engine.getOffset();
 
       target.fillStyle = 'rgba(0, 255, 0, .1)';
 
-      this.orders.forEach((o) => {
+      this.currentPath.forEach((o) => {
         target.fillRect(
           -offsetX + o.x,
           -offsetY + o.y,
           TILE_SIZE, TILE_SIZE);
       });
-    }
-
-    if ( this.options.HasTurret ) {
-      const rect = this.getRect(true);
-      const {x, y} = rect;
-
-      // FIXME
-      this.sprite.render(target, x, y, 32 + Math.round(this.turretDirection), this.spriteSheet);
     }
   }
 
@@ -95,28 +51,16 @@ export default class UnitObject extends MapObject {
    */
   update() {
     if ( !this.destroying ) {
-      this.handleOrder();
-      this.handleMovement();
-      this.handleAI();
+      this.process();
 
-      if ( this.moving ) {
-        this.setAnimation('Walk');
-      } else if ( this.attacking && this.type === 'infantry' ) { // FIXME
-        this.setAnimation('FireUp');
-      } else if ( !this.orders.length ) {
-        this.setAnimation('Ready');
+      this.aiTick = (this.aiTick + 1) % 10;
+
+      if ( this.rofCooldown > 0 ) {
+        this.rofCooldown--;
       }
 
       if ( this.health <= 0 ) {
-        if ( this.type === 'infantry' ) {
-          this.setAnimation('Die1', {
-            loop: false
-          });
-          this.engine.sounds.playSound('nuyell', {source: this});
-        } else {
-          this.engine.sounds.playSound('xplos', {source: this});
-          this.destroyed = true;
-        }
+        this.die();
       }
     }
 
@@ -124,42 +68,201 @@ export default class UnitObject extends MapObject {
   }
 
   /**
-   * Handle movement
+   * Shoot at given Object
+   * @param {MapObject} target Target
+   * @return {Boolean|Object}
    */
-  handleMovement() {
+  shoot(target) {
+    const weapon = this.options.PrimaryWeapon || this.options.SecondaryWeapon;
+    if ( !weapon ) {
+      return false;
+    }
 
-    if ( this.targetDirection !== null ) {
-      const dirs = this.directions;
-      const td = this.targetDirection;
-      let cd = this.direction;
+    if ( this.rofCooldown > 0 ) {
+      return true;
+    }
 
-      if ( td > cd && td - cd < dirs / 2 || td < cd && cd - td > dirs / 2 ) {
-        cd = cd + this.options.TurnSpeed / 10;
+    if ( this.isWithinRange(target) ) {
+      if ( this.options.FiresTwice && !this.hasFired ) {
+        this.rofCooldown = weapon.ROF / 2; // FIXME
+        this.hasFired = true;
       } else {
-        cd = cd - this.options.TurnSpeed / 10;
+        this.rofCooldown = weapon.ROF;
+        this.hasFired = !this.options.FiresTwice;
       }
 
-      if ( cd > dirs - 1 ) {
-        cd -= dirs - 1;
-      } else if ( cd < 0 ) {
-        cd += dirs - 1;
+      const sound = weapon ? weapon.Report : null;
+      if ( sound ) {
+        this.engine.sounds.playSound(sound, {source: this});
       }
 
-      this.direction = cd;
+      this.map.addProjectile({
+        x: this.x,
+        y: this.y
+      }, target, weapon);
 
-      if ( this.options.HasTurret ) {
-        this.turretDirection = this.direction; // FIXME
+      return weapon;
+    }
+
+    return false;
+  }
+
+  /**
+   * When object dies
+   */
+  die() {
+    this.destroy();
+  }
+
+  /**
+   * Set object selection state
+   * @param {Boolean} t Toggle
+   * @param {Boolean} [report] Emit report sound
+   * @return {Boolean}
+   */
+  select(t, report = false) {
+    if ( super.select(t) ) {
+      if ( report && this.isFriendly() ) {
+        this.engine.sounds.playSound('await1', {source: this});
       }
+      return true;
+    }
+    return false;
+  }
 
-      if ( this.direction === this.targetDirection ) {
-        this.targetDirection = null;
+  attack(target, report = false) {
+    let path = [];
+
+    const reachable = this.isWithinRange(target);
+    if ( !reachable ) {
+      if ( this.options.MovementType !== 6 ) { // FIXME
+        path = this.map.createPathGrid(this.tileX, this.tileY, target.tileX, target.tileY, (res) => {
+          res[target.tileY][target.tileX] = 0;
+
+          return res;
+        });
+
+        path.pop();
+      }
+    }
+
+    this.setPath(path, report);
+    this.targetObject = target;
+  }
+
+  move(tileX, tileY, report = false) {
+    const path = this.map.createPathGrid(this.tileX, this.tileY, tileX, tileY);
+
+    this.setPath(path, report);
+    this.targetObject = null;
+  }
+
+  /**
+   * Process actions
+   */
+  process() {
+    this.processAnimation();
+
+    if ( this.processRotation() ) {
+      return;
+    }
+
+    if ( this.processMovement() ) {
+      return;
+    }
+
+    if ( this.processTarget() ) {
+      return;
+    }
+
+    if ( this.aiTick === 0 ) {
+      this.processAI();
+    }
+
+    this.processOrder();
+  }
+
+  /**
+   * Process animation stuff
+   */
+  processAnimation() {
+    this.setAnimation('Ready');
+  }
+
+  /**
+   * Process AI
+   */
+  processAI() {
+    if ( this.targetObject && !this.isWithinRange(this.targetObject) ) {
+      if ( this.isFriendly() ) {
+        this.targetObject = null;
       } else {
+        // FIXME: Will chase forever
+        this.attack(this.targetObject);
         return;
       }
     }
 
+    const map = this.map;
+    const oppositeObjects = map.getObjectsFromFilter((o) => {
+      return o !== this && o.isUnit() && o.isEnemy(this.player);
+    });
+
+    if ( oppositeObjects.length ) {
+      const rangedObjects = oppositeObjects.filter(o => this.isWithinRange(o));
+      if ( rangedObjects.length ) {
+        this.attack(rangedObjects[0]);
+      }
+    }
+  }
+
+  /**
+   * Process the target
+   * @return {Boolean} If event occured
+   */
+  processTarget() {
+    const to = this.targetObject;
+
+    this.attacking = false;
+
+    if ( to ) {
+      const reachable = this.isWithinRange(to);
+
+      if ( to.health <= 0 ) {
+        this.targetObject = null;
+      } else {
+        this.attacking = reachable;
+
+        if ( this.shoot(to) ) {
+          this.orders = [];
+          this.targetX = null;
+          this.targetY = null;
+          this.targetDirection = null;
+          this.currentPath = [];
+
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Process the rotation
+   * @return {Boolean} If event occured
+   */
+  processRotation() {
+    return false;
+  }
+
+  /**
+   * Process the movement
+   * @return {Boolean} If event occured
+   */
+  processMovement() {
     if ( this.targetX === null || this.targetY === null ) {
-      return;
+      return false;
     }
 
     const movement = (this.options.Speed / TILE_SIZE); // FIXME
@@ -170,150 +273,80 @@ export default class UnitObject extends MapObject {
 
     const distance = Math.sqrt(Math.pow(this.targetX - this.x, 2) + Math.pow(this.targetY - this.y, 2));
     if ( distance < movement ) {
-      this.moving = false;
       this.targetX = null;
       this.targetY = null;
     } else {
-      this.x -= (velX);
-      this.y -= (velY);
+      this.x -= velX;
+      this.y -= velY;
       this.tileX = Math.round(this.x / TILE_SIZE);
       this.tileY = Math.round(this.y / TILE_SIZE);
-      this.moving = true;
-    }
-  }
 
-  /**
-   * Handle orders
-   */
-  handleOrder() {
-
-    // FIXME: Is outside sight while not targetting ?
-    const to = this.targetObject;
-    if ( to ) {
-      if ( !this.orders.length ) {
-        this.setDirection(getDirection(to, this, this.directions));
-      }
-
-      if ( to.health <= 0 ) {
-        this.targetObject = null;
-        this.attacking = false;
-        return;
-      }
-
-      const weapon = this.options.PrimaryWeapon || this.options.SecondaryWeapon;
-      const sight = (weapon ? weapon.Range : 1) * TILE_SIZE;
-      const distance = Math.sqrt(Math.pow(to.x - this.x, 2) + Math.pow(to.y - this.y, 2));
-      const sound = weapon ? weapon.Report : null;
-
-      if ( distance <= sight ) {
-        this.orders = [];
-        this.attacking = weapon ? true : false;
-        this.moving = false;
-        this.targetX = null;
-        this.targetY = null;
-
-        if ( weapon && this.rofCooldown === 0 ) {
-          if ( sound ) {
-            this.engine.sounds.playSound(sound, {source: this});
-          }
-
-          if ( weapon.Projectile.Unknown5 === 12 ) { // FIXME
-            const dirs = ['s', 'se', 'e', 'ne', 'n', 'nw', 'w', 'sw'];
-            const dir = getDirection({
-              x: this.tileX,
-              y: this.tileY
-            }, {
-              x: to.tileX,
-              y: to.tileY
-            }, 8);
-
-            // FIXME
-            const [x, y] = this.getPosition();
-            this.engine.scene.map.addEffect({
-              id: weapon.Projectile.Image + '-' + dirs[dir],
-              x: x,
-              y: y,
-              xOffset: (79 / 2),
-              yOffset: (79 / 2)
-            });
-          }
-
-          this.engine.scene.map.addProjectile(this, to, weapon);
-        }
-
-        if ( weapon ) {
-          this.rofCooldown = (this.rofCooldown + 1) % weapon.ROF;
-        }
-      }
-    }
-
-    if ( !this.orders.length  ) {
-      this.moving = false;
-      return;
-    }
-
-    if ( this.moving || this.targetDirection !== null ) {
-      return;
-    }
-
-    const order = this.orders[0];
-    const direction = getDirection(order, this, this.directions);
-
-    this.setDirection(direction);
-
-    this.targetX = order.x;
-    this.targetY = order.y;
-    this.orders.splice(0, 1);
-  }
-
-  handleAI() {
-    if ( this.orders.length ) {
-      return;
-    }
-
-    // TODO
-  }
-
-  select(t, report) {
-    if ( super.select(t) ) {
-      if ( report && this.isFriendly() ) {
-        this.engine.sounds.playSound('await1', {source: this});
-      }
       return true;
     }
+
     return false;
   }
 
-  setPath(path, report) {
-    if ( !this.options.Speed || !path.length ) {
-      return false;
+  /**
+   * Process the next order
+   */
+  processOrder() {
+    if ( this.currentPath.length ) {
+      const path = this.currentPath.shift();
+      if ( !path.length ) {
+        const [ox, oy] = this.getTargetOffset();
+
+        this.targetX = path.x + ox;
+        this.targetY = path.y + oy;
+      } else {
+        this.targetX = path.x;
+        this.targetY = path.y;
+      }
+
+      const direction = getDirection(path, this, this.directions);
+      if ( this.options.TurnSpeed ) {
+        if ( direction !== this.direction ) {
+          this.targetDirection = direction;
+        }
+      } else {
+        this.direction = direction;
+      }
+    } else {
+      if ( this.orders.length ) {
+        const order = this.orders.shift();
+        if ( order.action === 'move' ) {
+          this.currentPath = order.path;
+        }
+      }
     }
+  }
 
-    path.splice(0, 1);
-
-    console.log('Entity::setPath()', path);
-
-    this.targetX = null;
-    this.targetY = null;
-    this.targetDirection = null;
-    this.tileS = 0; // FIXME
-    this.moving = false;
-    this.attacking = false;
-    this.orders = path;
-    this.targetObject = null;
-    this.rofCooldown = 0;
-
+  setPath(path, report) {
     if ( report ) {
       this.engine.sounds.playSound('ackno', {source: this});
     }
 
-    return true;
+    if ( this.options.Speed ) {
+      this.currentPath = [];
+      this.orders = [{
+        action: 'move',
+        path
+      }];
+      this.targetX = null;
+      this.targetY = null;
+      this.targetDirection = null;
+      this.targetObject = null;
+
+      return true;
+    }
+
+    return false;
   }
 
   setAnimation(name, options = {}) {
     super.setAnimation(name, Object.assign({
       loop: true,
-      step: 0.25, // FIXME
+      step: 0.15, // FIXME
       getOffset: (anim) => {
         let offset = anim.options.multi !== 0
           ? Math.round(this.direction) * anim.frames
@@ -324,18 +357,20 @@ export default class UnitObject extends MapObject {
     }, options));
   }
 
-  setDirection(direction) {
-    if ( this.options.TurnSpeed ) {
-      if ( this.direction !== direction ) {
-        this.targetDirection = direction;
-      }
-    } else {
-      this.direction = direction;
+  getRenderOffset() {
+    if ( !this.sprite || !this.sprite.clip ) {
+      return super.getRenderOffset();
     }
+
+    const [cx, cy, cw, ch] = this.sprite.clip;
+    return [
+      cx - (cw / 2),
+      cy - (ch / 2)
+    ];
   }
 
-  setTarget(obj) {
-    this.targetObject = obj;
+  getTargetOffset() {
+    return [0, 0];
   }
 
 }

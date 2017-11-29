@@ -29,6 +29,16 @@ export function randomInteger(min = 0, max = Number.MAX_VALUE) {
 }
 
 /**
+ * Gets a random entry from array
+ * @param {Array} arr Array
+ * @return {*} Resulted item
+ */
+export function randomFromArray(arr) {
+  const i = randomInteger(0, arr.length - 1);
+  return arr[i];
+}
+
+/**
  * Get a parameter from query string
  * @param {String} [q] parameter to extract
  * @param {String} [search] string to use
@@ -47,6 +57,17 @@ export function queryParameter(q, search) {
 }
 
 /**
+ * Remove duplicates from array
+ * @param {Array} inp Input array
+ * @return {Array}
+ */
+export function unique(inp) {
+  return inp.filter((elem, pos, arr) => {
+    return arr.indexOf(elem) === pos;
+  });
+}
+
+/**
  * Copies a 2D array
  * @param {Array} arr Array
  * @return {Array}
@@ -59,11 +80,14 @@ export function copy(arr) {
  * Sorts an array of objects
  * @param {Array} arr Array
  * @param {String} key Key
+ * @return {Array}
  */
 export function sort(arr, key) {
   arr.sort((a, b) => {
     return (a[key] > b[key]) ? 1 : ((b[key] > a[key]) ? -1 : 0);
   });
+
+  return arr;
 }
 
 /**

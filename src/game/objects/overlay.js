@@ -3,8 +3,8 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import MapObject from '../mapobject';
-import {WALLS} from '../globals';
+import MapObject from 'game/theater/mapobject';
+import {WALLS} from 'game/globals';
 
 export default class OverlayObject extends MapObject {
 
@@ -13,9 +13,7 @@ export default class OverlayObject extends MapObject {
       id: args.id,
       type: args.type || 'overlay',
       tileX: args.tileX,
-      tileY: args.tileY,
-      xOffset: args.xOffset,
-      yOffset: args.yOffset
+      tileY: args.tileY
     }, engine.data.overlays[args.id]);
 
     this.spriteColor = '#669999';

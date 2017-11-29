@@ -47,24 +47,113 @@ export default class Mouse {
       cursorLock: false
     }, options);
 
+    /**
+     * Game Engine reference
+     * @type {Engine}
+     */
     this.engine = engine;
+
+    /**
+     * Mouse X position
+     * @type {Number}
+     */
     this.x = 0;
+
+    /**
+     * Mouse Y position
+     * @type {Number}
+     */
     this.y = 0;
+
+    /**
+     * Mouse pan X position
+     * @type {Number}
+     */
     this.panX = null;
+
+    /**
+     * Mouse pan Y position
+     * @type {Number}
+     */
     this.panY = null;
+
+    /**
+     * Mouse start X position
+     * @type {Number}
+     */
     this.startX = 0;
+
+    /**
+     * Mouse start Y position
+     * @type {Number}
+     */
     this.startY = 0;
+
+    /**
+     * Mouse temp X position
+     * @type {Number}
+     */
     this.tmpGameX = null;
+
+    /**
+     * Mouse temp Y position
+     * @type {Number}
+     */
     this.tmpGameY = null;
+
+    /**
+     * Dragging state
+     * @type {Boolean}
+     */
     this.dragging = false;
+
+    /**
+     * Panning state
+     * @type {Boolean}
+     */
     this.panning = false;
+
+    /**
+     * Capture state
+     * @type {Boolean}
+     */
     this.captured = false;
+
+    /**
+     * Pressed state
+     * @type {Boolean|Number}
+     */
     this.pressed = false;
+
+    /**
+     * Moved state
+     * @type {Boolean}
+     */
     this.moved = false;
-    this.rect = null;
-    this.buttonsDown = {};
-    this.buttonsPressed = {};
+
+    /**
+     * Locked state
+     * @type {Boolean}
+     */
     this.locked = false;
+
+    /**
+     * Calculated rectangle
+     * @type {Object}
+     */
+    this.rect = null;
+
+    /**
+     * Buttons down map
+     * @type {Object}
+     */
+    this.buttonsDown = {};
+
+    /**
+     * Buttons pressed map
+     * @type {Object}
+     */
+    this.buttonsPressed = {};
 
     const callback = (evName) => (ev) => {
       if ( this.engine && this.engine.running ) {

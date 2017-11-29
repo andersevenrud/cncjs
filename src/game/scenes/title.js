@@ -3,10 +3,9 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import GameScene from '../scene';
-import Sprite from '../../engine/sprite';
-import UIContainer from '../../engine/ui/container';
-import {loadImage} from '../../engine/util';
+import GameScene from 'game/scene';
+import UIContainer from 'engine/ui/container';
+import {loadImage} from 'engine/util';
 
 const ABOUT_TEXT = [
   'Command & Conquer - Tiberian Dawn',
@@ -31,10 +30,8 @@ export default class TitleScene extends GameScene {
     this.currentGUI = 0;
   }
 
-  destroy() {
+  ondestroy() {
     this.engine.pushScene('choose');
-
-    super.destroy();
   }
 
   update() {

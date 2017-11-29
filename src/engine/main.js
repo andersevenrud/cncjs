@@ -10,6 +10,7 @@ import Sound from './io/sound';
 import Zip from './io/zip';
 import Sprite from './sprite';
 import Configuration from './configuration';
+import Graph from './ui/graph';
 
 const MAX_DEBUG = 3;
 
@@ -27,6 +28,8 @@ export default class Engine {
    * @param {Number} [options.debug=0] Debug mode
    * @param {Object} [options.gui] GUI Element map
    * @param {Object} [options.scenes] Scene map
+   * @param {Object} [options.minWidth=640] Minimum canvas width
+   * @param {Object} [options.minHeight=480] Minimum canvas height
    * @param {Boolean} [options.debugMode=false] Debug mode
    * @param {Boolean} [options.cursorLock=false] Cursor Locking feature
    * @param {Boolean} [options.positionalAudio=false] Positional audio feature
@@ -34,6 +37,10 @@ export default class Engine {
   constructor(canvas, configuration, options = {}) {
     console.group('Engine::constructor()');
 
+    /**
+     * Game Engine options (see constrctor)
+     * @type {Object}
+     */
     this.options = Object.assign({}, {
       gui: {},
       scenes: {},
@@ -43,41 +50,183 @@ export default class Engine {
       dataFile: 'data.zip',
       cursorLock: false,
       updateRate: 1000 / 30,
-      positionalAudio: false
+      positionalAudio: false,
+      minWidth: 640,
+      minHeight: 480
     }, options);
 
+    /**
+     * Root DOM element
+     * @type {Node}
+     */
     this.$root = canvas.parentNode;
+
+    /**
+     * Root DOM element top position
+     * @type {Number}
+     */
     this.$rootTop = 0;
+
+    /**
+     * Root DOM element left position
+     * @type {Number}
+     */
     this.$rootLeft = 0;
 
+    /**
+     * Canvas DOM element
+     * @type {HTMLCanvasElement}
+     */
     this.canvas = canvas;
+
+    /**
+     * Canvas rendering context
+     * @type {CanvasRenderingContext2D}
+     */
     this.context = this.canvas.getContext('2d');
 
+    /**
+     * Game Data archive
+     * @type {Zip}
+     */
     this.zip = new Zip(this, this.options.dataFile);
+
+    /**
+     * Mouse IO Handler
+     * @type {Mouse}
+     */
     this.mouse = new Mouse(this, {
       cursorLock: this.options.cursorLock
     });
+
+    /**
+     * Keyboard IO Handler
+     * @type {Keyboard}
+     */
     this.keyboard = new Keyboard(this);
+
+    /**
+     * Sound IO Handler
+     * @type {Sound}
+     */
     this.sounds = new Sound(this, {
       positionalAudio: options.positionalAudio
     });
+
+    /**
+     * Configuration Handler
+     * @type {Configuration}
+     */
     this.configuration = new Configuration(options, configuration);
+
+    /**
+     * Current scene
+     * @type {Scene}
+     */
     this.scene = null;
 
+    /**
+     * Scene Queue
+     * @type {Scene[]}
+     */
     this.sceneQueue = [];
+
+    /**
+     * Sprite library
+     * @type {Object}
+     */
     this.spriteLibrary = {};
+
+    /**
+     * Engine running state
+     * @type {Boolean}
+     */
     this.running = false;
+
+    /**
+     * Engine started state
+     * @type {Boolean}
+     */
     this.started = false;
+
+    /**
+     * Engine loading state
+     * @type {Boolean}
+     */
+    this.loading = false;
+
+    /**
+     * Engine rendering width
+     * @type {Number}
+     */
     this.width = 0;
+
+    /**
+     * Engine rendering height
+     * @type {Number}
+     */
     this.height = 0;
+
+    /**
+     * Engine rendering delta
+     * @type {Float}
+     */
     this.delta = 0;
+
+    /**
+     * Engine rendering FPS
+     * @type {Float}
+     */
     this.fps = 0;
+
+    /**
+     * Engine rendering FPS (average)
+     * @type {Float}
+     */
     this.fpsAverage = 0;
-    this.updateTime = 0;
+
+    /**
+     * Engine tick counter
+     * @type {Number}
+     */
     this.currentTick = 0;
+
+    /**
+     * Engine next tick (internal)
+     * @type {Number}
+     */
+    this.nextTick = 0;
+
+    /**
+     * Engine pause tick
+     * @type {Boolean}
+     */
     this.pauseTick = false;
+
+    /**
+     * Engine paused state
+     * @type {Boolean}
+     */
     this.paused = false;
+
+    /**
+     * Engine paused state (past)
+     * @type {Boolean}
+     */
     this.wasPaused = false;
+
+    /**
+     * Stat graphs
+     * @type {Graph[]}
+     */
+    this.graphs = [
+      new Graph('FPS', '#0ff', '#002', () => {
+        return [Math.round(this.fps), 80];
+      }),
+      new Graph('MS', '#0f0', '#020', () => {
+        return [Math.round(this.delta * 1000), 100];
+      })
+    ];
 
     let debounce;
     const onresize = () => {
@@ -167,6 +316,16 @@ export default class Engine {
    * @return {Boolean} state
    */
   unpause() {
+    if ( this.paused ) {
+      /**
+       * NOTE: This is a workaround for browsers throttling tabs
+       * when blurring. requestAnimationFrame does not react when
+       * no focus is active, Without this the browser would simply
+       * "freeze" when returning to tab after a while of inactivity.
+       */
+      this.nextTick = performance.now();
+    }
+
     return this.pause(false);
   }
 
@@ -188,10 +347,11 @@ export default class Engine {
 
     console.info('Strating rendering loop...');
 
+    const now = performance.now();
+
     let lastFrame;
     let skipTicks = 1000 / this.options.updateRate;
-    let nextGameTick = performance.now();
-    let lastTick = nextGameTick;
+    let lastTick = now;
 
     const step = (t) => {
       if ( !this.running ) {
@@ -202,9 +362,13 @@ export default class Engine {
       this.delta = (t - lastTick) / 1000;
       this.fps = 1 / this.delta;
 
-      while ( t > nextGameTick ) {
+      /**
+       * NOTE: This is for our variable update rate. This makes sure that
+       * it runs at a steady frequency (always "catches up").
+       */
+      while ( t > this.nextTick ) {
         this.fpsAverage += (this.fps - this.fpsAverage) / 10;
-        nextGameTick += skipTicks;
+        this.nextTick += skipTicks;
         this.onupdate();
       }
 
@@ -216,6 +380,7 @@ export default class Engine {
     };
 
     this.running = true;
+    this.nextTick = now;
 
     step(performance.now());
   }
@@ -224,6 +389,10 @@ export default class Engine {
    * Event: On update
    */
   onupdate() {
+    if ( this.loading ) {
+      return;
+    }
+
     if ( this.paused ) {
       this.wasPaused = true;
       return;
@@ -238,7 +407,6 @@ export default class Engine {
       return;
     }
 
-    const now = performance.now();
     if ( this.scene && !this.paused && !this.scene.destroying ) {
       this.scene.update();
     }
@@ -247,9 +415,14 @@ export default class Engine {
     this.mouse.update();
     this.sounds.update();
 
-    this.updateTime = (performance.now() - now);
     if ( !this.pauseTick ) {
       this.currentTick++;
+    }
+
+    if ( this.options.debug >= MAX_DEBUG ) {
+      for ( let i = 0; i < this.graphs.length; i++ ) {
+        this.graphs[i].update();
+      }
     }
   }
 
@@ -258,7 +431,7 @@ export default class Engine {
    * @param {Number} delta Render delta time
    */
   onrender(delta) {
-    if ( this.paused ) {
+    if ( this.paused || this.loading ) {
       return;
     }
     //this.canvas.width = this.canvas.width;
@@ -266,8 +439,16 @@ export default class Engine {
     this.context.clearRect(0, 0, this.width, this.height);
     this.context.textBaseline = 'alphabetic';
     this.context.textAlign = 'start';
+
     if ( this.scene && !this.scene.destroying ) {
       this.scene.render(this.context, delta);
+    }
+
+    if ( this.options.debug >= MAX_DEBUG ) {
+      for ( let i = 0; i < this.graphs.length; i++ ) {
+        const p = this.graphs[i];
+        p.render(this.context, this.width - p.width, i * p.height);
+      }
     }
   }
 
@@ -275,8 +456,8 @@ export default class Engine {
    * Handles resize of screen
    */
   onresize() {
-    const w = Math.max(640, this.$root.offsetWidth);
-    const h = Math.max(535, this.$root.offsetHeight);
+    const w = Math.max(this.options.minWidth, this.$root.offsetWidth);
+    const h = Math.max(this.options.minHeight, this.$root.offsetHeight);
     const s = this.getConfig('scale');
 
     this.width = Math.round(w / s);
@@ -316,6 +497,7 @@ export default class Engine {
 
     this.paused = true;
     this.scene = null;
+    this.graphs = this.graphs.splice(0, 2);
 
     this.sounds.reset();
     this.mouse.reset();
@@ -328,6 +510,7 @@ export default class Engine {
 
     const scene = this.sceneQueue[0]();
     this.scene = scene;
+
     await this.scene.load();
 
     this.paused = false;
@@ -356,6 +539,7 @@ export default class Engine {
    * @param {String} [s] Show text
    */
   toggleLoading(t, p, s) {
+    this.loading = t;
 
     this.canvas.style.backgroundColor = t ? 'transparent' : '#000000';
 
@@ -395,6 +579,17 @@ export default class Engine {
         this.context.fillText(s, x, y);
       }
     }
+  }
+
+  /**
+   * Add a custom graph to the debugging
+   * @param {String} label Graph label
+   * @param {String} fg Foreground color
+   * @param {String} bg Background color
+   * @param {Function} cb Callback function => [value, max]
+   */
+  addGraph(label, fg, bg, cb) {
+    this.graphs.push(new Graph(label, fg, bg, cb));
   }
 
   /**

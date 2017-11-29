@@ -3,8 +3,9 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import Sprite from '../../engine/sprite';
-import UIElement from '../../engine/ui/element';
+
+import Sprite from 'engine/sprite';
+import UIElement from 'engine/ui/element';
 
 export default class RectElement extends UIElement {
   constructor(engine, options) {

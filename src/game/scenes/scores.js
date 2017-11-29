@@ -4,8 +4,8 @@
  * @license MIT
  */
 
-import GameScene from '../scene';
-import Sprite from '../../engine/sprite';
+import GameScene from 'game/scene';
+import Sprite from 'engine/sprite';
 
 // TODO
 export default class ScoreScene extends GameScene {

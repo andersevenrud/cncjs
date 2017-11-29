@@ -65,9 +65,29 @@ export default class Keyboard {
    * @param {Object} [options] Options
    */
   constructor(engine, options = {}) {
+
+    /**
+     * Game Engine reference
+     * @type {Engine}
+     */
     this.engine = engine;
+
+    /**
+     * Keys down map
+     * @type {Object}
+     */
     this.keysDown = {};
+
+    /**
+     * Keys pressed map
+     * @type {Object}
+     */
     this.keysPressed = {};
+
+    /**
+     * Options
+     * @type {Object}
+     */
     this.options = Object.assign({}, options);
 
     const events = ['keydown', 'keyup', 'keypress'];

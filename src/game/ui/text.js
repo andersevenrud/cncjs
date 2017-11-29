@@ -3,7 +3,8 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import UIElement from '../../engine/ui/element';
+
+import UIElement from 'engine/ui/element';
 import {createFontSprite} from './font';
 
 export default class TextElement extends UIElement {
@@ -22,7 +23,7 @@ export default class TextElement extends UIElement {
     const {x, y, w} = this.rect;
 
     if ( !this.label[line] ) {
-      this.label[line] = createFontSprite(str, 0, '6point');
+      this.label[line] = createFontSprite(this.engine, str, 0, '6point');
     }
 
     const label = this.label[line];

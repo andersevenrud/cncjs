@@ -3,9 +3,10 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
+
 import {createFontSprite} from './font';
-import Sprite from '../../engine/sprite';
-import UIElement from '../../engine/ui/element';
+import Sprite from 'engine/sprite';
+import UIElement from 'engine/ui/element';
 
 export default class ButtonElement extends UIElement {
   constructor(engine, options) {
@@ -25,6 +26,10 @@ export default class ButtonElement extends UIElement {
     const sprite = Sprite.instance('options');
     const backTexture = sprite ? Sprite.instance('btexture').createImage(1) : null;
     const ptrn = backTexture ? target.createPattern(backTexture, 'repeat') : null;
+
+    if ( this.options.disabled ) {
+      target.globalAlpha = 0.5;
+    }
 
     target.lineWidth = 1;
     target.fillStyle = ptrn ? ptrn : '#000000';
@@ -58,11 +63,15 @@ export default class ButtonElement extends UIElement {
     }
 
     if ( !this.label ) {
-      this.label = createFontSprite(this.options.label, 0, '6point');
+      this.label = createFontSprite(this.engine, this.options.label, 0, '6point');
     }
 
     target.drawImage(this.label,
                      Math.round(x + (w / 2) - (this.label.width / 2)),
                      Math.round(y + (h / 2) - (this.label.height / 2)));
+
+    if ( this.options.disabled ) {
+      target.globalAlpha = 1.0;
+    }
   }
 }

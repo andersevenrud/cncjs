@@ -3,10 +3,9 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import Scene from '../engine/scene';
-import Sprite from '../engine/sprite';
-import Cursor from './ui/cursor';
-import {drawText} from '../engine/ui/util';
+import Scene from 'engine/scene';
+import Cursor from 'game/ui/cursor';
+import {drawText} from 'engine/ui/util';
 
 /**
  * Base Game Scene class
@@ -86,10 +85,8 @@ export default class GameScene extends Scene {
       const km = this.engine.getConfig('keymap');
 
       const debug = [
-        `FPS: ${(this.engine.fpsAverage).toFixed(0)} (${(this.engine.fps).toFixed(0)} / ${(this.engine.delta * 1000).toFixed(2)}ms)`,
-        `Update: ${this.engine.updateTime.toFixed(2)} (${Math.round(1000 / this.engine.options.updateRate)}Hz) (${Sprite.getCacheCount()} sprites)`,
+        `Render: ${(this.engine.fpsAverage).toFixed(0)} (${(this.engine.delta * 1000).toFixed(2)}ms) @ ${Math.round(1000 / this.engine.options.updateRate)}Hz tick`,
         `Viewport: ${vw}x${vh} (${this.engine.getConfig('scale').toFixed(1)}x) @ ${this.gameX}x${this.gameY}`,
-        `Sound: s:${String(this.engine.sounds.soundEnabled)} m:${String(this.engine.sounds.musicEnabled)}`,
         ...this.debugOutput,
         '',
         `<${km.DEBUG_TOGGLE}> Debug, <${km.DEBUG_SCALE}> Scale`,

@@ -23,7 +23,7 @@ export default class TabElement extends SpriteElement {
       const txt = typeof this.options.label === 'function' ? this.options.label() : this.options.label;
 
       if ( !this.label || txt !== this.lastText ) {
-        this.label = createFontSprite(txt, 0);
+        this.label = createFontSprite(this.engine, txt, 0);
       }
 
       target.drawImage(this.label,

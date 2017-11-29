@@ -4,7 +4,7 @@
  * @license MIT
  */
 import 'babel-polyfill';
-import Game from './game/main';
+import Game from 'game/main';
 
 window.addEventListener('DOMContentLoaded', () => {
   const canvas = document.querySelector('canvas');

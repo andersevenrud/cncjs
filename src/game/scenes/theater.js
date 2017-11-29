@@ -3,20 +3,17 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import Map from '../map';
-import GameScene from '../scene';
-import Player from '../player';
-import Triggers from '../triggers';
-import TickerElement from '../ui/ticker';
-import MiniMap from '../ui/minimap';
-import ConstructObject from '../objects/construct';
-import UIContainer from '../../engine/ui/container';
-import Sprite from '../../engine/sprite';
-import {sort, randomInteger} from '../../engine/util';
-import {tileFromPoint} from '../physics';
-import {TILE_SIZE, ICONS, SOUNDS, THEMES} from '../globals';
+import Level from 'game/theater/level';
+import GameScene from 'game/scene';
+import TickerElement from 'game/ui/ticker';
+import MiniMap from 'game/ui/minimap';
+import ConstructObject from 'game/objects/construct';
+import UIContainer from 'engine/ui/container';
+import Sprite from 'engine/sprite';
+import {randomInteger} from 'engine/util';
+import {tileFromPoint} from 'game/physics';
+import {TILE_SIZE, ICONS, SOUNDS} from 'game/globals';
 
-const TICK_LENGTH = 80; // FIXME
 const DEFAULT_THEME = 5; // FIXME
 const SCROLL_MARGIN = 4; // FIXME
 const SCROLL_SPEED = 3; // FIXME
@@ -27,28 +24,19 @@ export default class TheaterScene extends GameScene {
     super(...arguments);
 
     this.currentTheme = -1;
-    this.players = [];
-    this.triggers = null;
-    this.gameTick = 0;
-    this.map = null;
     this.sidebar = null;
     this.minimap = null;
     this.soundDebounce = {};
     this.guiContainers = [];
     this.currentGUI = -1;
-    this.minimapVisible = true;
-    this.minimapAvailable = true; // FIXME
-    this.sidebarVisible = true;
+    this.minimapVisible = false;
+    this.minimapAvailable = false; // FIXME
+    this.sidebarVisible = this.engine.options.debug === 3; // FIXME
     this.tickerBuildings = null;
     this.tickerUnits = null;
     this.cursorName = 'default';
     this.constructObject = null;
-
-    this.player = null;
-    this.buildables = {
-      structures: [],
-      units: []
-    };
+    this.debugTime = 0;
   }
 
   async load() {
@@ -56,10 +44,16 @@ export default class TheaterScene extends GameScene {
 
     const mapName = this.options.map;
     const level = this.engine.data.levels[mapName];
-    const buildables = this.getBuildables();
 
     const tmap = {desert: 'DESERT.MIX', winter: 'WINTER.MIX'};
     const theatre = tmap[level.theater] || 'TEMPERAT.MIX';
+
+    const extractAudio = (iter) => {
+      if ( iter.PrimaryWeapon && iter.PrimaryWeapon.Report ) {
+        return 'audio:' + iter.PrimaryWeapon.Report;
+      }
+      return null;
+    };
 
     const audioNames = [
       'audio:button',
@@ -74,30 +68,25 @@ export default class TheaterScene extends GameScene {
       'audio:reinfor1',
       'audio:batlcon1',
       'audio:bldg1',
-      'audio:xplos',
-      'audio:xplobig4',
-      ...buildables.units.map(iter => {
-        if ( iter.PrimaryWeapon && iter.PrimaryWeapon.Report ) {
-          return 'audio:' + iter.PrimaryWeapon.Report;
-        }
-        return null;
-      }),
-      ...buildables.units.map(iter => {
-        if ( iter.SecondaryWeapon && iter.SecondaryWeapon.Report ) {
-          return 'audio:' + iter.SecondaryWeapon.Report;
-        }
-        return null;
-      })
+      'audio:crumble',
+      'audio:nukexplo',
+      ...Object.values(this.engine.data.aircraft).map(extractAudio),
+      ...Object.values(this.engine.data.infantry).map(extractAudio),
+      ...Object.values(this.engine.data.units).map(extractAudio)
     ];
 
     Object.keys(SOUNDS).forEach((k) => {
-      const count = SOUNDS[k].count;
-      if ( count instanceof Array ) {
-        count.forEach((i) => audioNames.push(`audio:${k}${i}`));
+      if ( typeof SOUNDS[k] === 'string' ) {
+        audioNames.push(`audio:${SOUNDS[k]}`);
       } else {
-        for ( let i = 0; i < count; i++ ) {
-          const s = SOUNDS[k].separator || '';
-          audioNames.push(`audio:${k}${s}${i + 1}`);
+        const count = SOUNDS[k].count;
+        if ( count instanceof Array ) {
+          count.forEach((i) => audioNames.push(`audio:${k}${i}`));
+        } else {
+          for ( let i = 0; i < count; i++ ) {
+            const s = SOUNDS[k].separator || '';
+            audioNames.push(`audio:${k}${s}${i + 1}`);
+          }
         }
       }
     });
@@ -123,34 +112,32 @@ export default class TheaterScene extends GameScene {
       'sprite:smokey',
 
       // FIXME: Filtered
-      ...buildables.structures.map(iter => `sprite:${iter.Id}`),
-      ...buildables.structures.map(iter => `sprite:${ICONS[theatre]}/${iter.Icon}`),
-      ...buildables.units.map(iter => `sprite:${ICONS[theatre]}/${iter.Icon}`),
-      ...buildables.units.map(iter => `sprite:${iter.Id}`)
+      ...Object.values(this.engine.data.aircraft).map(iter => `sprite:${ICONS[theatre]}/${iter.Icon}`),
+      ...Object.values(this.engine.data.aircraft).map(iter => `sprite:${iter.Id}`),
+
+      ...Object.values(this.engine.data.structures).map(iter => `sprite:${iter.Id}`),
+      ...Object.values(this.engine.data.structures).filter(iter => iter.Selectable).map(iter => `sprite:${iter.Id}make`),
+      ...Object.values(this.engine.data.structures).map(iter => `sprite:${ICONS[theatre]}/${iter.Icon}`),
+
+      ...Object.values(this.engine.data.infantry).map(iter => `sprite:${ICONS[theatre]}/${iter.Icon}`),
+      ...Object.values(this.engine.data.infantry).map(iter => `sprite:${iter.Id}`),
+
+      ...Object.values(this.engine.data.units).map(iter => `sprite:${ICONS[theatre]}/${iter.Icon}`),
+      ...Object.values(this.engine.data.units).map(iter => `sprite:${iter.Id}`)
     ];
 
-    console.log('Sounds', audioNames);
-    console.log('Sprites', spriteNames);
+    console.debug('Sounds', audioNames);
+    console.debug('Sprites', spriteNames);
 
     await super.load([
-      ...audioNames.filter(iter => !!iter),
+      ...audioNames.filter(iter => !!iter && ['audio:toss', 'audio:dinoatk1', 'audio:none'].indexOf(iter) === -1),
       ...spriteNames.filter(iter => !!iter)
     ]);
 
-    this.buildables = buildables;
-    this.players = Player.createAll(level.players, level.info.Player);
-    this.player = this.getMainPlayer();
-    this.map = new Map(this.engine, theatre, level);
-    this.minimap = new MiniMap(this.engine, this.map);
-    this.triggers = new Triggers(this.engine, this, this.map, level);
-    this.tickerBuildings = new TickerElement(this.engine, 'structures', {
-      buildables: this.buildables.structures
-    });
-    this.tickerUnits = new TickerElement(this.engine, 'units', {
-      buildables: this.buildables.units
-    });
+    this.level = new Level(this.engine, theatre, level);
+    await this.level.load();
 
-    await this.map.load(level);
+    this.minimap = new MiniMap(this.engine, this.level.map);
     await this.minimap.load();
 
     this.loadUI(level);
@@ -158,31 +145,31 @@ export default class TheaterScene extends GameScene {
     this.engine.sounds.setSoundHandler((i, c) => this.playSound(i, c));
     this.playTheme(DEFAULT_THEME);
 
-    const myObjects = this.map.objects.filter(o => o.isFriendly());
-    if ( myObjects.length ) {
-      const {tileX, tileY} = myObjects[0];
-      const {vw, vh} = this.getViewport();
-      const posX = (tileX * TILE_SIZE) - (vw / 2);
-      const posY = (tileY * TILE_SIZE) - (vh / 2);
-      this.setOffset(posX, posY);
-    }
+    this.engine.addGraph('#O', '#f08', '#201', () => {
+      if ( this.level && this.level.map ) {
+        return [this.level.map.objects.length];
+      }
+      return [0, 0];
+    });
 
     this.loaded = true;
   }
 
   loadUI(level) {
-    const playerName = this.player.teamName.toLowerCase();
+    const mp = this.level.getMainPlayer();
+    const playerName = mp.teamName.toLowerCase();
+
+    this.tickerBuildings = new TickerElement(this.engine, 'structures');
+    this.tickerUnits = new TickerElement(this.engine, 'units');
 
     this.guiContainers = [
       new UIContainer(this.engine, [
         {type: 'rect', x: 0, y: 0, w: -1, h: 14},
         {type: 'tab', x: 0, y: 0, label: 'Options', cb: () => (this.currentGUI = 0)},
         {type: 'tab', x: -320, y: 0, label: () => {
-          const mp = this.getMainPlayer();
           return String(mp.credits);
         }, cb: () => {
           if ( this.engine.options.debugMode ) {
-            const mp = this.getMainPlayer();
             mp.addCredits(1000);
           }
         }},
@@ -203,20 +190,17 @@ export default class TheaterScene extends GameScene {
         {type: 'sprite', name: 'hstripdn', pressIndex: 1, x: 70 + 20 + 33, y: 357, cb: () => this.tickerUnits.down()},
         {instance: this.tickerBuildings, x: 20, y: 164, cb: (e, cb) => this.clickBuildable(e, cb)},
         {instance: this.tickerUnits, x: 20 + 64 + 6, y: 164, cb: (e, cb) => this.clickBuildable(e, cb)},
-        {instance: this.minimap, visible: () => this.sidebarVisible && this.minimapVisible}
+        {instance: this.minimap, visible: () => this.getMinimapVisible()}
       ], {x: -160, y: 14}),
 
       new UIContainer(this.engine, [
         {type: 'box', corners: true, x: 0, y: 0, w: 450, h: 270},
         {type: 'text', text: ['Menu'], x: 30, y: 15, w: 390, h: 20, underline: true, center: true},
-        {type: 'button', label: 'Load Mission', x: 135, y: 80, w: 180, h: 18},
-        {type: 'button', label: 'Save Mission', x: 135, y: 110, w: 180, h: 18},
-        {type: 'button', label: 'Delete Mission', x: 135, y: 140, w: 180, h: 18},
+        {type: 'button', label: 'Load Mission', x: 135, y: 80, w: 180, h: 18, disabled: true},
+        {type: 'button', label: 'Save Mission', x: 135, y: 110, w: 180, h: 18, disabled: true},
+        {type: 'button', label: 'Delete Mission', x: 135, y: 140, w: 180, h: 18, disabled: true},
         {type: 'button', label: 'Game Controls', x: 135, y: 50, w: 180, h: 18, cb: () => (this.currentGUI = 2)},
-        {type: 'button', label: 'Abort Mission', x: 135, y: 170, w: 180, h: 18, cb: () => {
-          this.engine.pushScene('title');
-          this.engine.sounds.playSound('batlcon1', {}, () => this.destroy());
-        }},
+        {type: 'button', label: 'Abort Mission', x: 135, y: 170, w: 180, h: 18, cb: () => this.level.abort()},
         {type: 'button', label: 'Mission Briefing', x: (450 - 180 - 24), y: 230, w: 180, h: 18, cb: () => (this.currentGUI = 1)},
         {type: 'button', label: 'Resume Mission', x: 24, y: 230, w: 180, h: 18, cb: () => (this.currentGUI = -1)}
       ], {center: {width: 450, height: 270}}),
@@ -261,7 +245,6 @@ export default class TheaterScene extends GameScene {
         {type: 'text', text: ['Sound Controls'], x: 30, y: 15, w: 390, h: 20, underline: true, center: true},
         {type: 'button', label: 'Game Controls', x: (450 - 180 - 24), y: 230, w: 180, h: 18, cb: () => (this.currentGUI = 2)}
       ], {center: {width: 450, height: 270}})
-
     ];
   }
 
@@ -270,22 +253,27 @@ export default class TheaterScene extends GameScene {
 
     this.gui = [
       this.guiContainers[0],
-      this.sidebarVisible ? this.guiContainers[1] : null,
+      this.getSidebarVisible() ? this.guiContainers[1] : null,
       busy ? this.guiContainers[2 + this.currentGUI] : null
     ].filter(iter => !!iter);
 
+    this.guiContainers[0].active = !busy;
+    this.guiContainers[1].active = !busy;
+
     super.update();
 
-    this.handleMouse();
-    this.handleKeyboard();
-
-    if ( this.constructObject ) {
-      this.constructObject.update();
-    }
-
-    this.updateScroll();
-
     this.cursorName = this.getCursor();
+
+    if ( !busy ) {
+      this.handleMouse();
+      this.handleKeyboard();
+
+      if ( this.constructObject ) {
+        this.constructObject.update();
+      }
+
+      this.updateScroll();
+    }
 
     this.engine.pauseTick = busy; // FIXME: This needs a better solution
 
@@ -293,13 +281,7 @@ export default class TheaterScene extends GameScene {
       this.cursor.setCursor(this.cursorName);
 
       if ( !busy ) {
-        this.map.update();
-
-        const tick = this.engine.currentTick;
-        if ( tick === 1 || (tick % TICK_LENGTH) === 0 ) {
-          this.triggers.process(this.gameTick);
-          this.gameTick++;
-        }
+        this.level.update();
       }
     }
 
@@ -307,7 +289,7 @@ export default class TheaterScene extends GameScene {
   }
 
   updateScroll() {
-    if ( this.guiHit ) {
+    if ( this.guiHit || this.currentGUI !== -1 ) {
       return;
     }
 
@@ -361,10 +343,10 @@ export default class TheaterScene extends GameScene {
 
         console.log('select rectangle', selection);
 
-        const objects = this.map.getObjectsFromRect(selection)
+        const objects = this.level.map.getObjectsFromRect(selection)
           .filter((obj) => obj.isSelectable() && obj.isFriendly() && obj.isUnit());
 
-        this.map.select(objects);
+        this.level.map.select(objects);
       }
     }
   }
@@ -386,7 +368,7 @@ export default class TheaterScene extends GameScene {
         if ( this.mode ) {
           this.setMode(null);
         } else {
-          this.map.unselect();
+          this.level.map.unselect();
         }
       }
 
@@ -412,21 +394,21 @@ export default class TheaterScene extends GameScene {
     const kbd = this.engine.keyboard;
     const cfg = this.engine.configuration;
 
+    if ( kbd.keyClicked(cfg.getKey('CANCEL')) ) {
+      this.level.map.unselect();
+    }
+
     if ( kbd.keyClicked(cfg.getKey('THEME_PREV')) ) {
       this.prevTheme();
     } else if ( kbd.keyClicked(cfg.getKey('THEME_NEXT')) ) {
       this.nextTheme();
     }
 
-    if ( kbd.keyClicked(cfg.getKey('CANCEL')) ) {
-      this.map.unselect();
-    }
-
     if ( this.engine.options.debugMode ) {
       if ( kbd.keyClicked(cfg.getKey('DEBUG_DESTROY')) ) {
-        this.map.selectedObjects.forEach((o) => (o.health = 0));
+        this.level.map.selectedObjects.forEach((o) => (o.health = 0));
       } else if ( kbd.keyClicked(cfg.getKey('DEBUG_FOG')) ) {
-        this.map.fog.visible = !this.map.fog.visible;
+        this.level.map.fog.visible = !this.level.map.fog.visible;
       }
     }
   }
@@ -436,7 +418,7 @@ export default class TheaterScene extends GameScene {
       return;
     }
 
-    this.map.render(target, delta);
+    this.level.render(target, delta);
 
     // Building overlay
     if ( this.constructObject ) {
@@ -457,31 +439,43 @@ export default class TheaterScene extends GameScene {
     super.render(target, delta);
 
     if ( this.engine.options.debug ) {
-      const mp = this.getMainPlayer();
-      let selected = '';
+      const mp = this.level.getMainPlayer();
+      const map = this.level.map;
+      const [mx, my] = this.engine.mouse.getPosition();
+      const {offsetX, offsetY} = this.engine.getOffset();
+      const {tileX, tileY} = tileFromPoint(mx + offsetX, my + offsetY);
 
-      if ( this.map.selectedObjects.length === 1 ) {
-        let obj = this.map.selectedObjects[0];
+      let selected = '';
+      let gridItem = this.level.map.getGrid(tileX, tileY);
+      if ( gridItem ) {
+        gridItem = `${gridItem.value} ${gridItem.id} ${String(!!gridItem.object)}`;
+      }
+
+      if ( this.level.map.selectedObjects.length === 1 ) {
+        let obj = this.level.map.selectedObjects[0];
         selected = `${obj.tileX}x${obj.tileY}x${obj.tileS} (${Math.round(obj.x)}x${Math.round(obj.y)}) ${obj.animation.name} o:${obj.animation.offset} f:${obj.animation.frame} d:${obj.direction}`;
       }
 
       this.debugOutput = [
-        `Objects: ${this.map.objects.length} (${this.map.visibleObjects})`,
-        `Tick: ${this.engine.currentTick} (${this.gameTick})`,
-        `Map: ${this.map.id} - ${this.map.tilesX}x${this.map.tilesY} (${this.map.width}x${this.map.height})`,
+        `Mouse: ${Math.round(mx)}x${Math.round(my)} / ${tileX}x${tileY} (${gridItem})`,
+        `Objects: ${map.objects.length} (${map.visibleObjects} visible) (${map.selectedObjects.length} selected)`,
+        `Tick: ${this.engine.currentTick} (${this.level.levelTick})`,
+        `Map: ${map.id} - ${map.tilesX}x${map.tilesY} (${map.width}x${map.height})`,
         `Player: ${mp.playerName} - ${mp.teamName} c:${mp.credits} p:${mp.power}`,
-        `Selected: (${this.map.selectedObjects.length}) ${selected}`
+        selected ? `Selected: ${selected}` : '-'
       ];
     }
   }
 
   clickViewport({x, y}) {
+    const map = this.level.map;
+    const mp = this.level.getMainPlayer();
     const {offsetX, offsetY} = this.engine.getOffset();
     const clickX = x + offsetX;
     const clickY = y + offsetY;
     const {tileX, tileY} = tileFromPoint(clickX, clickY);
 
-    if ( (tileX < 0 || tileY < 0) || (tileX > this.map.tilesX - 1 || tileY > this.map.tilesY - 1) ) {
+    if ( (tileX < 0 || tileY < 0) || (tileX > map.tilesX - 1 || tileY > map.tilesY - 1) ) {
       return;
     }
 
@@ -492,10 +486,10 @@ export default class TheaterScene extends GameScene {
       if ( valid ) {
         cb();
 
-        this.map.addObject({
+        map.addObject({
           tileX,
           tileY,
-          team: this.getMainPlayer().team,
+          team: mp.team,
           id: entry.Id,
           type: entry.Type
         });
@@ -505,20 +499,18 @@ export default class TheaterScene extends GameScene {
       return;
     }
 
-    let found = this.map.getObjectsFromPosition(clickX, clickY, true).filter((iter) => !iter.isMapOverlay());
+    let found = map.getObjectsFromPosition(clickX, clickY, true).filter((iter) => iter.isUnit());
     if ( !found.length ) {
-      found = this.map.getObjectsFromTile(tileX, tileY, true).filter((iter) => !iter.isMapOverlay());
+      found = map.getObjectsFromTile(tileX, tileY, true).filter((iter) => !iter.isMapOverlay());
     }
 
     if ( found.length ) {
       if ( this.mode === 'sell' ) {
-        const mp = this.getMainPlayer();
         let sold = false;
         for ( let i = 0; i < found.length; i++ ) {
           const o = found[i];
           if ( o.isSellable() ) {
-            const refund = found[0].sell();
-            mp.addCredits(refund);
+            found[0].sell();
             sold = true;
           }
         }
@@ -529,11 +521,11 @@ export default class TheaterScene extends GameScene {
       }
     }
 
-    const selected = this.map.selectedObjects;
+    const selected = map.selectedObjects;
     const hasSelected = selected.length;
 
     if ( hasSelected ) {
-      const tileBlocked = this.map.fog.visible ? !this.map.fog.getVisibility(tileX, tileY) : false;
+      const tileBlocked = map.fog.visible ? !map.fog.getVisibility(tileX, tileY) : false;
 
       if ( tileBlocked ) {
         return;
@@ -544,17 +536,30 @@ export default class TheaterScene extends GameScene {
         const clickedEnemy = found.length ? found[0].isEnemy() : false;
         const clickedFriendly = found.length ? found[0].isFriendly() : false;
 
+        const selectedObjects = map.selectedObjects.filter((obj) => obj.isFriendly());
         if ( hasSelectedAttackable && clickedEnemy ) {
-          this.map.action('attack', found[0]);
+          selectedObjects.forEach((o) => {
+            o.attack(found[0], true);
+          });
           return;
         } else if ( hasSelectedMovable && hasSelectedFriendly && !clickedFriendly ) {
-          this.map.action('move', {x: clickX, y: clickY});
+          selectedObjects.forEach((o) => {
+            const d = tileFromPoint(clickX, clickY);
+            o.move(d.tileX, d.tileY, true);
+          });
           return;
         }
       }
     }
 
-    this.map.select(found);
+    if ( found.length && found[0].isFriendly() && found[0].isExpandable() ) {
+      if ( found[0].selected ) {
+        found[0].expand();
+        return;
+      }
+    }
+
+    map.select(found);
   }
 
   setOffset(x, y) {
@@ -569,7 +574,7 @@ export default class TheaterScene extends GameScene {
   }
 
   getScrollBounds() {
-    const {width, height} = this.map;
+    const {width, height} = this.level.map;
     const {vw, vh} = this.getViewport();
     const xb = Math.round(vw / 2);
     const yb = Math.round(vh / 2);
@@ -577,19 +582,6 @@ export default class TheaterScene extends GameScene {
     const my = height - vh + yb;
 
     return {xb, yb, mx, my};
-  }
-
-  // FIXME: Surely, there's a better name for this
-  getMainPlayer() {
-    return this.players.find(p => p.current);
-  }
-
-  getPlayerByName(playerName) {
-    return this.players.find(p => p.playerName === playerName);
-  }
-
-  getPlayerByTeam(playerTeam) {
-    return this.players.find(p => p.team === playerTeam);
   }
 
   setMode(mode, options, cb) {
@@ -644,7 +636,7 @@ export default class TheaterScene extends GameScene {
 
   getViewport(engine) {
     let {vw, vh, vx, vy} = super.getViewport();
-    if ( !engine && this.sidebarVisible ) {
+    if ( !engine && this.getSidebarVisible() ) {
       vw -= 160;
     }
     return {vx, vy, vw, vh};
@@ -655,7 +647,7 @@ export default class TheaterScene extends GameScene {
    * @param {String} id Theme ID
    */
   playTheme(id) {
-    const src = THEMES[id].filename;
+    const src = this.engine.data.themes[id].filename;
     this.engine.sounds.playSong(src, {}, (played) => {
       if ( this.engine.sounds.musicEnabled && played ) {
         this.nextTheme();
@@ -668,7 +660,7 @@ export default class TheaterScene extends GameScene {
    * Play next theme
    */
   nextTheme() {
-    this.playTheme((this.currentTheme + 1) % THEMES.length);
+    this.playTheme((this.currentTheme + 1) % this.engine.data.themes.length);
   }
 
   /**
@@ -676,15 +668,41 @@ export default class TheaterScene extends GameScene {
    */
   prevTheme() {
     const n = (this.currentTheme - 1);
-    this.playTheme(n < 0 ? THEMES.length - 1 : n);
+    this.playTheme(n < 0 ? this.engine.data.themes.length - 1 : n);
   }
 
-  toggleSidebar() {
-    this.sidebarVisible = !this.sidebarVisible; // FIXME
+  playSound(soundId, cb) {
+    const sound = SOUNDS[soundId];
+    const origSoundId = soundId;
+
+    if ( sound ) {
+      if ( typeof sound === 'string' ) {
+        cb(sound);
+        return;
+      }
+
+      const tmp = sound.count;
+      const index = tmp instanceof Array ? randomInteger(0, tmp.length - 1) : randomInteger(1, tmp);
+      soundId += (sound.separator || '') + String(tmp instanceof Array ? tmp[index] : index);
+
+      // FIXME: This is here because usually it's the "multiple" ones we don't want
+      if ( typeof this.soundDebounce[origSoundId] !== 'undefined' ) {
+        clearTimeout(this.soundDebounce[origSoundId]);
+        delete this.soundDebounce[origSoundId];
+      }
+    }
+
+    this.soundDebounce[origSoundId] = setTimeout(() => cb(soundId), 10);
+  }
+
+  toggleSidebar(t) {
+    this.sidebarVisible = typeof t === 'boolean' ? t : !this.sidebarVisible; // FIXME
   }
 
   toggleMinimap() {
-    this.minimapVisible = !this.minimapVisible; // FIXME
+    if ( this.minimapAvailable ) {
+      this.minimapVisible = !this.minimapVisible; // FIXME
+    }
   }
 
   clickBuildable(entry, cb) {
@@ -704,19 +722,34 @@ export default class TheaterScene extends GameScene {
     this.setMode('build', entry, cb);
   }
 
+  getSidebarVisible() {
+    return this.sidebarVisible;
+  }
+
+  getMinimapVisible() {
+    if ( this.engine.options.debug === 3 ) {
+      return true;
+    }
+
+    return this.sidebarVisible &&
+      this.minimapVisible &&
+      this.minimapAvailable;
+  }
+
   getCursor() {
     const [mouseX, mouseY] = this.engine.mouse.getPosition();
-    const {vw} = this.engine.getViewport();
+    const {vw} = this.getViewport();
 
     if ( mouseY <= 14 || mouseX >= vw || this.currentGUI !== -1 ) {
       return 'default';
     }
 
+    const map = this.level.map;
     const {offsetX, offsetY} = this.engine.getOffset();
     const {tileX, tileY} = tileFromPoint(mouseX + offsetX, mouseY + offsetY);
-    const gridItem = this.map.getGrid(tileX, tileY);
+    const gridItem = map.getGrid(tileX, tileY);
     const currentObject = gridItem ? gridItem.object : null;
-    const selectedObject = this.map.selectedObjects[0];
+    const selectedObject = map.selectedObjects[0];
 
     if ( this.mode === 'sell' ) {
       return currentObject && currentObject.isSellable() ? 'sell' : 'cannotSell';
@@ -730,7 +763,7 @@ export default class TheaterScene extends GameScene {
       if ( currentObject === selectedObject && currentObject.isExpandable() ) {
         return 'expand';
       } else if ( selectedObject.isMovable() ) {
-        const insideFog = this.map.fog.visible ? !this.map.fog.getVisibility(tileX, tileY) : false;
+        const insideFog = map.fog.visible ? !map.fog.getVisibility(tileX, tileY) : false;
         const insideTile = !currentObject;
         return !insideTile || insideFog ? 'unavailable' : 'move';
       }
@@ -741,69 +774,5 @@ export default class TheaterScene extends GameScene {
     }
 
     return 'default';
-  }
-
-  getBuildables(buildLevel = -1, techLevel = -1) {
-    const data = this.engine.data;
-    const levelFilter = (iter) => iter.TechLevel >= techLevel;
-    const buildFilter = (iter) => iter.BuildLevel >= buildLevel;
-
-    const filter = (iter) => {
-      return !!iter.Icon;
-      /*
-      return typeof iter.TechLevel === 'undefined'
-        ? false
-        : (iter.BuildLevel < 90 && iter.TechLevel < 90);
-        */
-    };
-
-    const getData = (s) => {
-      const iter = data.structures[s] || data.units[s] || data.infantry[s] || data.aircraft[s];
-      return iter;
-    };
-
-    const structureKeys = Object.keys(data.structures).filter(s => filter(data.structures[s]));
-    const unitKeys = Object.keys(data.infantry).filter(s => filter(data.infantry[s]))
-      .concat(Object.keys(data.units).filter(s => filter(data.units[s])))
-      .concat(Object.keys(data.aircraft).filter(s => filter(data.aircraft[s])));
-
-    const result = {
-      structures: structureKeys.map(getData),
-      units: unitKeys.map(getData)
-    };
-
-    sort(result.structures, 'BuildLevel');
-    sort(result.units, 'BuildLevel');
-
-    if ( techLevel >= 0 ) {
-      result.structures = result.structures.filter(levelFilter);
-      result.units = result.units.filter(levelFilter);
-    }
-
-    if ( buildLevel >= 0 ) {
-      result.structures = result.structures.filter(buildFilter);
-      result.units = result.units.filter(buildFilter);
-    }
-
-    return result;
-  }
-
-  playSound(soundId, cb) {
-    const sound = SOUNDS[soundId];
-    const origSoundId = soundId;
-
-    if ( sound ) {
-      const tmp = sound.count;
-      const index = tmp instanceof Array ? randomInteger(0, tmp.length - 1) : randomInteger(1, tmp);
-      soundId += (sound.separator || '') + String(tmp instanceof Array ? tmp[index] : index);
-
-      // FIXME: This is here because usually it's the "multiple" ones we don't want
-      if ( typeof this.soundDebounce[origSoundId] !== 'undefined' ) {
-        clearTimeout(this.soundDebounce[origSoundId]);
-        delete this.soundDebounce[origSoundId];
-      }
-    }
-
-    this.soundDebounce[origSoundId] = setTimeout(() => cb(soundId), 10);
   }
 }

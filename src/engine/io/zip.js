@@ -16,10 +16,31 @@ import {requestArrayBuffer} from '../util';
 export default class Zip {
 
   constructor(engine, filename) {
+
+    /**
+     * Game Engine reference
+     * @type {Engine}
+     */
     this.engine = engine;
+
+    /**
+     * Zip Archive
+     * @type {ZipObject}
+     */
     this.zip = null;
+
+    /**
+     * List of failed files
+     * @type {String[]}
+     */
     this.failed = [];
+
+    /**
+     * Archive filename
+     * @type {String}
+     */
     this.filename = filename;
+
     console.log('Zip::constructor()');
   }
 
@@ -86,7 +107,7 @@ export default class Zip {
       return raw;
     } catch ( e ) {
       this.failed.push(filename);
-      console.error(filename, e);
+      console.warn(filename, e);
     }
 
     return null;

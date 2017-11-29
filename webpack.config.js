@@ -11,6 +11,20 @@ const VERSION = fs.readJsonSync('package.json').version;
 module.exports = {
   devtool: 'source-map',
 
+  devServer: {
+    contentBase: path.join(__dirname, 'dist'),
+    compress: true,
+    port: 9090
+  },
+
+  resolve: {
+    alias: {
+      game: path.resolve(__dirname, 'src/game'),
+      engine: path.resolve(__dirname, 'src/engine'),
+      root: path.resolve(__dirname, 'src')
+    }
+  },
+
   entry: {
     app: [
       './src/app.js',
@@ -64,7 +78,7 @@ module.exports = {
     loaders: [
       {
         test: /\.js$/,
-        exclude: /(node_modules|bower_components)/,
+        exclude: /node_modules(?!\/webpack-dev-server)/,
         use: {
           loader: 'babel-loader'
         }

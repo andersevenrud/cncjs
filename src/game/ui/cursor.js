@@ -4,8 +4,7 @@
  * @license MIT
  */
 
-import Sprite from '../../engine/sprite';
-import {CURSOR_SPRITES} from '../globals';
+import Sprite from 'engine/sprite';
 
 /**
  * Game Cursor Class
@@ -24,6 +23,7 @@ export default class Cursor {
     this.index = 0;
     this.offset = 0;
     this.timer = 0;
+    this.cursors = {};
   }
 
   /**
@@ -31,6 +31,7 @@ export default class Cursor {
    */
   async load() {
     this.sprite = Sprite.instance('mouse');
+    this.cursors = this.engine.data.cursors;
   }
 
   /**
@@ -41,10 +42,10 @@ export default class Cursor {
       return;
     }
 
-    let found = CURSOR_SPRITES[this.cursorName];
+    let found = this.cursors[this.cursorName];
     if ( typeof found === 'undefined' ) {
       console.warn('Invalid cursor', this.cursorName);
-      found = CURSOR_SPRITES.default;
+      found = this.cursors.default;
     }
 
     const spriteOffset = found.index || 0;
@@ -81,6 +82,10 @@ export default class Cursor {
   }
 
   setCursor(name) {
+    if ( name !== this.cursorName ) {
+      this.spriteOffset = 0;
+      this.timer = 0;
+    }
     this.cursorName = name;
   }
 

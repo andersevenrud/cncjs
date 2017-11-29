@@ -42,6 +42,14 @@ When done, run the conversion and packing utility:
 npm run mix
 ```
 
+### Development environment
+
+Run this to run incremental builds and open development server at `localhost:9090`:
+
+```
+npm run start:dev
+```
+
 ### Compile Sources
 
 After extracting and converting all data, you can proceed to build:
@@ -50,8 +58,4 @@ After extracting and converting all data, you can proceed to build:
 npm run build
 ```
 
-## Running
-
-After successfully building the game and its data files, the `dist/` directory is ready for serving.
-
-*You will need a webserver because game data is transferred via a `.zip` file that requires CORS.*
+Copy the `dist/` directory to your web server directory.

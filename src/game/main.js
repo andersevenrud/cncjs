@@ -4,25 +4,25 @@
  * @license MIT
  */
 
-import TitleScene from './scenes/title';
-import MovieScene from './scenes/movie';
-import TheaterScene from './scenes/theater';
-import GlobeScene from './scenes/globe';
-import ScoreScene from './scenes/scores';
-import ChooseScene from './scenes/choose';
+import TitleScene from 'game/scenes/title';
+import MovieScene from 'game/scenes/movie';
+import TheaterScene from 'game/scenes/theater';
+import GlobeScene from 'game/scenes/globe';
+import ScoreScene from 'game/scenes/scores';
+import ChooseScene from 'game/scenes/choose';
 
-import TabElement from './ui/tab';
-import BoxElement from './ui/box';
-import RectElement from './ui/rect';
-import TextElement from './ui/text';
-import SpriteElement from './ui/sprite';
-import ButtonElement from './ui/button';
-import SliderElement from './ui/slider';
+import TabElement from 'game/ui/tab';
+import BoxElement from 'game/ui/box';
+import RectElement from 'game/ui/rect';
+import TextElement from 'game/ui/text';
+import SpriteElement from 'game/ui/sprite';
+import ButtonElement from 'game/ui/button';
+import SliderElement from 'game/ui/slider';
 
-import Engine from '../engine/main';
-import {queryParameter} from '../engine/util';
+import Engine from 'engine/main';
+import {queryParameter} from 'engine/util';
 
-import {UPDATE_RATE} from './globals';
+import {UPDATE_RATE} from 'game/globals';
 
 export default class Game extends Engine {
 
@@ -48,6 +48,8 @@ export default class Game extends Engine {
         DEBUG_DESTROY: 'DELETE'
       }
     }, Object.assign({}, {
+      minWidth: 640,
+      minHeight: 535,
       cursorLock: debugType <= 0,
       updateRate: UPDATE_RATE,
       //positionalAudio: true,
@@ -81,8 +83,6 @@ export default class Game extends Engine {
 
     this.data = Object.freeze(data);
 
-    Object.keys(this.data).forEach((k) => console.log(k, this.data[k]));
-
     this.spriteLibrary = this.data.sprites;
     console.groupEnd();
   }
@@ -99,7 +99,14 @@ export default class Game extends Engine {
       } else if ( score ) {
         this.pushScene('score', {score});
       } else if ( globe ) {
-        this.pushScene('globe', {globe});
+        this.pushScene('globe', {
+          globe,
+          level: queryParameter('map') || 'scg01ea',
+          player: {
+            playerName: queryParameter('player') || 'GoodGuy',
+            teamName: queryParameter('team') || 'gdi'
+          }
+        });
       } else if ( map ) {
         this.pushScene('theater', {map});
       }

@@ -3,9 +3,9 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import EngineObject from '../engine/object';
-import {pointFromTile} from './physics';
-import {TILE_SIZE, ZINDEX} from './globals';
+import EngineObject from 'engine/object';
+import {pointFromTile} from 'game/physics';
+import {TILE_SIZE, ZINDEX} from 'game/globals';
 
 export default class MapObject extends EngineObject {
 
@@ -20,16 +20,17 @@ export default class MapObject extends EngineObject {
       count: 0
     };
 
+    this._index = -1;
     this.id = args.id;
+    this.map = engine.scene.level.map;
     this.type = args.type;
-    this.team = args.team;
+    this.player = null;
     this.options = options;
     this.tileX = args.tileX;
     this.tileY = args.tileY;
-    this.tileS = args.tileS || 0;
+    this.sizeX = Math.floor(this.sprite.width / TILE_SIZE);
+    this.sizeY = Math.floor(this.sprite.height / TILE_SIZE);
     this.selected = false;
-    this.directions = 0;
-    this.direction = 0;
     this.zIndex = ZINDEX[this.type] || 1;
     this.animations = options.SequenceInfo || {};
     this.health = options.HitPoints || 255;
@@ -40,15 +41,34 @@ export default class MapObject extends EngineObject {
     const startPos = pointFromTile(args.tileX, args.tileY);
     this.x = typeof args.x === 'number' ? args.x : startPos.x;
     this.y = typeof args.y === 'number' ? args.y : startPos.y;
-    this.xOffset = args.yOffset || 0;
-    this.yOffset = args.yOffset || 0;
-    this.spriteSheet = this.team;
+
+    if ( typeof args.team !== 'undefined' ) {
+      const team = args.team === -1 ? 2 : args.team;
+      this.player = engine.scene.level.players.find(player => player.team ===  team);
+      this.spriteSheet = this.player.team > 1 ? 0 : this.player.team;
+    }
 
     console.debug('MapObject::constructor()', this.type, this.id, this);
   }
 
   destroy() {
-    this.engine.scene.map.removeObject(this); // FIXME
+    this.map.removeObject(this); // FIXME
+  }
+
+  expand() {
+
+  }
+
+  move(tileX, tileY) {
+    // void
+  }
+
+  attack(target) {
+    // void
+  }
+
+  takeDamage(dmg, weapon) {
+    this.health -= dmg;
   }
 
   /**
@@ -171,6 +191,7 @@ export default class MapObject extends EngineObject {
   renderHealthBar(target) {
     const {x1, x2, y1} = this.getRect(true);
     const value = Math.max(this.health / this.options.HitPoints, 0.0);
+    const colors = ['#00ff00', '#ffff00', '#ff0000'];
 
     const margin = 2;
     const barHeight = 5;
@@ -180,23 +201,8 @@ export default class MapObject extends EngineObject {
     target.fillStyle = '#000000';
     target.fillRect(x1 - margin, y1 - margin - (margin + barHeight), barWidth, barHeight);
 
-    if ( value > 0.7  ) {
-      target.fillStyle = '#00ff00';
-    } else if ( value > 0.4 ) {
-      target.fillStyle = '#ffff00';
-    } else {
-      target.fillStyle = '#ff0000';
-    }
-
+    target.fillStyle = colors[this.getDamageState()];
     target.fillRect(x1 - margin + 1, y1 - margin - (margin + barHeight) + 1, barPercentage, barHeight - 2);
-  }
-
-  /**
-   * Sets the current target
-   * @param {MapObject} obj Game Object
-   */
-  setTarget(obj) {
-    // void
   }
 
   /**
@@ -209,41 +215,25 @@ export default class MapObject extends EngineObject {
     return false;
   }
 
-  /**
-   * Get selection state
-   * @return {Boolean}
-   */
-  getSelected() {
-    return this.selected;
-  }
+  isWithinRange(o) {
+    let sight = 0;
 
-  /**
-   * Get player name
-   * @return {String}
-   */
-  getPlayerName() {
-    const player = this.engine.scene.getPlayerByTeam(this.team);
-    return player ? player.playerName : null;
-  }
+    const weapon = this.options.PrimaryWeapon; // FIXME
+    if ( !weapon ) {
+      return false;
+    }
 
-  /**
-   * Gets the rectangle of the object
-   * @param {Boolean} [world=false] Use game coordinates
-   * @return {Object}
-   */
-  getRect(world = false) {
-    const w = this.sprite.width;
-    const h = this.sprite.height;
-    const [x, y] = this.getPosition(world);
+    sight = weapon.Range;
+    if ( this.isUnit() ) {
+      sight += 1;
+    }
 
-    // FIXME!
-    const clip = this.sprite.clip;
-    const x1 = clip ? x + this.xOffset : x;
-    const x2 = clip ? x1 + TILE_SIZE : x1 + w;
-    const y1 = clip ? y + this.yOffset : y;
-    const y2 = clip ? y1 + TILE_SIZE : y1 + h;
+    const distance = Math.sqrt(
+      Math.pow(o.x - this.x, 2) +
+      Math.pow(o.y - this.y, 2)
+    );
 
-    return {w, h, x, y, x1, x2, y1, y2};
+    return distance <= (sight * TILE_SIZE);
   }
 
   /**
@@ -252,11 +242,10 @@ export default class MapObject extends EngineObject {
    * @return {Object}
    */
   checkSurrounding() {
-    const map = this.engine.scene.map;
-    const top = map.queryGrid(this.tileX, this.tileY - 1, 'id', this.id, true);
-    const bottom = map.queryGrid(this.tileX, this.tileY + 1, 'id', this.id, true);
-    const left = map.queryGrid(this.tileX - 1, this.tileY, 'id', this.id, true);
-    const right = map.queryGrid(this.tileX + 1, this.tileY, 'id', this.id, true);
+    const top = this.map.queryGrid(this.tileX, this.tileY - 1, 'id', this.id, true);
+    const bottom = this.map.queryGrid(this.tileX, this.tileY + 1, 'id', this.id, true);
+    const left = this.map.queryGrid(this.tileX - 1, this.tileY, 'id', this.id, true);
+    const right = this.map.queryGrid(this.tileX + 1, this.tileY, 'id', this.id, true);
 
     return {top, left, bottom, right};
   }
@@ -303,27 +292,34 @@ export default class MapObject extends EngineObject {
 
   /**
    * Checks if this is an firendly type instance
+   * @param {Player} [player] Check against this player
    * @return {Boolean}
    */
-  isFriendly() {
-    const mainPlayer = this.engine.scene.getMainPlayer();
-    return mainPlayer.team === this.team; // FIXME: Allies
+  isFriendly(player = null) {
+    // FIXME: Allies
+    if ( !this.player ) {
+      return false;
+    }
+
+    const mainPlayer = player || this.engine.scene.level.getMainPlayer();
+    return this.player.team === mainPlayer.team;
   }
 
   /**
    * Checks if this is an enemy type instance
+   * @param {Player} [player] Check against this player
    * @return {Boolean}
    */
-  isEnemy() {
-    return !this.isFriendly();
+  isEnemy(player = null) {
+    return !this.isFriendly(player);
   }
 
   isSellable() {
-    return false;
+    return this.isStructure() && this.isFriendly();
   }
 
   isRepairable() {
-    return false;
+    return this.isSellable(); // FIXME
   }
 
   isBlocking() {
@@ -347,6 +343,16 @@ export default class MapObject extends EngineObject {
 
   isExpandable() {
     return this.id === 'mcv'; // FIXM
+  }
+
+  getDamageState() {
+    const value = Math.max(this.health / this.options.HitPoints, 0.0);
+    if ( value > 0.7  ) {
+      return 0;
+    } else if ( value > 0.4 ) {
+      return 1;
+    }
+    return 2;
   }
 
 }

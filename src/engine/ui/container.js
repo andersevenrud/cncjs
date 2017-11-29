@@ -17,6 +17,7 @@ export default class UIContainer {
    */
   constructor(engine, elements, options) {
     this.clicked = false;
+    this.active = true;
     this.engine = engine;
     this.options = Object.assign({}, {
       x: null,
@@ -113,21 +114,27 @@ export default class UIContainer {
         y2: y + h
       };
 
-      const emit = (name, data) => el['on' + name](data);
-
-      if ( click && collidePoint(click, el.rect) ) {
-        emit('click', click);
-      } else if ( press && collidePoint(press, el.rect) ) {
-        emit('press', press);
+      if ( el.isDisabled() ) {
+        continue;
       }
 
-      hit = el.clicked || el.pressed;
+      if ( this.active ) {
+        if ( click && collidePoint(click, el.rect) ) {
+          el.emit('click', click);
+        } else if ( press && collidePoint(press, el.rect) ) {
+          el.emit('press', press);
+        }
 
-      if ( collidePoint(mousePos, el.rect) ) {
-        emit('hover', mousePos); // NOTE: Last!
+        hit = el.clicked || el.pressed;
+
+        if ( collidePoint(mousePos, el.rect) ) {
+          el.hovering = mousePos;
+
+          el.emit('hover', mousePos); // NOTE: Last!
+        }
+
+        el.update();
       }
-
-      el.update();
     }
 
     this.clicked = hit;
@@ -154,7 +161,7 @@ export default class UIContainer {
   _event(name, data) {
     for ( let i = 0; i < this.elements.length; i++ ) {
       const el = this.elements[i];
-      if ( el.isVisible() ) {
+      if ( el.isVisible() && !el.isDisabled() ) {
         el['on' + name](data);
       }
     }

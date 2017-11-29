@@ -4,11 +4,12 @@
  * @license MIT
  */
 
-import {PLAYER_NAMES} from './globals';
+import {PLAYER_NAMES} from 'game/globals';
 
 export default class Player {
 
-  constructor(playerName, opts, current) {
+  constructor(engine, playerName, opts, current) {
+    this.engine = engine;
     this.team = PLAYER_NAMES.indexOf(playerName);
     this.playerName = playerName;
     this.teamName = playerName === 'BadGuy' ? 'NOD' : 'GDI'; // FIXME
@@ -43,8 +44,10 @@ export default class Player {
     this.credits = parseInt(c, 10);
   }
 
-  static createAll(opts, current) {
-    const players = PLAYER_NAMES.map((name) => new Player(name, opts[name], name === current));
+  static createAll(engine, opts, current) {
+    const players = PLAYER_NAMES.map((name) => {
+      return new Player(engine, name, opts[name], name === current);
+    });
     console.log('Players', players);
     return players;
   }

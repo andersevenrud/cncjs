@@ -4,7 +4,32 @@
  * @license MIT
  */
 
-import {TILE_SIZE} from './globals';
+import {TILE_SIZE} from 'game/globals';
+
+/**
+ * Gets new direction based on target
+ * @param {Number} current Current Direction
+ * @param {Number} target Target Direction
+ * @param {Number} speed Turning speed
+ * @param {Number} dirs Directions base
+ * @return {Number}
+ */
+export function getNewDirection(current, target, speed, dirs) {
+
+  if ( target > current && target - current < dirs / 2 || target < current && current - target > dirs / 2 ) {
+    current = current + speed / 10;
+  } else {
+    current = current - speed / 10;
+  }
+
+  if ( current > dirs - 1 ) {
+    current -= dirs - 1;
+  } else if ( current < 0 ) {
+    current += dirs - 1;
+  }
+
+  return current;
+}
 
 /**
  * Gets a direction based on angle of direction

@@ -4,10 +4,12 @@
  * @license MIT
  */
 import Bib from './bib';
-import MapObject from '../mapobject';
-import Sprite from '../../engine/sprite';
-import Animation from '../../engine/animation';
-import {TILE_SIZE, WALLS} from '../globals';
+import MapObject from 'game/theater/mapobject';
+import Sprite from 'engine/sprite';
+import Animation from 'engine/animation';
+import {TILE_SIZE, WALLS} from 'game/globals';
+
+const DAMAGE_SUFFIX = ['', '-Damaged', '-Destroyed'];
 
 export default class StructureObject extends MapObject {
 
@@ -25,10 +27,9 @@ export default class StructureObject extends MapObject {
     this.spriteColor = this.isFriendly() ? '#00ff00' : '#ff0000';
 
     if ( !this.isWall ) {
-      this.constructionSprite = this.options.Buildable ? Sprite.instance(args.id + 'make') : null;
-      this.constructed = !engine.scene.loaded;
-      this.constructing = !!this.constructionSprite && !this.constructed;
-      this.deconstructing = false;
+      this.constructionSprite = engine.scene.loaded ? Sprite.instance(args.id + 'make') : null;
+      this.constructing = !!this.constructionSprite && engine.scene.loaded;
+      this.constructed = !this.constructing;
       this.animation = this.sprite && this.sprite.render ? new Animation({}) : null;
 
       if ( !Object.keys(this.animations).length ) {
@@ -47,6 +48,7 @@ export default class StructureObject extends MapObject {
 
       if ( this.constructing ) {
         this.setAnimation('make', {
+          step: 0.25,
           sprite: this.constructionSprite
         });
       }
@@ -57,10 +59,25 @@ export default class StructureObject extends MapObject {
     }
   }
 
+  die() {
+    if ( !this.destroying ) {
+      this.engine.sounds.playSound('crumble', {source: this});
+
+      this.map.addEffect({
+        id: 'art-exp1',
+        x: this.x + (this.width / 2),
+        y: this.y + (this.height / 2)
+      });
+
+      this.destroy();
+    }
+  }
+
   sell() {
     this.deconstructing = true;
 
     this.setAnimation('unmake', {
+      step: 0.25,
       sprite: this.constructionSprite,
       reverse: true
     });
@@ -69,7 +86,9 @@ export default class StructureObject extends MapObject {
       this.engine.sounds.playSound('cashturn', {source: this});
     }
 
-    return this.options.Cost;
+    if ( this.player && this.options.Cost ) {
+      this.player.addCredits(this.options.Cost);
+    }
   }
 
   update() {
@@ -84,14 +103,8 @@ export default class StructureObject extends MapObject {
 
       this.spriteFrame = (true ? 0 : 16) + (top ? 1 : 0) + (right ? 2 : 0) + (bottom ? 4 : 0) + (left ? 8 : 0); // FIXME
     } else {
-      if ( this.health <= 0 && !this.destroying ) {
-        this.engine.sounds.playSound('xplobig4', {source: this});
-
-        this.engine.scene.map.addEffect({
-          id: 'art-exp1',
-          tileX: this.tileX,
-          tileY: this.tileY
-        });
+      if ( this.health <= 0 ) {
+        this.die();
       }
 
       if ( this.deconstructing ) {
@@ -105,7 +118,9 @@ export default class StructureObject extends MapObject {
         this.constructing = false;
         this.constructed = true;
 
-        this.setAnimation('Idle', {
+        const animationName = 'Idle' + DAMAGE_SUFFIX[this.getDamageState()];
+        this.setAnimation(this.animations[animationName] ? animationName : 'Idle', {
+          step: 0.25,
           loop: true,
           sprite: this.sprite
         });
@@ -120,14 +135,6 @@ export default class StructureObject extends MapObject {
       const rect = this.getRect(true);
       this.bib.render(target, rect.x, rect.y + this.bibOffsetY);
     }
-  }
-
-  isSellable() {
-    return this.isFriendly();
-  }
-
-  isRepairable() {
-    return this.isFriendly(); // FIXME
   }
 
 }
