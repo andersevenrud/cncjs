@@ -188,8 +188,14 @@ export default class TheaterScene extends GameScene {
         {type: 'sprite', name: 'hstripdn', pressIndex: 1, x: 20 + 33, y: 357, cb: () => this.tickerBuildings.down()},
         {type: 'sprite', name: 'hstripup', pressIndex: 1, x: 70 + 20, y: 357, cb: () => this.tickerUnits.up()},
         {type: 'sprite', name: 'hstripdn', pressIndex: 1, x: 70 + 20 + 33, y: 357, cb: () => this.tickerUnits.down()},
-        {instance: this.tickerBuildings, x: 20, y: 164, cb: (e, cb) => this.clickBuildable(e, cb)},
-        {instance: this.tickerUnits, x: 20 + 64 + 6, y: 164, cb: (e, cb) => this.clickBuildable(e, cb)},
+        {instance: this.tickerBuildings, x: 20, y: 164, cb: (e, spawn, cb) => this.clickBuildable(e, cb)},
+        {instance: this.tickerUnits, x: 20 + 64 + 6, y: 164, cb: (e, spawn, cb) => {
+          if ( spawn ) {
+            this.spawnBuildable(e, mp, cb);
+          } else {
+            this.clickBuildable(e, cb);
+          }
+        }},
         {instance: this.minimap, visible: () => this.getMinimapVisible()}
       ], {x: -160, y: 14}),
 
@@ -705,13 +711,40 @@ export default class TheaterScene extends GameScene {
     }
   }
 
+  spawnBuildable(entry, player, cb) {
+    cb = cb || function() {};
+
+    const hasParent = this.level.map
+      .getObjectsFromFilter(iter => {
+        return iter.player === player && iter.isStructure();
+      }).find(iter => {
+        // TODO: Primary
+        const st = entry.Type === 'infantry' ? 'bar' : 'war'; // FIXME
+        return iter.options.SubType === st;
+      });
+
+    if ( hasParent ) {
+      const [tileX, tileY] = hasParent.getSpawnLocation();
+
+      this.level.map.addObject({
+        tileX,
+        tileY,
+        team: player.team,
+        id: entry.Id,
+        type: entry.Type
+      });
+
+      cb();
+    }
+  }
+
   clickBuildable(entry, cb) {
     cb = cb || function() {};
 
     console.info('Build', entry);
 
     if ( !Sprite.instance(this.engine, entry.Id) ) {
-      console.warn('Sprite was not found for this entry', entry);
+      console.warn('Sprite was not found for this entry', entry.Id);
     }
 
     if ( this.constructObject ) {

@@ -269,22 +269,8 @@ export default class Level {
     const mp = this.getMainPlayer();
 
     const built = unique(this.map.getObjectsFromFilter((iter) => {
-      return iter.isStructure() && !iter.player.neutral && iter.isFriendly();
-    }).map((iter) => {
-      if ( ['eye', 'tmpl'].indexOf(iter.id) !== -1 ) {
-        return 'tech';
-      }
-
-      if ( ['hand', 'pyle'].indexOf(iter.id) !== -1 ) {
-        return 'bar';
-      }
-
-      if ( ['weap', 'afld'].indexOf(iter.id) !== -1 ) {
-        return 'war';
-      }
-
-      return iter.id;
-    }));
+      return iter.player === mp && iter.isStructure();
+    })).map(iter => iter.options.SubType || iter.id);
 
     const isBuildable = iter => !!iter.Icon;
 

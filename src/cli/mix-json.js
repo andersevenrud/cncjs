@@ -675,6 +675,22 @@ const parseObjectList = (treeName, type, key, anims) => {
     // NOTE: These properties are non-standard!
     options.Id = realName;
     options.Type = treeName.replace(/s$/, '');
+    options.SubType = (function() {
+      if ( ['eye', 'tmpl'].indexOf(realName) !== -1 ) {
+        return 'tech';
+      }
+
+      if ( ['hand', 'pyle'].indexOf(realName) !== -1 ) {
+        return 'bar';
+      }
+
+      if ( ['weap', 'afld'].indexOf(realName) !== -1 ) {
+        return 'war';
+      }
+
+      return null;
+    }());
+
     if ( buildFilter(options) ) {
       options.Icon = realName + 'icnh';
     }

@@ -135,4 +135,9 @@ export default class StructureObject extends MapObject {
     }
   }
 
+  getSpawnLocation() {
+    // TODO: Get from data options
+    return [this.tileX, this.tileY + this.sizeY];
+  }
+
 }

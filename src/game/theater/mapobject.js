@@ -346,6 +346,10 @@ export default class MapObject extends EngineObject {
     return this.id === 'mcv'; // FIXM
   }
 
+  getSpawnLocation() {
+    return [this.tileX, this.tileY];
+  }
+
   getDamageState() {
     const value = Math.max(this.health / this.options.HitPoints, 0.0);
     if ( value > 0.7  ) {

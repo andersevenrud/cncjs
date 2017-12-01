@@ -101,6 +101,7 @@ I might have gone a bit overboard, so this game contains an entirely separate ga
 * [x] Misc: Music (themes)
 * [ ] Misc: Make units spawn in their respective construction buildings
 * [ ] Misc: Handle tiberium growth and spread
+* [ ] Misc: All animations
 * [ ] Misc: **Some sprites are hitting the canvas size limit! These needs to be split into columns**
 * [ ] AI: Collision
 * [ ] AI: Grouping (**partially complete**)

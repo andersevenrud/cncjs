@@ -70,7 +70,7 @@ export default class TickerElement extends UIElement {
         }
 
         if ( busy.done ) {
-          this.options.cb(obj, () => {
+          this.options.cb(obj, false, () => {
             delete this.building[obj.Id];
           });
         }
@@ -129,6 +129,12 @@ export default class TickerElement extends UIElement {
 
         if ( busy.current <= 0 ) {
           busy.done = true;
+
+          if ( this.type !== 'structures' ) {
+            this.options.cb(o, true, () => {
+              delete this.building[o.Id];
+            });
+          }
 
           sounds.playSound('constru1', {queue: true});
         } else if ( (busy.current % 20) === 0 ) {
