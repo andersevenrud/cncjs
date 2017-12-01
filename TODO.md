@@ -64,6 +64,7 @@ I might have gone a bit overboard, so this game contains an entirely separate ga
 * [x] Order: Attacking
 * [x] Misc: A player state object etc.
 * [x] Misc: Scene handling
+* [ ] Misc: Better handling of "layers" in theater
 
 ### v0.5.0 (current goal)
 

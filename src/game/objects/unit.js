@@ -24,7 +24,6 @@ import {TILE_SIZE} from 'game/globals';
     this.targetDirection = null;
     this.hasFired = false;
     this.aiTick = 0;
-    this.spriteColor = this.isFriendly() ? '#00ff00' : '#ff0000';
     this.animation = new Animation({});
     this.currentPath = [];
 

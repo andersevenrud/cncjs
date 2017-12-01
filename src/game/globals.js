@@ -25,13 +25,28 @@ export const PLAYER_NAMES = [
   'GoodGuy',
   'BadGuy',
   'Neutral',
-  'Special'/*,
+  'Special',
   'Multi1',
   'Multi2',
   'Multi3',
   'Multi4',
   'Multi5',
-  'Multi6'*/
+  'Multi6'
+];
+
+export const PLAYER_COLORS = [
+  '#00ff00',
+  '#ff0000',
+  '#0000ff',
+  '#ffffff',
+
+  // FIXME
+  '#000000',
+  '#000000',
+  '#000000',
+  '#000000',
+  '#000000',
+  '#000000'
 ];
 
 export const ICONS = {

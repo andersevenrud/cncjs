@@ -12,10 +12,11 @@ export default class Player {
     this.engine = engine;
     this.team = PLAYER_NAMES.indexOf(playerName);
     this.playerName = playerName;
-    this.teamName = playerName === 'BadGuy' ? 'NOD' : 'GDI'; // FIXME
+    this.teamName = ['GDI', 'NOD'][this.team] || playerName;
     this.credits = (opts.Credits || 0) * 100;
     this.power = 0;
     this.current = current === true;
+    this.neutral = this.team === 2; // FIXME
   }
 
   addPower(p) {
@@ -45,7 +46,7 @@ export default class Player {
   }
 
   static createAll(engine, opts, current) {
-    const players = PLAYER_NAMES.map((name) => {
+    const players = PLAYER_NAMES.slice(0, 4).map((name) => { // FIXME
       return new Player(engine, name, opts[name], name === current);
     });
     console.log('Players', players);

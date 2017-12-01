@@ -5,7 +5,7 @@
  */
 import EngineObject from 'engine/object';
 import {pointFromTile} from 'game/physics';
-import {TILE_SIZE, ZINDEX} from 'game/globals';
+import {TILE_SIZE, ZINDEX, PLAYER_COLORS} from 'game/globals';
 
 export default class MapObject extends EngineObject {
 
@@ -33,6 +33,7 @@ export default class MapObject extends EngineObject {
     this.selected = false;
     this.zIndex = ZINDEX[this.type] || 1;
     this.animations = options.SequenceInfo || {};
+    this.animation = null;
     this.health = options.HitPoints || 255;
     this.destroying = false;
     this.destroyed = false;
@@ -46,6 +47,7 @@ export default class MapObject extends EngineObject {
       const team = args.team === -1 ? 2 : args.team;
       this.player = engine.scene.level.players.find(player => player.team ===  team);
       this.spriteSheet = this.player.team > 1 ? 0 : this.player.team;
+      this.spriteColor = PLAYER_COLORS[this.player.team];
     }
 
     console.debug('MapObject::constructor()', this.type, this.id, this);
@@ -296,9 +298,8 @@ export default class MapObject extends EngineObject {
    * @return {Boolean}
    */
   isFriendly(player = null) {
-    // FIXME: Allies
-    if ( !this.player ) {
-      return false;
+    if ( !this.player || this.player.neutral ) {
+      return true;
     }
 
     const mainPlayer = player || this.engine.scene.level.getMainPlayer();

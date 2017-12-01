@@ -23,8 +23,6 @@ export default class StructureObject extends MapObject {
     this.deconstructing = false;
     this.bibOffsetY = null;
     this.constructionSprite = null;
-    this.animation = null;
-    this.spriteColor = this.isFriendly() ? '#00ff00' : '#ff0000';
 
     if ( !this.isWall ) {
       this.constructionSprite = engine.scene.loaded ? Sprite.instance(args.id + 'make') : null;
