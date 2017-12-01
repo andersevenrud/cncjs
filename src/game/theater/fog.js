@@ -47,7 +47,7 @@ export default class Fog {
 
     for ( let i = 0; i < objects.length; i++ ) {
       let o = objects[i];
-      if ( o.isFriendly() ) { // TODO: Reveal when shooting
+      if ( o.isPlayerObject() && o.isFriendly() ) { // TODO: Reveal when shooting
         const s = (o.options.Sight || 1);
         for ( let y = -s; y <= s; y++ ) {
           for ( let x = -s; x <= s; x++ ) {
