@@ -19,7 +19,7 @@ import {TILE_SIZE} from 'game/globals';
     this.targetX = null;
     this.targetY = null;
     this.directions = 0;
-    this.direction = 0;
+    this.direction = args.direction || 0;
     this.attacking = false;
     this.targetDirection = null;
     this.hasFired = false;

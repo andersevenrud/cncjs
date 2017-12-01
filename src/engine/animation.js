@@ -89,8 +89,6 @@ export default class Animation {
     this.sprite = options.sprite;
 
     this.reset();
-
-    console.debug('Animate', this);
   }
 
   /**

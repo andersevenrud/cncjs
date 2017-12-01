@@ -13,12 +13,12 @@ export default class VehicleObject extends UnitObject {
     super(engine, args, engine.data.units[args.id]);
 
     this.directions = 32;
-    this.direction = (args.direction || 0) / this.directions;
-    this.targetTurretDirection = null;
-    this.turretDirection = this.direction;
     this.animations = { // FIXME
       Ready: {frames: 1}
     };
+
+    this.targetTurretDirection = null;
+    this.turretDirection = this.direction;
   }
 
   render(target) {

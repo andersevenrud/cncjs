@@ -485,10 +485,14 @@ const parseEntities = (metadata, diffX, diffY) => {
     const [owner, type, health, cell, direction, action, trigger] = metadata.UNITS[k].split(',');
     const {tileX, tileY} = tileFromIndex(parseInt(cell, 10), 64);
 
+    const dir = parseInt(direction, 10) || 0;
+    const dirs = 32;
+    const ndir = dir > 0 ? dirs - Math.floor((dir / 255) * dirs) : 0;
+
     return {
       id: type.toLowerCase(),
       type: 'unit',
-      direction: parseInt(direction, 10) || 0,
+      direction: ndir,
       team: teams.indexOf(owner),
       tileX: tileX - diffX,
       tileY: tileY - diffY
@@ -499,10 +503,14 @@ const parseEntities = (metadata, diffX, diffY) => {
     const [owner, type, health, cell, subcell, action, direction, trigger] = metadata.INFANTRY[k].split(',');
     const {tileX, tileY} = tileFromIndex(parseInt(cell, 10), 64);
 
+    const dir = parseInt(direction, 10) || 0;
+    const dirs = 8;
+    const ndir = dir > 0 ? dirs - Math.floor((dir / 255) * dirs) : 0;
+
     return {
       id: type.toLowerCase(),
       type: 'infantry',
-      direction: parseInt(direction, 10) || 0,
+      direction: ndir,
       team: teams.indexOf(owner),
       tileS: parseInt(subcell, 10),
       tileX: tileX - diffX,

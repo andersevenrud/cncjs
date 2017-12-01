@@ -6,6 +6,9 @@
 
 import {TILE_SIZE} from 'game/globals';
 
+// TODO: This needs optimization. Some of the stuff in here is insanely expensive,
+//       Add a 'reveal' state to map grid instead ?
+
 /**
  * Game Map Fog Class
  */
