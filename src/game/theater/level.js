@@ -266,9 +266,10 @@ export default class Level {
 
   getBuildables(type) {
     const {structures, infantry, units, aircraft} = this.engine.data;
+    const mp = this.getMainPlayer();
 
     const built = unique(this.map.getObjectsFromFilter((iter) => {
-      return iter.isStructure() && iter.isFriendly(this);
+      return iter.isStructure() && !iter.player.neutral && iter.isFriendly();
     }).map((iter) => {
       if ( ['eye', 'tmpl'].indexOf(iter.id) !== -1 ) {
         return 'tech';
@@ -302,6 +303,15 @@ export default class Level {
 
       if ( iter.Type === 'unit' && built.indexOf('war') === -1 ) {
         return false;
+      }
+
+      if ( iter.Owner ) {
+        const found = iter.Owner.map(s => s.toLowerCase())
+          .indexOf(mp.playerName.toLowerCase()) !== -1;
+
+        if ( !found ) {
+          return false;
+        }
       }
 
       let available = iter.BuildLevel <= this.buildLevel;

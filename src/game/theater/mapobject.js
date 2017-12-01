@@ -302,8 +302,11 @@ export default class MapObject extends EngineObject {
       return true;
     }
 
-    const mainPlayer = player || this.engine.scene.level.getMainPlayer();
-    return this.player.team === mainPlayer.team;
+    if ( player ) {
+      return player.team === this.player.team;
+    }
+
+    return this.player.current;
   }
 
   /**
