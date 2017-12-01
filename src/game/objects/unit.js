@@ -334,7 +334,7 @@ import {TILE_SIZE} from 'game/globals';
       this.currentPath = [];
       this.orders = [{
         action: 'move',
-        path
+        path: path.slice(1)
       }];
       this.targetX = null;
       this.targetY = null;
