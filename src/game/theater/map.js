@@ -235,7 +235,7 @@ export default class Map {
       let o = this.objects[i];
       o.update();
 
-      if ( o.isBlocking() ) {
+      if ( !o.destroying && o.isBlocking() ) {
         this.addToGrid(o);
       }
     }

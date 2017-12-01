@@ -29,4 +29,8 @@ export default class OverlayObject extends MapObject {
       this.spriteFrame = 11; // FIXME
     }
   }
+
+  isBlocking() {
+    return this.type === 'smudge' || !this.isTiberium;
+  }
 }

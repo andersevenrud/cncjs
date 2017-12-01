@@ -324,10 +324,7 @@ export default class MapObject extends EngineObject {
   }
 
   isBlocking() {
-    // FIXME
-    return !this.destroying
-      && !this.options.Tiberium
-      && ['smudge', 'projectile', 'effect'].indexOf(this.type) === -1;
+    return this.isUnit() || this.isStructure();
   }
 
   isSelectable() {
