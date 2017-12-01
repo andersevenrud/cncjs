@@ -27,6 +27,11 @@ import {TILE_SIZE} from 'game/globals';
     this.spriteColor = this.isFriendly() ? '#00ff00' : '#ff0000';
     this.animation = new Animation({});
     this.currentPath = [];
+
+    if ( this.sprite.clip ) {
+      this.width = this.sprite.clip[2];
+      this.height = this.sprite.clip[3];
+    }
   }
 
   render(target) {

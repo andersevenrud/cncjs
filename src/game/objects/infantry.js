@@ -17,8 +17,6 @@ export default class InfantryObject extends UnitObject {
     this.sizeX = 1;
     this.sizeY = 1;
     this.tileS = args.tileS || 0;
-    this.width = this.sprite.clip[2];
-    this.height = this.sprite.clip[3];
     this.directions = 8;
     this.direction = (args.direction || 0) / this.directions;
     this.idling = false;
