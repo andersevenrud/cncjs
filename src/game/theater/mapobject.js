@@ -336,7 +336,7 @@ export default class MapObject extends EngineObject {
   }
 
   isBlocking() {
-    return this.isUnit() || this.isStructure();
+    return this.isUnit() || this.isStructure() || this.type === 'terrain';
   }
 
   isSelectable() {
