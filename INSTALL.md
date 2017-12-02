@@ -21,6 +21,9 @@ This guide explains (briefly) how to manually build and run the game from source
 
 ```bash
 npm install
+
+git submodule init
+git submodule update
 ```
 
 ### Convert data
@@ -33,8 +36,6 @@ All game files go into `src/data/`.
     * Use `.png` without compression and corrections for all sprites
     * Use `.wav` for all sounds and music
     * Use `.avi` for movies (`Intel Video 5.10` codec)
-* Download all `.ini` files from [this site](http://nyerguds.arsaneus-design.com/cnc95upd/inirules/)
-    * **Note:** There's an error in `grids.ini` at line 158. It should be `2` and not `1` as an index.
 
 When done, run the conversion and packing utility:
 
