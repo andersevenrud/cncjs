@@ -21,99 +21,9 @@ const INI = require('ini');
 const ATTRIBUTE_TYPES = {
   Verses: 'integer[]',
   Owner: 'array',
-  TurningSpeed: 'integer',
-  MovementType: 'integer',
-  Speed: 'integer',
-  TurnSpeed: 'integer',
-  Armor: 'integer',
-  Cost: 'integer',
-  BuildLevel: 'integer',
-  Sight: 'integer',
-  Infiltrate: 'boolean',
-  IsCivilian: 'boolean',
-  IsWanderer: 'boolean',
-  FemaleCiv: 'boolean',
-  CycleGraphics: 'boolean',
-  Clocked: 'boolean',
-  TechLevel: 'integer',
-  PrimaryWeapon: 'string',
-  SecondaryWeapon: 'string',
-  IsLarge: 'boolean',
-  NoTurretLock: 'boolean',
-  AttackAnimation: 'boolean',
-  AutoRotatingTurret: 'boolean',
-  IsCrewed: 'boolean',
-  Buildable: 'boolean',
-  FiresTwice: 'boolean',
-  HasTurret: 'boolean',
-  Invulnerable: 'boolean',
-  Harvests: 'boolean',
-  Crusher: 'boolean',
-  Crushable: 'boolean',
-  IsTransport: 'boolean',
-  ShownName: 'boolean',
-  IsDinosaur: 'boolean',
-  Prerequisites: 'string',
-  DeathAnimation: 'string',
-  Selectable: 'boolean',
-  ValidTarget: 'boolean',
-  Airplane: 'boolean',
-  Damage: 'integer',
-  Range: 'float',
-  CanTurn: 'boolean',
-  CantTurn: 'boolean',
-  Cloaked: 'boolean',
-  CanBeCaptured: 'boolean',
-  CanBePrimary: 'boolean',
-  Ammo: 'integer',
-  HitPoints: 'integer',
-  NameID: 'integer',
-  OverlapList: 'string',
-  OccupyList: 'string',
-  HideTrueName: 'boolean',
-  HasBib: 'boolean',
-  Repairable: 'boolean',
-  PowerDrain: 'integer',
-  PowerProduction: 'integer',
-  Sensors: 'boolean',
-  TheaterSensitive: 'boolean',
-  WallSpecial: 'boolean',
-  TiberiumStorage: 'boolean',
-  MuzzleFlash: 'boolean',
-  ROF: 'integer',
-  AA: 'boolean',
-  Arcing: 'boolean',
-  BulletSpeed: 'integer',
-  High: 'boolean',
-  Inaccurate: 'boolean',
-  Invisible: 'boolean',
-  NoRotation: 'boolean',
-  RotationSpeed: 'integer',
-  SmokeTrail: 'boolean',
-  InfantryDeath: 'integer',
-  Spread: 'integer',
-  TargetWalls: 'integer',
-  TargetWood: 'integer',
-  NameID: 'integer',
-  NameId: 'integer',
-  X: 'integer',
-  Y: 'integer',
-  SecondaryTypeCells: 'integer[]',
-  PrimaryTypeCells: 'integer[]',
-  CarryOverCap: 'boolean',
-  CarryOverMoney: 'boolean',
-  Intro: 'string',
-  BuildLevel: 'integer',
-  Percent: 'integer',
   Allies: 'array',
-  FlagHome: 'integer',
-  FlagLocation: 'integer',
-  MaxBuilding: 'integer',
-  MaxUnit: 'integer',
-  Credits: 'integer',
-  StartFacing: 'integer',
-  ExitInfo: 'integer',
-  Unknown5: 'integer'
+  SecondaryTypeCells: 'integer[]',
+  PrimaryTypeCells: 'integer[]'
 };
 
 const SMALL_UNITS = ['stnk', 'apc', 'arty', 'bggy', 'bike', 'ftnk', 'ltnk', 'jeep', 'mhq', 'mlrs', 'msam'];
@@ -144,7 +54,8 @@ const INI_FILES = [
   'overlay.ini', 'terrain.ini', 'tilesets.ini',
   'infanims.ini', 'stranims.ini',
   'weapons.ini', 'bullets.ini', 'warheads.ini',
-  'mission.ini'
+  'mission.ini',
+  'land.ini', 'rules.ini'
 ];
 
 const INIS = {};
@@ -161,7 +72,9 @@ const TREE = {
   tiles: {},
   sprites: {},
   levels: {},
-  tileIndex: []
+  tileIndex: [],
+  rules: {},
+  land: {}
 };
 
 INI_FILES.forEach((filename) => {
@@ -194,6 +107,8 @@ const buildFilter = (iter) => {
 };
 
 const parseObjectAttributeValue = (name, value) => {
+  value = value.trim();
+
   const type = ATTRIBUTE_TYPES[name];
   const lcValues = ['DeathAnimation', 'MuzzleFlash', 'Explosion', 'Image', 'Report', 'Prerequisites', 'Action', 'Brief', 'Lose', 'Win'];
 
@@ -202,13 +117,28 @@ const parseObjectAttributeValue = (name, value) => {
   } else if ( type === 'float' ) {
     value = parseFloat(value);
   } else if ( type === 'boolean' ) {
-    value = value === 'Yes' || value === '1';
+    value = value.toLowerCase() === 'yes' || value === '1';
   } else if ( type === 'string' ) {
     value = value === 'None' ? null : value;
   } else if ( type === 'array' ) {
     value = value === 'None' ? [] : value.split(',');
   } else if ( type === 'integer[]' ) {
     value = value === 'None' ? [] : value.split(',').map(parseInteger);
+  } else {
+
+    // Take a guess
+    if ( value.match(/^\-?\d+$/) ) {
+      value = parseInt(value, 10);
+    } else if ( value.match(/^(\d+)?\.\d+$/) ) {
+      value = parseFloat(value);
+    } else if ( value.match(/^\d+%$/) ) {
+      value = parseInt(value, 10) / 100;
+    } else if ( value.toLowerCase() === 'yes' ) {
+      value = true;
+    } else if ( value.toLowerCase() === 'no' ) {
+      value = false;
+    }
+
   }
 
   return (lcValues.indexOf(name) !== -1 && typeof value === 'string' ? value.toLowerCase() : value);
@@ -331,6 +261,10 @@ const parseObjectOptions = (rawOptions, anims, iterName) => {
   return result;
 };
 
+///////////////////////////////////////////////////////////////////////////////
+// MISC
+///////////////////////////////////////////////////////////////////////////////
+
 const parseThemeList = () => {
   const themes = [];
   Object.values(INIS.themes.Themes).forEach((name) => {
@@ -345,6 +279,18 @@ const parseThemeList = () => {
   });
 
   TREE.themes = themes;
+};
+
+const parseRuleList = () => {
+  Object.keys(INIS.rules).forEach((sub) => {
+    TREE.rules[sub] = parseObjectAttributes(INIS.rules[sub]);
+  });
+};
+
+const parseLandList = () => {
+  Object.keys(INIS.land).forEach((sub) => {
+    TREE.land[sub] = parseObjectAttributes(INIS.land[sub]);
+  });
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -804,6 +750,11 @@ module.exports = function() {
   parseObjectList('infantry', 'infantry', 'Infantry', 'infanims');
   parseObjectList('structures', 'structs', 'Structures', 'stranims');
 
+  console.log('Parsing rules');
+  parseRuleList();
+  console.log('Parsing land');
+  parseLandList();
+  console.log('Parsing themes');
   parseThemeList();
   console.log('Parsing terrains');
   parseTerrainList();
