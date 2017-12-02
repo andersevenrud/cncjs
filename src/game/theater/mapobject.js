@@ -352,9 +352,10 @@ export default class MapObject extends EngineObject {
 
   getDamageState() {
     const value = Math.max(this.health / this.options.HitPoints, 0.0);
-    if ( value > 0.7  ) {
+    const rules = this.engine.data.rules.General;
+    if ( value > rules.ConditionYellow ) {
       return 0;
-    } else if ( value > 0.4 ) {
+    } else if ( value > rules.ConditionRed ) {
       return 1;
     }
     return 2;
