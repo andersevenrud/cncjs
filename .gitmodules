@@ -1,0 +1,3 @@
+[submodule "src/data"]
+	path = src/data
+	url = git@github.com:andersevenrud/cncjs-data.git

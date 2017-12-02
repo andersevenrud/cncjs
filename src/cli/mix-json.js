@@ -112,6 +112,7 @@ const ATTRIBUTE_TYPES = {
   MaxUnit: 'integer',
   Credits: 'integer',
   StartFacing: 'integer',
+  ExitInfo: 'integer',
   Unknown5: 'integer'
 };
 
@@ -165,7 +166,7 @@ const TREE = {
 
 INI_FILES.forEach((filename) => {
   console.log('Reading', filename);
-  INIS[filename.replace('.ini', '')] = INI.decode(fs.readFileSync(path.join(SRC, filename), 'utf8'));
+  INIS[filename.replace('.ini', '')] = INI.decode(fs.readFileSync(path.join(SRC, 'GAME.DAT', filename), 'utf8'));
 });
 
 const parseInteger = (val) => {
@@ -328,6 +329,22 @@ const parseObjectOptions = (rawOptions, anims, iterName) => {
   addObjectOccupance(result);
 
   return result;
+};
+
+const parseThemeList = () => {
+  const themes = [];
+  Object.values(INIS.themes.Themes).forEach((name) => {
+    const obj = INIS.themes[name];
+    if ( obj.IsAvailable ) {
+      themes.push({
+        filename: name.toLowerCase(),
+        title: obj.Title,
+        length: parseInt(obj.Length, 10)
+      });
+    }
+  });
+
+  TREE.themes = themes;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -773,7 +790,6 @@ const getSpriteInfo = (name, sx, sy, type, pixels) => {
 const importLists = () => {
   TREE.cursors = JSON.parse(fs.readFileSync(path.join(SRC, 'cursors.json'), 'utf8'));
   TREE.sprites = JSON.parse(fs.readFileSync(path.join(SRC, 'sprites.json'), 'utf8'));
-  TREE.themes = JSON.parse(fs.readFileSync(path.join(SRC, 'themes.json'), 'utf8'));
   TREE.fonts = JSON.parse(fs.readFileSync(path.join(SRC, 'fonts.json'), 'utf8'));
 };
 
@@ -788,6 +804,7 @@ module.exports = function() {
   parseObjectList('infantry', 'infantry', 'Infantry', 'infanims');
   parseObjectList('structures', 'structs', 'Structures', 'stranims');
 
+  parseThemeList();
   console.log('Parsing terrains');
   parseTerrainList();
   console.log('Parsing overlays');
