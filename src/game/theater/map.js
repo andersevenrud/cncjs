@@ -64,8 +64,7 @@ export default class Map {
     this.loaded = false;
 
     this.gridFinder = new PF.AStarFinder({
-      heuristic: PF.Heuristic.chebyshev,
-      allowDiagonal: true
+      diagonalMovement: PF.DiagonalMovement.Always
     });
 
     console.log('Map::constructor()');
