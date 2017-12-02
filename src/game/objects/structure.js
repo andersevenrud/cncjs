@@ -85,7 +85,10 @@ export default class StructureObject extends MapObject {
     }
 
     if ( this.player && this.options.Cost ) {
-      this.player.addCredits(this.options.Cost);
+      const rate = this.engine.data.rules.General.RefundPercent;
+      const ret = this.options.Cost * rate;
+
+      this.player.addCredits(ret);
     }
   }
 
