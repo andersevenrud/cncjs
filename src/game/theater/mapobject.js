@@ -70,6 +70,10 @@ export default class MapObject extends EngineObject {
   }
 
   takeDamage(dmg, weapon) {
+    const rules = this.engine.data.rules.General;
+    dmg = Math.min(dmg, rules.MaxDamage);
+    dmg = Math.max(dmg, rules.MinDamage);
+
     this.health -= dmg;
   }
 

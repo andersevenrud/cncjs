@@ -63,10 +63,13 @@ export default class InfantryObject extends UnitObject {
   }
 
   takeDamage(dmg, weapon) {
-    this.health -= dmg;
+    super.takeDamage(...arguments);
+
     const anim = weapon.Projectile.Warhead.InfantryDeath;
     if ( anim ) {
       this.deathAnimation = 'Die' + String(anim);
+    } else {
+      this.deathAnimation = null;
     }
   }
 
