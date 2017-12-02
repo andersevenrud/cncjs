@@ -37,7 +37,7 @@ export default class VehicleObject extends UnitObject {
     if ( this.targetDirection !== null ) {
       this.direction = getNewDirection(this.direction,
                                        this.targetDirection,
-                                       this.options.TurnSpeed,
+                                       this.options.TurnSpeed / 4,
                                        this.directions);
 
       if ( this.direction === this.targetDirection ) {
@@ -50,7 +50,7 @@ export default class VehicleObject extends UnitObject {
     if ( this.targetTurretDirection !== null ) {
       this.turretDirection = getNewDirection(this.turretDirection,
                                              this.targetTurretDirection,
-                                             this.options.TurnSpeed,
+                                             this.options.TurnSpeed / 4,
                                              this.directions);
 
       if ( Math.round(this.turretDirection) === this.targetTurretDirection ) {

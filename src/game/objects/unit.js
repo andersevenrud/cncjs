@@ -269,7 +269,7 @@ import {TILE_SIZE} from 'game/globals';
       return false;
     }
 
-    const movement = (this.options.Speed / TILE_SIZE); // FIXME
+    const movement = (this.options.Speed / TILE_SIZE) / (this.type === 'infantry' ? 2 : 4);
     const direction = getDirection({x: this.targetX, y: this.targetY}, this, this.directions);
     const angleRadians = (direction / this.directions) * 2 * Math.PI;
     const velX = (movement * Math.sin(angleRadians));

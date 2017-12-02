@@ -26,6 +26,7 @@ export default class ProjectileObject extends MapObject {
     this.damage = weapon.Damage;
     this.versus = weapon.Projectile.Warhead.Verses;
     this.invisible = weapon.Projectile.Invisible;
+    this.weapon = weapon;
     this.from = from;
     this.effectDest = {
       x: to.x + (to.width / 2),
@@ -86,9 +87,7 @@ export default class ProjectileObject extends MapObject {
       const objArmor = objects[i].options.Armor;
       const dmg = objArmor ? this.damage * this.versus[objArmor] / 100 : this.damage;
 
-      if ( !isNaN(dmg) ) {
-        objects[i].health -= dmg;
-      }
+      objects[i].takeDamage(dmg, this.weapon);
     }
 
     this.destroy();

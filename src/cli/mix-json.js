@@ -660,6 +660,9 @@ const parseObjectList = (treeName, type, key, anims) => {
 
     if ( type === 'structs' ) {
       applySequenceInfo(name, options);
+
+      // NOTE: Game was hard-wired to double this value
+      options.HitPoints *= 2;
     }
 
     TREE[treeName][realName] = options;

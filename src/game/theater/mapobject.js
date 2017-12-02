@@ -70,6 +70,11 @@ export default class MapObject extends EngineObject {
   }
 
   takeDamage(dmg, weapon) {
+    if ( isNaN(dmg) ) {
+      console.warn('Took invalid damage', dmg, weapon);
+      dmg = 0;
+    }
+
     const rules = this.engine.data.rules.General;
     dmg = Math.min(dmg, rules.MaxDamage);
     dmg = Math.max(dmg, rules.MinDamage);
@@ -348,6 +353,10 @@ export default class MapObject extends EngineObject {
 
   isExpandable() {
     return this.id === 'mcv'; // FIXM
+  }
+
+  isHarvester() {
+    return this.options.Harvester;
   }
 
   getSpawnLocation() {
