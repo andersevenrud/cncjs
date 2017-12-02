@@ -302,7 +302,7 @@ export default class Level {
 
       let available = iter.BuildLevel <= this.buildLevel;
 
-      if ( available && iter.Prerequisites ) {
+      if ( available && iter.Prerequisites && iter.Prerequisites !== 'none' ) {
         // FIXME: Multiple ?
         available = built.indexOf(iter.Prerequisites) !== -1;
       }
