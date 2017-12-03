@@ -79,7 +79,7 @@ export default class Map {
     console.info(data);
 
     for ( let i = 1; i < 4; i++ ) {
-      Bib.preload(i);
+      Bib.preload(this.theatre, i);
     }
 
     this.id = data.id;
@@ -98,11 +98,8 @@ export default class Map {
     for ( let x = 0; x < this.tilesX; x++ ) {
       for ( let y = 0; y < this.tilesY; y++ ) {
         let i = data.tiles[y][x];
-        try {
-          await Sprite.preload(this.engine, i[0], this.theatre);
-        } catch ( e ) {}
-
         let obj = new TileObject(this.engine, x, y, i);
+        await obj.load();
         obj.render(this.context);
 
         if ( !i[3] ) {
@@ -266,10 +263,18 @@ export default class Map {
   /**
    * Adds an object to the map
    * @param {MapObject} obj Object
+   * @return {MapObject}
    */
-  _addObject(obj) {
+  async _addObject(obj) {
+    try {
+      await obj.load();
+    } catch ( e ) {}
+
     obj._index = this.objects.push(obj) - 1;
+
     this._sortObjects();
+
+    return obj;
   }
 
   /**
@@ -284,11 +289,10 @@ export default class Map {
   /**
    * Adds a effect (overlay) object to the map
    * @param {Object} args Arguments
+   * @return {MapObject}
    */
   async addEffect(args) {
-    await Sprite.preload(this.engine, args.id);
-
-    this._addObject(new EffectObject(this.engine, args));
+    return await this._addObject(new EffectObject(this.engine, args));
   }
 
   /**
@@ -303,34 +307,26 @@ export default class Map {
       return false;
     }
 
-    try {
-      await Sprite.preload(this.engine, weapon.Projectile.Image);
-    } catch ( e ) {}
-
-    return this._addObject(new ProjectileObject(this.engine, from, to, weapon));
+    return await this._addObject(new ProjectileObject(this.engine, from, to, weapon));
   }
 
   /**
    * Adds an object to the map
    * @param {Object} args Arguments
    * @param {String} [type] Object type
+   * @return {MapObject}
    */
   async addObject(args, type = null) {
-    const col = args.type === 'terrain' ? this.theatre : 0;
     type = type || args.type;
 
     if ( !type ) {
       console.warn('Invalid object type given', type, args);
-      return;
+      return false;
     }
-
-    try {
-      await Sprite.preload(this.engine, args.id, col);
-    } catch ( e ) {}
 
     const obj = new ObjectMap[type](this.engine, args);
 
-    this._addObject(obj);
+    return await this._addObject(obj);
   }
 
   /**

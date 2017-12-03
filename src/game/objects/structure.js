@@ -14,7 +14,11 @@ const DAMAGE_SUFFIX = ['', '-Damaged', '-Destroyed'];
 export default class StructureObject extends MapObject {
 
   constructor(engine, args) {
-    super(engine, args, engine.data.structures[args.id]);
+    const theatre = engine.scene.level.theatre;
+
+    super(engine, Object.assign({}, {
+      path: args.team === -1 ? theatre : 'CONQUER.MIX' // FIXME
+    }, args), engine.data.structures[args.id]);
 
     this.isWall = WALLS.indexOf(this.id) !== -1;
     this.bib = null;
@@ -23,10 +27,14 @@ export default class StructureObject extends MapObject {
     this.deconstructing = false;
     this.bibOffsetY = null;
     this.constructionSprite = null;
+  }
+
+  async load() {
+    await super.load();
 
     if ( !this.isWall ) {
-      this.constructionSprite = engine.scene.loaded ? Sprite.instance(args.id + 'make') : null;
-      this.constructing = !!this.constructionSprite && engine.scene.loaded;
+      this.constructionSprite = this.engine.scene.loaded ? Sprite.instance('CONQUER.MIX/' + this.id + 'make') : null;
+      this.constructing = !!this.constructionSprite && this.engine.scene.loaded;
       this.constructed = !this.constructing;
       this.animation = this.sprite && this.sprite.render ? new Animation({}) : null;
 

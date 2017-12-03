@@ -28,7 +28,7 @@ export default class BoxElement extends UIElement {
     target.fillRect(x, y, w, h);
 
     if ( this.options.corners ) {
-      const sprite = Sprite.instance('options');
+      const sprite = Sprite.instance('CONQUER.MIX/options');
 
       if ( sprite ) {
         target.strokeRect(x + .5, y + .5, w, h);

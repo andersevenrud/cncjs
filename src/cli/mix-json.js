@@ -77,11 +77,6 @@ const TREE = {
   land: {}
 };
 
-INI_FILES.forEach((filename) => {
-  console.log('Reading', filename);
-  INIS[filename.replace('.ini', '')] = INI.decode(fs.readFileSync(path.join(SRC, 'GAME.DAT', filename), 'utf8'));
-});
-
 const parseInteger = (val) => {
   return String(val).match(/h$/) ? parseInt(val, 16) : parseInt(val, 10);
 };
@@ -747,6 +742,11 @@ const importLists = () => {
 ///////////////////////////////////////////////////////////////////////////////
 
 module.exports = function() {
+  INI_FILES.forEach((filename) => {
+    console.log('Reading', filename);
+    INIS[filename.replace('.ini', '')] = INI.decode(fs.readFileSync(path.join(SRC, 'GAME.DAT', filename), 'utf8'));
+  });
+
   console.log('Parsing objects');
   parseObjectList('aircraft', 'aircraft', 'Aircraft');
   parseObjectList('units', 'units', 'Units');

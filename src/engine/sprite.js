@@ -208,18 +208,17 @@ export default class Sprite {
    *
    * @param {Engine} engine Engine reference
    * @param {String} name Sprite name
-   * @param {String} [sub] Sub-folder
    * @return {Sprite}
    */
-  static async preload(engine, name, sub) {
-    sub = sub ? `/${sub}` : '';
+  static async preload(engine, name) {
 
     if ( !CACHE[name] ) {
-      const found = engine.spriteLibrary[name];
+      const tempName = name.split('/').reverse()[0];
+      const found = engine.spriteLibrary[name] || engine.spriteLibrary[tempName];
 
       if ( found ) {
         const {type, size, clip, count} = found;
-        const sprite = new Sprite(`sprites${sub}/${name}.png`, size, clip, count);
+        const sprite = new Sprite(`sprites/${name}.png`, size, clip, count);
         await sprite.load(engine, type);
 
         CACHE[name] = sprite;

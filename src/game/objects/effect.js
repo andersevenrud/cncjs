@@ -10,14 +10,21 @@ export default class EffectObject extends MapObject {
 
   constructor(engine, args) {
     super(engine, Object.assign({}, args, {
-      type: 'effect'
+      type: 'effect',
+      path: 'CONQUER.MIX'
     }), engine.data.overlays[args.id]);
 
     this.spriteColor = '#ff9900';
+    this.repeat = args.repeat === true;
+  }
+
+  async load() {
+    await super.load();
+
     this.animation = new Animation({
       sprite: this.sprite,
-      name: args.id,
-      repeat: args.repeat === true
+      name: this.id,
+      repeat: this.repeat === true
     });
 
     this.x -= (this.sprite.width / 2);

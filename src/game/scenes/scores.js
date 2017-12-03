@@ -25,7 +25,8 @@ export default class ScoreScene extends GameScene {
 
     this.engine.sounds.playSong('win1', {loop: true});
 
-    this.sprite = Sprite.instance(this.options.player === 'GoodGuy' ? 's-gdiin2' : 'scrscn1');
+    const sn = this.options.player === 'GoodGuy' ? 's-gdiin2' : 'scrscn1';
+    this.sprite = Sprite.instance('GENERAL.MIX/' + sn);
   }
 
   update(options) {

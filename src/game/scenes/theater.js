@@ -92,38 +92,40 @@ export default class TheaterScene extends GameScene {
     });
 
     const spriteNames = [
-      'sprite:htabs',
-      'sprite:options',
-      'sprite:hside1',
-      'sprite:hside2',
-      'sprite:hradar_gdi',
-      'sprite:hradar_nod',
-      'sprite:hstripdn',
-      'sprite:hstripup',
-      'sprite:hrepair',
-      'sprite:hsell',
-      'sprite:hmap',
-      'sprite:hpips',
-      'sprite:hclock',
-      'sprite:trans',
-      'sprite:bib1',
-      'sprite:bib2',
-      'sprite:bib3',
-      'sprite:smokey',
+      'sprite:UPDATEC.MIX/htabs',
+      'sprite:CONQUER.MIX/options',
+      'sprite:UPDATEC.MIX/hside1',
+      'sprite:UPDATEC.MIX/hside2',
+      'sprite:UPDATEC.MIX/hradar_gdi',
+      'sprite:UPDATEC.MIX/hradar_nod',
+      'sprite:UPDATEC.MIX/hstripdn',
+      'sprite:UPDATEC.MIX/hstripup',
+      'sprite:UPDATEC.MIX/hrepair',
+      'sprite:UPDATEC.MIX/hsell',
+      'sprite:UPDATEC.MIX/hmap',
+      'sprite:UPDATEC.MIX/hpips',
+      'sprite:UPDATEC.MIX/hclock',
+      'sprite:CONQUER.MIX/trans',
+      `sprite:${theatre}/bib1`,
+      `sprite:${theatre}/bib2`,
+      `sprite:${theatre}/bib3`,
+      'sprite:CONQUER.MIX/smokey',
 
       // FIXME: Filtered
       ...Object.values(this.engine.data.aircraft).map(iter => `sprite:${ICONS[theatre]}/${iter.Icon}`),
-      ...Object.values(this.engine.data.aircraft).map(iter => `sprite:${iter.Id}`),
+      ...Object.values(this.engine.data.aircraft).map(iter => `sprite:CONQUER.MIX/${iter.Id}`),
 
-      ...Object.values(this.engine.data.structures).map(iter => `sprite:${iter.Id}`),
-      ...Object.values(this.engine.data.structures).filter(iter => iter.Selectable).map(iter => `sprite:${iter.Id}make`),
+      ...Object.values(this.engine.data.structures).map(iter => {
+        return iter.TheaterSensitive ? `sprite:${theatre}/${iter.Id}` : `sprite:CONQUER.MIX/${iter.Id}`;
+      }),
+      ...Object.values(this.engine.data.structures).filter(iter => iter.Selectable).map(iter => `sprite:CONQUER.MIX/${iter.Id}make`),
       ...Object.values(this.engine.data.structures).map(iter => `sprite:${ICONS[theatre]}/${iter.Icon}`),
 
       ...Object.values(this.engine.data.infantry).map(iter => `sprite:${ICONS[theatre]}/${iter.Icon}`),
-      ...Object.values(this.engine.data.infantry).map(iter => `sprite:${iter.Id}`),
+      ...Object.values(this.engine.data.infantry).map(iter => `sprite:CONQUER.MIX/${iter.Id}`),
 
       ...Object.values(this.engine.data.units).map(iter => `sprite:${ICONS[theatre]}/${iter.Icon}`),
-      ...Object.values(this.engine.data.units).map(iter => `sprite:${iter.Id}`)
+      ...Object.values(this.engine.data.units).map(iter => `sprite:CONQUER.MIX/${iter.Id}`)
     ];
 
     console.debug('Sounds', audioNames);
@@ -178,16 +180,16 @@ export default class TheaterScene extends GameScene {
 
       new UIContainer(this.engine, [
         {type: 'rect', x: 0, y: 0, w: 160, h: -1, texture: true},
-        {type: 'sprite', name: 'hradar_' + playerName, x: 0, y: 0},
-        {type: 'sprite', name: 'hside1', x: 1, y: 142, index: 1},
-        {type: 'sprite', name: 'hside2', x: 1, y: 142 + 118, index: 1},
-        {type: 'sprite', name: 'hrepair', pressIndex: 1, x: 5, y: 143, cb: () => this.setMode('repair')},
-        {type: 'sprite', name: 'hsell', pressIndex: 1, x: 5 + 53, y: 143, cb: () => this.setMode('sell')},
-        {type: 'sprite', name: 'hmap', index: this.minimapAvailable ? 0 : 2, pressIndex: this.minimapAvailable ? 1 : 2, x: 5 + 106, y: 143, cb: () => this.toggleMinimap()},
-        {type: 'sprite', name: 'hstripup', pressIndex: 1, x: 20, y: 357, cb: () => this.tickerBuildings.up()},
-        {type: 'sprite', name: 'hstripdn', pressIndex: 1, x: 20 + 33, y: 357, cb: () => this.tickerBuildings.down()},
-        {type: 'sprite', name: 'hstripup', pressIndex: 1, x: 70 + 20, y: 357, cb: () => this.tickerUnits.up()},
-        {type: 'sprite', name: 'hstripdn', pressIndex: 1, x: 70 + 20 + 33, y: 357, cb: () => this.tickerUnits.down()},
+        {type: 'sprite', name: 'UPDATEC.MIX/hradar_' + playerName, x: 0, y: 0},
+        {type: 'sprite', name: 'UPDATEC.MIX/hside1', x: 1, y: 142, index: 1},
+        {type: 'sprite', name: 'UPDATEC.MIX/hside2', x: 1, y: 142 + 118, index: 1},
+        {type: 'sprite', name: 'UPDATEC.MIX/hrepair', pressIndex: 1, x: 5, y: 143, cb: () => this.setMode('repair')},
+        {type: 'sprite', name: 'UPDATEC.MIX/hsell', pressIndex: 1, x: 5 + 53, y: 143, cb: () => this.setMode('sell')},
+        {type: 'sprite', name: 'UPDATEC.MIX/hmap', index: this.minimapAvailable ? 0 : 2, pressIndex: this.minimapAvailable ? 1 : 2, x: 5 + 106, y: 143, cb: () => this.toggleMinimap()},
+        {type: 'sprite', name: 'UPDATEC.MIX/hstripup', pressIndex: 1, x: 20, y: 357, cb: () => this.tickerBuildings.up()},
+        {type: 'sprite', name: 'UPDATEC.MIX/hstripdn', pressIndex: 1, x: 20 + 33, y: 357, cb: () => this.tickerBuildings.down()},
+        {type: 'sprite', name: 'UPDATEC.MIX/hstripup', pressIndex: 1, x: 70 + 20, y: 357, cb: () => this.tickerUnits.up()},
+        {type: 'sprite', name: 'UPDATEC.MIX/hstripdn', pressIndex: 1, x: 70 + 20 + 33, y: 357, cb: () => this.tickerUnits.down()},
         {instance: this.tickerBuildings, x: 20, y: 164, cb: (e, spawn, cb) => this.clickBuildable(e, cb)},
         {instance: this.tickerUnits, x: 20 + 64 + 6, y: 164, cb: (e, spawn, cb) => {
           if ( spawn ) {
@@ -743,7 +745,7 @@ export default class TheaterScene extends GameScene {
 
     console.info('Build', entry);
 
-    if ( !Sprite.instance(this.engine, entry.Id) ) {
+    if ( !Sprite.instance(this.engine, 'CONQUER.MIX/' + entry.Id) ) {
       console.warn('Sprite was not found for this entry', entry.Id);
     }
 

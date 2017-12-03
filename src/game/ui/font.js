@@ -32,7 +32,7 @@ function calculateString(str, font) {
 
 function createImage(engine, str, fontName, color) {
   const fonts = engine.data.fonts;
-  const sprite = Sprite.instance(fontName);
+  const sprite = Sprite.instance('CCLOCAL.MIX/' + fontName);
   const font = fonts[fontName];
   const {calculated, width, height} = calculateString(str, font);
 

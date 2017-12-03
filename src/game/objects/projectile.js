@@ -14,6 +14,7 @@ export default class ProjectileObject extends MapObject {
     super(engine, {
       id: weapon.Projectile.Image,
       type: 'projectile',
+      path: 'CONQUER.MIX',
       x: from.x,
       y: from.y
     }, {});
@@ -39,11 +40,17 @@ export default class ProjectileObject extends MapObject {
       tileY: to.tileY
     };
 
-    if ( !weapon.Projectile.NoRotation ) {
+    console.debug('Spawned projectile', this, weapon);
+  }
+
+  async load() {
+    await super.load();
+
+    if ( !this.weapon.Projectile.NoRotation ) {
       this.animation = new Animation({
         loop: false,
         frames: 1,
-        name: weapon.Projectile.Image,
+        name: this.weapon.Projectile.Image,
         sprite: this.sprite,
         getOffset: (anim) => {
           const d = getDirection({
@@ -58,8 +65,6 @@ export default class ProjectileObject extends MapObject {
         }
       });
     }
-
-    console.debug('Spawned projectile', this, weapon);
   }
 
   render(target, delta) {

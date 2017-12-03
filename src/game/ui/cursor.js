@@ -30,7 +30,7 @@ export default class Cursor {
    * Loads the cursor
    */
   async load() {
-    this.sprite = Sprite.instance('mouse');
+    this.sprite = Sprite.instance('CCLOCAL.MIX/mouse');
     this.cursors = this.engine.data.cursors;
   }
 

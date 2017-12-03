@@ -14,11 +14,11 @@ let CACHE = {};
  */
 export default class Bib {
 
-  constructor(bibId) {
+  constructor(theatre, bibId) {
     this.canvas = document.createElement('canvas');
     this.context = this.canvas.getContext('2d');
 
-    const bib = Sprite.instance('bib' + String(bibId));
+    const bib = Sprite.instance(`${theatre}/bib${bibId}`);
     const sizeX = bib.count / 2;
     const sizeY = 2;
 
@@ -58,11 +58,12 @@ export default class Bib {
 
   /**
    * Preloads given Bib
+   * @param {String} theatre Theatre pack
    * @param {Number} id Bib Id
    */
-  static preload(id) {
-    console.debug('Creating new bib', id);
-    CACHE[id] = new Bib(id);
+  static preload(theatre, id) {
+    console.debug('Creating new bib', theatre, id);
+    CACHE[id] = new Bib(theatre, id);
   }
 
   /**

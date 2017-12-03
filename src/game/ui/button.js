@@ -23,8 +23,8 @@ export default class ButtonElement extends UIElement {
     }
 
     const {x, y, w, h} = this.rect;
-    const sprite = Sprite.instance('options');
-    const backTexture = sprite ? Sprite.instance('btexture').createImage(1) : null;
+    const sprite = Sprite.instance('CONQUER.MIX/options');
+    const backTexture = sprite ? Sprite.instance('UPDATEC.MIX/btexture').createImage(1) : null;
     const ptrn = backTexture ? target.createPattern(backTexture, 'repeat') : null;
 
     if ( this.options.disabled ) {

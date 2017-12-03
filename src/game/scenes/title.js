@@ -63,13 +63,13 @@ export default class TitleScene extends GameScene {
 
   async load() {
     await super.load([
-      'sprite:options',
-      'sprite:htitle'
+      'sprite:CONQUER.MIX/options',
+      'sprite:UPDATE.MIX/htitle'
     ]);
 
     try {
       // FIXME: Move to sprite
-      const asset = await this.engine.zip.getDataFile('sprites/htitle.png');
+      const asset = await this.engine.zip.getDataFile('sprites/UPDATE.MIX/htitle.png');
       const url = URL.createObjectURL(asset);
       this.titleImage = await loadImage(url);
       URL.revokeObjectURL(url);

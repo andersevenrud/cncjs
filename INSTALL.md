@@ -7,6 +7,7 @@ This guide explains (briefly) how to manually build and run the game from source
 * `node` version 6 or newer
 * `zip`
 * `imagemagick`
+* `ffmpeg`
 * Copy of the **Windows 95** (aka "Gold") editon of the game
 
 ## Building
@@ -35,7 +36,8 @@ All game files go into `src/data/`.
 * Extract the `.mix` files into their respective directories using [XCC Utilities](http://xhp.xwis.net/utilities/).
     * Use `.png` without compression and corrections for all sprites
     * Use `.wav` for all sounds and music
-    * Use `.avi` for movies (`Intel Video 5.10` codec)
+    * Use `.avi` for movies (`Cinepack` codec)
+    * Put `.pal` files in `GAME.DAT`
 
 When done, run the conversion and packing utility:
 

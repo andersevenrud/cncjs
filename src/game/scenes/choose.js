@@ -74,10 +74,10 @@ export default class ChooseScene extends GameScene {
 
   async load() {
     await super.load([
-      'sprite:choose'
+      'sprite:TRANSIT.MIX/choose'
     ]);
 
-    this.sprite = Sprite.instance('choose');
+    this.sprite = Sprite.instance('TRANSIT.MIX/choose');
     this.engine.sounds.playSong('struggle', {loop: true});
   }
 

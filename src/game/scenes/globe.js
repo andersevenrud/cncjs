@@ -21,15 +21,15 @@ export default class GlobeScene extends GameScene {
 
   async load() {
     const spriteNames = [
-      'sprite:options',
-      'sprite:e-bwtocl', // spinning earth
-      'sprite:greyerth', // spinning earth
-      'sprite:hbosnia', // zoom on bosnia
-      'sprite:hearth_a', // zoom on africa
-      'sprite:africa', // african mission selection
-      'sprite:hsafrica', // zoom on south africa
-      'sprite:hearth_e', // zoom on europe
-      'sprite:europe' // european mission selection
+      'sprite:CONQUER.MIX/options',
+      'sprite:GENERAL.MIX/e-bwtocl', // spinning earth
+      'sprite:GENERAL.MIX/greyerth', // spinning earth
+      'sprite:UPDATE.MIX/hbosnia', // zoom on bosnia
+      'sprite:UPDATE.MIX/hearth_a', // zoom on africa
+      'sprite:GENERAL.MIX/africa', // african mission selection
+      'sprite:UPDATE.MIX/hsafrica', // zoom on south africa
+      'sprite:UPDATE.MIX/hearth_e', // zoom on europe
+      'sprite:GENERAL.MIX/europe' // european mission selection
 
       /*
       'click_a', // african hotspots
@@ -82,8 +82,8 @@ export default class GlobeScene extends GameScene {
 
     if ( this.stage < 2 ) {
       this.sprite = this.stage === 0
-        ? Sprite.instance('e-bwtocl')
-        : Sprite.instance('hearth_e');
+        ? Sprite.instance('GENERAL.MIX/e-bwtocl')
+        : Sprite.instance('UPDATE.MIX/hearth_e');
 
       if ( !this.sprite ) {
         return;

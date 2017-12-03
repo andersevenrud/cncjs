@@ -11,7 +11,7 @@ export default class TabElement extends SpriteElement {
     super(engine, Object.assign({}, {
       pressIndex: 1,
       label: 'Tab',
-      name: 'htabs'
+      name: 'UPDATEC.MIX/htabs'
     }, options));
 
     this.label = null;

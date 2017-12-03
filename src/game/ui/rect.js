@@ -22,8 +22,8 @@ export default class RectElement extends UIElement {
 
     const {x, y, w, h} = this.rect;
 
-    const sprite = this.options.texture ? Sprite.instance('btexture') : null;
-    const backTexture = sprite ? Sprite.instance('btexture').createImage(1) : null;
+    const sprite = this.options.texture ? Sprite.instance('UPDATEC.MIX/btexture') : null;
+    const backTexture = sprite ? sprite.createImage(1) : null;
     const ptrn = backTexture ? target.createPattern(backTexture, 'repeat') : null;
 
     target.fillStyle = ptrn ? ptrn : this.options.color;

@@ -9,15 +9,19 @@ import {WALLS} from 'game/globals';
 export default class OverlayObject extends MapObject {
 
   constructor(engine, args) {
+    const theatre = engine.scene.level.theatre;
+    const isWall = WALLS.indexOf(args.id) !== -1;
+
     super(engine, {
       id: args.id,
       type: args.type || 'overlay',
+      path: isWall ? 'CONQUER.MIX' : theatre,
       tileX: args.tileX,
       tileY: args.tileY
     }, engine.data.overlays[args.id]);
 
     this.spriteColor = '#669999';
-    this.isWall = WALLS.indexOf(this.id) !== -1;
+    this.isWall = isWall;
     this.isTiberium = this.options.Tiberium;
   }
 

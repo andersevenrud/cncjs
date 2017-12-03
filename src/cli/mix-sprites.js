@@ -3,14 +3,6 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-
-//
-// THIS IS A WORK IN PROGRESS AND QUITE UGLY
-// YOU HAVE BEEN WARNED!
-//
-
-// TODO: Add all unit colors horizontally
-
 const cp = require('child_process');
 const fs = require('fs-extra');
 const path = require('path');
@@ -18,11 +10,11 @@ const Promise = require('bluebird');
 const PNG = require('pngjs').PNG;
 const INI = require('ini');
 
-const ROOT = process.cwd();
+const PALETTE = {};
+const ROOT = path.resolve(__dirname + '/../../');
 const SRC = path.resolve(ROOT, 'src/data');
 const DEST = path.resolve(ROOT, '.tmp/');
 const DIST = path.resolve(ROOT, 'dist');
-const PALETTE = {};
 
 function rgbToHex(r, g, b) {
   return ([
@@ -32,16 +24,12 @@ function rgbToHex(r, g, b) {
   ]).map((i) => String(i).padStart(2, 0)).join('');
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// PALETTE GENERATION
-///////////////////////////////////////////////////////////////////////////////
-
 const makePalette = () => {
-  const palettes = INI.decode(fs.readFileSync(path.resolve(SRC, 'colors.ini'), 'utf8'));
+  const palettes = INI.decode(fs.readFileSync(path.resolve(SRC, 'GAME.DAT', 'colors.ini'), 'utf8'));
   const fromIndex = palettes.YellowPalette.RemapIndexes.split(',').map(i => parseInt(i, 10));
   const toIndex = palettes.RedPalette.RemapIndexes.split(',').map(i => parseInt(i, 10));
 
-  const stream = fs.readFileSync(path.join(SRC, 'temperat.pal'));
+  const stream = fs.readFileSync(path.join(SRC, 'GAME.DAT', 'temperat.pal'));
   const result = [];
 
   for ( let i = 0; i < stream.length; i += 3 ) {
@@ -114,11 +102,7 @@ const createPaletted = (src, dest) => {
   });
 };
 
-///////////////////////////////////////////////////////////////////////////////
-// SPRITE GENERATION
-///////////////////////////////////////////////////////////////////////////////
-
-const makeSpritesFromDirectory = (p, applyPalette, outSelf, trans) => {
+const makeSpritesFromDirectory = (p, applyPalette, trans) => {
   const root = path.join(SRC, p);
 
   // FIXME: This could probably need a look-see
@@ -129,7 +113,7 @@ const makeSpritesFromDirectory = (p, applyPalette, outSelf, trans) => {
   const group = {};
   let lastPrefix;
   list.forEach((f) => {
-    const [prefix] = f.replace(/\.png$/).split(/\d{4}/);
+    const [prefix] = f.replace(/\.png$/, '').split(/\d{4}/);
     if ( prefix !== lastPrefix ) {
       group[prefix] = 0;
     }
@@ -140,8 +124,7 @@ const makeSpritesFromDirectory = (p, applyPalette, outSelf, trans) => {
   return Promise.each(Object.keys(group), (prefix, idx) => {
     const src = path.resolve(SRC, path.basename(root), prefix);
     const target = prefix.replace(/(\s|\-)$/, '');
-    const sub = outSelf ? `/${p}` : '';
-    const dest = path.resolve(DEST, `sprites${sub}/${target}.png`);
+    const dest = path.resolve(DEST, `sprites/${p}/${target}.png`);
     const cmd = `convert '${src}*' -append ${dest}`;
     const tff = `/tmp/_cncjs_${p}_${idx}_`;
 
@@ -177,54 +160,23 @@ const makeSpritesFromDirectory = (p, applyPalette, outSelf, trans) => {
   });
 };
 
-const makeSprites = () => {
-  return Promise.all([
-    makeSpritesFromDirectory('CONQUER.MIX', true),
-    makeSpritesFromDirectory('CCLOCAL.MIX'),
-    makeSpritesFromDirectory('DESEICNH.MIX', false, true),
-    makeSpritesFromDirectory('TEMPICNH.MIX', false, true),
-    makeSpritesFromDirectory('UPDATE.MIX', false, false, false),
-    makeSpritesFromDirectory('UPDATEC.MIX', false, false, ['hclock', 'hpips']),
-    makeSpritesFromDirectory('GENERAL.MIX', false, false, false),
-    makeSpritesFromDirectory('TRANSIT.MIX'),
-    makeSpritesFromDirectory('TEMPERAT.MIX', false, true),
-    makeSpritesFromDirectory('DESERT.MIX', false, true),
-    makeSpritesFromDirectory('WINTER.MIX', false, true)
-  ]);
-};
-
 ///////////////////////////////////////////////////////////////////////////////
-// SOUND GENERATION
+// EXPORTS
 ///////////////////////////////////////////////////////////////////////////////
 
-const makeSounds = () => {
-  const copy = (dir, name, zip) => {
-    const mix = path.resolve(SRC, dir);
-    fs.readdirSync(mix).filter((f) => f.match(/\.wav$/)).forEach((f) => {
-      const src = path.resolve(SRC, dir, f);
-      const dest = zip ? path.resolve(DEST, name, f) : path.resolve(DIST, name, f);
+async function makeSprites() {
+  makePalette();
+  await makeSpritesFromDirectory('CONQUER.MIX', true);
+  await makeSpritesFromDirectory('CCLOCAL.MIX');
+  await makeSpritesFromDirectory('DESEICNH.MIX', false);
+  await makeSpritesFromDirectory('TEMPICNH.MIX', false);
+  await makeSpritesFromDirectory('UPDATE.MIX', false, false);
+  await makeSpritesFromDirectory('UPDATEC.MIX', false, ['hclock', 'hpips']);
+  await makeSpritesFromDirectory('GENERAL.MIX', false, false);
+  await makeSpritesFromDirectory('TRANSIT.MIX');
+  await makeSpritesFromDirectory('TEMPERAT.MIX', false);
+  await makeSpritesFromDirectory('DESERT.MIX', false);
+  await makeSpritesFromDirectory('WINTER.MIX', false);
+}
 
-      console.log(src, '=>', dest);
-      fs.mkdirpSync(path.dirname(dest));
-      fs.copyFileSync(src, dest);
-    });
-  };
-
-  copy('AUD.MIX', 'audio', true);
-  copy('SPEECH.MIX', 'audio', true);
-  copy('SOUNDS.MIX', 'audio', true);
-
-  copy('TRANSIT.MIX', 'audio');
-  copy('SCORES.MIX', 'audio');
-};
-
-///////////////////////////////////////////////////////////////////////////////
-// SOUND GENERATION
-///////////////////////////////////////////////////////////////////////////////
-
-module.exports = {
-  makePalette,
-  makeSounds,
-  makePalette,
-  makeSprites
-};
+module.exports = makeSprites;

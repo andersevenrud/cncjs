@@ -8,6 +8,7 @@ import Sprite from 'engine/sprite';
 import UIElement from 'engine/ui/element';
 import {createFontSprite} from './font';
 import {collidePoint} from 'engine/physics';
+import {ICONS} from 'game/globals';
 
 export default class TickerElement extends UIElement {
   constructor(engine, type, options) {
@@ -19,8 +20,8 @@ export default class TickerElement extends UIElement {
 
     this.type = type;
     this.offset = this.options.offset;
-    this.labelSprite = Sprite.instance('hpips');
-    this.clockSprite = Sprite.instance('hclock');
+    this.labelSprite = Sprite.instance('UPDATEC.MIX/hpips');
+    this.clockSprite = Sprite.instance('UPDATEC.MIX/hclock');
     this.buildables = [];
     this.elements = [];
     this.building = {};
@@ -111,7 +112,7 @@ export default class TickerElement extends UIElement {
     let createTooltip = false;
     for ( let i = 0; i < max; i++ ) {
       const o = this.buildables[i + this.offset];
-      const s = Sprite.instance(o.Icon);
+      const s = Sprite.instance(ICONS[this.level.theatre] + '/' + o.Icon);
 
       if ( !s ) {
         continue;

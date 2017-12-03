@@ -3,6 +3,7 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
+import Sprite from 'engine/sprite';
 import EngineObject from 'engine/object';
 import {pointFromTile} from 'game/physics';
 import {TILE_SIZE, ZINDEX, PLAYER_COLORS} from 'game/globals';
@@ -12,13 +13,7 @@ export default class MapObject extends EngineObject {
   constructor(engine, args, options) {
     options = options || {};
 
-    super(engine, args.id);
-
-    this.sprite = this.sprite || {
-      width: TILE_SIZE,
-      height: TILE_SIZE,
-      count: 0
-    };
+    super(engine, [args.path, args.id].filter(s => !!s).join('/'));
 
     this._index = -1;
     this.id = args.id;
@@ -28,8 +23,8 @@ export default class MapObject extends EngineObject {
     this.options = options;
     this.tileX = args.tileX;
     this.tileY = args.tileY;
-    this.sizeX = Math.floor(this.sprite.width / TILE_SIZE);
-    this.sizeY = Math.floor(this.sprite.height / TILE_SIZE);
+    this.sizeX = 0;
+    this.sizeY = 0;
     this.selected = false;
     this.zIndex = ZINDEX[this.type] || 1;
     this.animations = options.SequenceInfo || {};
@@ -51,6 +46,21 @@ export default class MapObject extends EngineObject {
     }
 
     console.debug('MapObject::constructor()', this.type, this.id, this);
+  }
+
+  async load() {
+    await Sprite.preload(this.engine, this.spriteId);
+
+    super.load();
+
+    this.sprite = this.sprite || {
+      width: TILE_SIZE,
+      height: TILE_SIZE,
+      count: 0
+    };
+
+    this.sizeX = Math.floor(this.sprite.width / TILE_SIZE);
+    this.sizeY = Math.floor(this.sprite.height / TILE_SIZE);
   }
 
   destroy() {

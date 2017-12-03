@@ -11,7 +11,9 @@ import {TILE_SIZE} from 'game/globals';
 /*abstract*/ export default class UnitObject extends MapObject {
 
   constructor(engine, args, data) {
-    super(engine, args, data);
+    super(engine, Object.assign({}, {
+      path: 'CONQUER.MIX'
+    }, args), data);
 
     this.orders = [];
     this.rofCooldown = 0;
@@ -26,6 +28,10 @@ import {TILE_SIZE} from 'game/globals';
     this.aiTick = 0;
     this.animation = new Animation({});
     this.currentPath = [];
+  }
+
+  async load() {
+    await super.load();
 
     if ( this.sprite.clip ) {
       this.width = this.sprite.clip[2];

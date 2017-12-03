@@ -31,12 +31,12 @@ export default class GameScene extends Scene {
     console.group('Scene::load()');
 
     const list = [
-      'sprite:btexture',
-      'sprite:mouse',
-      'sprite:3point',
-      'sprite:6point',
-      'sprite:8point',
-      'sprite:vcr'
+      'sprite:UPDATEC.MIX/btexture',
+      'sprite:CCLOCAL.MIX/mouse',
+      'sprite:CCLOCAL.MIX/3point',
+      'sprite:CCLOCAL.MIX/6point',
+      'sprite:CCLOCAL.MIX/8point',
+      'sprite:CCLOCAL.MIX/vcr'
     ].concat(additional);
 
     await super.load(list);

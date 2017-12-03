@@ -22,6 +22,7 @@ export default class ConstructObject {
     this.pattern = null;
     this.x = null;
     this.y = null;
+    this.sprite = Sprite.instance('CONQUER.MIX/trans');
   }
 
   move(x, y) {
@@ -54,12 +55,12 @@ export default class ConstructObject {
             const valid = this.map.queryGrid(tileX + col, tileY + row, 'value') === 0;
             if ( valid ) {
               if ( num === 2 ) {
-                spriteImage = Sprite.instance('trans').createImage(1);
+                spriteImage = this.sprite.createImage(1);
               } else {
-                spriteImage = Sprite.instance('trans').createImage(0);
+                spriteImage = this.sprite.createImage(0);
               }
             } else {
-              spriteImage = Sprite.instance('trans').createImage(2);
+              spriteImage = this.sprite.createImage(2);
             }
 
             result.push({

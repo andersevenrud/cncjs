@@ -21,6 +21,10 @@ export default class InfantryObject extends UnitObject {
     this.direction = (args.direction || 0) / this.directions;
     this.idling = false;
     this.idleCounter = 0;
+  }
+
+  async load() {
+    await super.load();
 
     const [ox, oy] = this.getTargetOffset();
     this.x += ox;

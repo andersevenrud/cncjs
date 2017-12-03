@@ -27,7 +27,7 @@ export default class EngineObject {
      * Object Sprite
      * @type {Sprite}
      */
-    this.sprite = Sprite.instance(spriteId);
+    this.sprite = null;
 
     /**
      * Current sprite frame
@@ -75,13 +75,13 @@ export default class EngineObject {
      * Object width
      * @type {Number}
      */
-    this.width = this.sprite ? this.sprite.width : 0;
+    this.width = 0;
 
     /**
      * Object height
      * @type {Number}
      */
-    this.height = this.sprite ? this.sprite.height : 0;
+    this.height = 0;
 
     /**
      * Object x position
@@ -94,6 +94,23 @@ export default class EngineObject {
      * @type {Number}
      */
     this.y = 0;
+  }
+
+  /**
+   * Loads object data etc.
+   */
+  load() {
+    if ( this.spriteId ) {
+      const sprite = Sprite.instance(this.spriteId);
+      if ( sprite ) {
+        this.sprite = sprite;
+
+        if ( this.width === 0 && this.height === 0 ) {
+          this.width = sprite.width;
+          this.height = sprite.height;
+        }
+      }
+    }
   }
 
   /**

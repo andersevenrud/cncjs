@@ -97,10 +97,8 @@ export default class Scene {
     console.info('...', loadAudio.length, 'audio files');
 
     for ( let i = 0; i < loadSprites.length; i++ ) {
-      const [sub, name] = loadSprites[i].indexOf('/') !== -1 ? loadSprites[i].split('/') : [null, loadSprites[i]];
-
       try {
-        await Sprite.preload(this.engine, name, sub);
+        await Sprite.preload(this.engine, loadSprites[i]);
       } catch ( e ) {
         console.error('Failed to load sprite', loadSprites[i], e);
       }
