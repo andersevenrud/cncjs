@@ -50,26 +50,26 @@ export default class TheaterScene extends GameScene {
 
     const extractAudio = (iter) => {
       if ( iter.PrimaryWeapon && iter.PrimaryWeapon.Report ) {
-        return 'audio:' + iter.PrimaryWeapon.Report;
+        return 'audio:SOUNDS.MIX/' + iter.PrimaryWeapon.Report;
       }
       return null;
     };
 
     const audioNames = [
-      'audio:button',
-      'audio:cancel1',
-      'audio:bldging1',
-      'audio:constru1',
-      'audio:constru2',
-      'audio:clock1',
-      'audio:cashturn',
-      'audio:accom1',
-      'audio:fail1',
-      'audio:reinfor1',
-      'audio:batlcon1',
-      'audio:bldg1',
-      'audio:crumble',
-      'audio:nukexplo',
+      'audio:SPEECH.MIX/cancel1',
+      'audio:SPEECH.MIX/bldging1',
+      'audio:SPEECH.MIX/constru1',
+      'audio:SPEECH.MIX/accom1',
+      'audio:SPEECH.MIX/fail1',
+      'audio:SPEECH.MIX/reinfor1',
+      'audio:SPEECH.MIX/batlcon1',
+      'audio:SPEECH.MIX/bldg1',
+      'audio:SOUNDS.MIX/constru2',
+      'audio:SOUNDS.MIX/clock1',
+      'audio:SOUNDS.MIX/cashturn',
+      'audio:SOUNDS.MIX/button',
+      'audio:SOUNDS.MIX/crumble',
+      'audio:SOUNDS.MIX/nukexplo',
       ...Object.values(this.engine.data.aircraft).map(extractAudio),
       ...Object.values(this.engine.data.infantry).map(extractAudio),
       ...Object.values(this.engine.data.units).map(extractAudio)
@@ -77,15 +77,15 @@ export default class TheaterScene extends GameScene {
 
     Object.keys(SOUNDS).forEach((k) => {
       if ( typeof SOUNDS[k] === 'string' ) {
-        audioNames.push(`audio:${SOUNDS[k]}`);
+        audioNames.push(`audio:SOUNDS.MIX/${SOUNDS[k]}`);
       } else {
         const count = SOUNDS[k].count;
         if ( count instanceof Array ) {
-          count.forEach((i) => audioNames.push(`audio:${k}${i}`));
+          count.forEach((i) => audioNames.push(`audio:SOUNDS.MIX/${k}${i}`));
         } else {
           for ( let i = 0; i < count; i++ ) {
             const s = SOUNDS[k].separator || '';
-            audioNames.push(`audio:${k}${s}${i + 1}`);
+            audioNames.push(`audio:SOUNDS.MIX/${k}${s}${i + 1}`);
           }
         }
       }
@@ -132,7 +132,7 @@ export default class TheaterScene extends GameScene {
     console.debug('Sprites', spriteNames);
 
     await super.load([
-      ...audioNames.filter(iter => !!iter && ['audio:toss', 'audio:dinoatk1', 'audio:none'].indexOf(iter) === -1),
+      ...audioNames.filter(iter => !!iter && ['audio:SOUNDS.MIX/toss', 'audio:SOUNDS.MIX/dinoatk1', 'audio:SOUNDS.MIX/none'].indexOf(iter) === -1),
       ...spriteNames.filter(iter => !!iter)
     ]);
 
@@ -656,7 +656,7 @@ export default class TheaterScene extends GameScene {
    */
   playTheme(id) {
     const src = this.engine.data.themes[id].filename;
-    this.engine.sounds.playSong(src, {}, (played) => {
+    this.engine.sounds.playSong('SCORES.MIX/' + src, {}, (played) => {
       if ( this.engine.sounds.musicEnabled && played ) {
         this.nextTheme();
       }
@@ -680,7 +680,7 @@ export default class TheaterScene extends GameScene {
   }
 
   playSound(soundId, cb) {
-    const sound = SOUNDS[soundId];
+    const sound = SOUNDS[soundId.replace('SOUNDS.MIX/', '')];
     const origSoundId = soundId;
 
     if ( sound ) {
@@ -750,7 +750,7 @@ export default class TheaterScene extends GameScene {
     }
 
     if ( this.constructObject ) {
-      this.engine.sounds.playSound('bldg1');
+      this.engine.sounds.playSound('SPEECH.MIX/bldg1');
       return;
     }
 

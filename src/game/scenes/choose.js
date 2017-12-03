@@ -78,7 +78,7 @@ export default class ChooseScene extends GameScene {
     ]);
 
     this.sprite = Sprite.instance('TRANSIT.MIX/choose');
-    this.engine.sounds.playSong('struggle', {loop: true});
+    this.engine.sounds.playSong('TRANSIT.MIX/struggle', {loop: true});
   }
 
   selectTeam(teamName) {
@@ -87,7 +87,7 @@ export default class ChooseScene extends GameScene {
       this.destroy({team: teamName.toUpperCase()});
     };
 
-    this.engine.sounds.playSong(`${teamName}_slct`, {}, (el) => done());
+    this.engine.sounds.playSong(`TRANSIT.MIX/${teamName}_slct`, {}, (el) => done());
   }
 
   ondestroy(options) {

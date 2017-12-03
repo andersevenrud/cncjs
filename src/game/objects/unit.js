@@ -103,7 +103,7 @@ import {TILE_SIZE} from 'game/globals';
 
       const sound = weapon ? weapon.Report : null;
       if ( sound ) {
-        this.engine.sounds.playSound(sound, {source: this});
+        this.engine.sounds.playSound('SOUNDS.MIX/' + sound, {source: this});
       }
 
       this.map.addProjectile({
@@ -133,7 +133,7 @@ import {TILE_SIZE} from 'game/globals';
   select(t, report = false) {
     if ( super.select(t) ) {
       if ( report && this.isFriendly() ) {
-        this.engine.sounds.playSound('await1', {source: this});
+        this.engine.sounds.playSound('SOUNDS.MIX/await1', {source: this});
       }
       return true;
     }
@@ -333,7 +333,7 @@ import {TILE_SIZE} from 'game/globals';
 
   setPath(path, report) {
     if ( report ) {
-      this.engine.sounds.playSound('ackno', {source: this});
+      this.engine.sounds.playSound('SOUNDS.MIX/ackno', {source: this});
     }
 
     if ( this.options.Speed ) {

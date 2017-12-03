@@ -18,7 +18,7 @@ const mixJson = require('../src/cli/mix-json.js');
 ///////////////////////////////////////////////////////////////////////////////
 
 const makeStuffz = () => {
-  cp.execSync(`zip -r ${DIST}/data.zip * -x speech/* -x sounds/* -x music/*`, {
+  cp.execSync(`zip -r ${DIST}/data.zip * -x MOVIES.MIX/* -x SCORES.MIX/*`, {
     cwd: DEST,
     stdio: 'pipe'
   });

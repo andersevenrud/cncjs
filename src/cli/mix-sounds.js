@@ -12,11 +12,11 @@ const DEST = path.resolve(ROOT, '.tmp/');
 const DIST = path.resolve(ROOT, 'dist');
 
 async function makeSounds() {
-  const copy = (dir, name, zip) => {
+  const copy = (dir, zip) => {
     const mix = path.resolve(SRC, dir);
     fs.readdirSync(mix).filter((f) => f.match(/\.wav$/)).forEach((f) => {
       const src = path.resolve(SRC, dir, f);
-      const dest = zip ? path.resolve(DEST, name, f) : path.resolve(DIST, name, f);
+      const dest = zip ? path.resolve(DEST, dir, f) : path.resolve(DIST, dir, f);
 
       console.log(src, '=>', dest);
       fs.mkdirpSync(path.dirname(dest));
@@ -24,12 +24,12 @@ async function makeSounds() {
     });
   };
 
-  copy('AUD.MIX', 'audio', true);
-  copy('SPEECH.MIX', 'audio', true);
-  copy('SOUNDS.MIX', 'audio', true);
+  copy('AUD.MIX', true);
+  copy('SPEECH.MIX', true);
+  copy('SOUNDS.MIX', true);
 
-  copy('TRANSIT.MIX', 'audio');
-  copy('SCORES.MIX', 'audio');
+  copy('TRANSIT.MIX');
+  copy('SCORES.MIX');
 }
 
 module.exports = makeSounds;

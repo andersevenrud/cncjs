@@ -19,11 +19,11 @@ export default class ScoreScene extends GameScene {
 
   async load() {
     await super.load([
-      'sprite:s-gdiin2',
-      'sprite:scrscn1'
+      'sprite:GENERAL.MIX/s-gdiin2',
+      'sprite:GENERAL.MIX/scrscn1'
     ]);
 
-    this.engine.sounds.playSong('win1', {loop: true});
+    this.engine.sounds.playSong('TRANSIT.MIX/win1', {loop: true});
 
     const sn = this.options.player === 'GoodGuy' ? 's-gdiin2' : 'scrscn1';
     this.sprite = Sprite.instance('GENERAL.MIX/' + sn);

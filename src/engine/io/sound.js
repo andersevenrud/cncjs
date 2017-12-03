@@ -16,7 +16,6 @@ export default class Sound {
   /**
    * @param {Engine} engine Game Engine reference
    * @param {Object} [options] Sound Options
-   * @param {String} [options.path=audio] Sound path
    * @param {String} [options.format=wav] Sound format
    * @param {Boolean} [options.positionalAudio=false] Positional audio feature
    */
@@ -26,7 +25,6 @@ export default class Sound {
      * @type {Object}
      */
     this.options = Object.assign({}, {
-      path: 'audio',
       format: 'wav',
       positionalAudio: false
     }, options);
@@ -138,7 +136,7 @@ export default class Sound {
    * @param {String} name Audio name
    */
   async preload(name) {
-    const src = `${this.options.path}/${name}.${this.options.format}`;
+    const src = `${name}.${this.options.format}`;
 
     try {
       const raw = await this.engine.zip.getDataFile(src);
@@ -285,7 +283,7 @@ export default class Sound {
       }
     }
 
-    const src = `${this.options.path}/${filename}.${this.options.format}`;
+    const src = `${filename}.${this.options.format}`;
     console.debug('Requesting song', src);
 
     this.musicElement = new Audio(src);

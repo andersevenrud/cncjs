@@ -104,7 +104,7 @@ export default class VehicleObject extends UnitObject {
       });
     }
 
-    this.engine.sounds.playSound('xplos', {source: this});
+    this.engine.sounds.playSound('SOUNDS.MIX/xplos', {source: this});
     this.destroyed = true;
   }
 

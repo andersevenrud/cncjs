@@ -78,7 +78,7 @@ export default class ProjectileObject extends MapObject {
   reachedDestination() {
     // TODO: Splash damage
     if ( this.explosion !== 'none' ) {
-      this.engine.sounds.playSound(this.explosion, {source: this});
+      this.engine.sounds.playSound('SOUNDS.MIX/' + this.explosion, {source: this});
 
       this.map.addEffect({
         id: this.explosion,

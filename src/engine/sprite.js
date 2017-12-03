@@ -218,7 +218,7 @@ export default class Sprite {
 
       if ( found ) {
         const {type, size, clip, count} = found;
-        const sprite = new Sprite(`sprites/${name}.png`, size, clip, count);
+        const sprite = new Sprite(`${name}.png`, size, clip, count);
         await sprite.load(engine, type);
 
         CACHE[name] = sprite;

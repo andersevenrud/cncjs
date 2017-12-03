@@ -100,13 +100,13 @@ export default class Level {
 
   abort() {
     this.engine.pushScene('title');
-    this.engine.sounds.playSound('batlcon1', {}, () => this.engine.scene.destroy());
+    this.engine.sounds.playSound('SPEECH.MIX/batlcon1', {}, () => this.engine.scene.destroy());
   }
 
   win(options) {
     const mp = this.getMainPlayer();
 
-    this.engine.sounds.playSound('accom1');
+    this.engine.sounds.playSound('SPEECH.MIX/accom1');
     this.engine.pushScene('movie', {movie: options.Win});
     this.engine.pushScene('score', {
       player: mp
@@ -119,7 +119,7 @@ export default class Level {
   }
 
   lose(options) {
-    this.engine.sounds.playSound('fail1');
+    this.engine.sounds.playSound('SPEECH.MIX/fail1');
     this.engine.pushScene('movie', {movie: options.Lose});
     this.engine.pushScene('title');
     this.engine.scene.destroy();
@@ -136,7 +136,7 @@ export default class Level {
     console.groupEnd();
 
     if ( report ) {
-      this.engine.sounds.playSound('reinfor1');
+      this.engine.sounds.playSound('SPEECH.MIX/reinfor1');
     }
   }
 

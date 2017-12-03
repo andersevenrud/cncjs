@@ -74,7 +74,7 @@ export default class GlobeScene extends GameScene {
     ], {center: {width: 200, height: 200}});
 
     this.gui = [ui];
-    this.engine.sounds.playSong('loopie6m', {loop: true});
+    this.engine.sounds.playSong('TRANSIT.MIX/loopie6m', {loop: true});
   }
 
   update() {

@@ -60,14 +60,14 @@ export default class StructureObject extends MapObject {
       }
 
       if ( this.engine.scene.loaded && this.isFriendly() ) {
-        this.engine.sounds.playSound('constru2', {source: this});
+        this.engine.sounds.playSound('SOUNDS.MIX/constru2', {source: this});
       }
     }
   }
 
   die() {
     if ( !this.destroying ) {
-      this.engine.sounds.playSound('crumble', {source: this});
+      this.engine.sounds.playSound('SOUNDS.MIX/crumble', {source: this});
 
       this.map.addEffect({
         id: 'art-exp1',
@@ -89,7 +89,7 @@ export default class StructureObject extends MapObject {
     });
 
     if ( this.isFriendly() ) {
-      this.engine.sounds.playSound('cashturn', {source: this});
+      this.engine.sounds.playSound('SOUNDS.MIX/cashturn', {source: this});
     }
 
     if ( this.player && this.options.Cost ) {

@@ -69,7 +69,7 @@ export default class TitleScene extends GameScene {
 
     try {
       // FIXME: Move to sprite
-      const asset = await this.engine.zip.getDataFile('sprites/UPDATE.MIX/htitle.png');
+      const asset = await this.engine.zip.getDataFile('UPDATE.MIX/htitle.png');
       const url = URL.createObjectURL(asset);
       this.titleImage = await loadImage(url);
       URL.revokeObjectURL(url);
@@ -77,7 +77,7 @@ export default class TitleScene extends GameScene {
       console.warn(e);
     }
 
-    this.engine.sounds.playSong('map1', {loop: true});
+    this.engine.sounds.playSong('TRANSIT.MIX/map1', {loop: true});
 
     this.guiContainers = [
       new UIContainer(this.engine, [

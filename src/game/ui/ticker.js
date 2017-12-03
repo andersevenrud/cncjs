@@ -38,7 +38,7 @@ export default class TickerElement extends UIElement {
 
     this.offset = Math.max(0, this.offset - 1);
 
-    this.engine.sounds.playSound('button', {volume: 0.5});
+    this.engine.sounds.playSound('SOUNDS.MIX/button', {volume: 0.5});
   }
 
   down() {
@@ -48,7 +48,7 @@ export default class TickerElement extends UIElement {
 
     this.offset = Math.min(this.offset + 1, this.buildables.length - 5);
 
-    this.engine.sounds.playSound('button', {volume: 0.5});
+    this.engine.sounds.playSound('SOUNDS.MIX/button', {volume: 0.5});
   }
 
   emit(name, data) {
@@ -77,7 +77,7 @@ export default class TickerElement extends UIElement {
         }
       } else {
         if ( click.button <= 1 ) {
-          this.engine.sounds.playSound('bldging1');
+          this.engine.sounds.playSound('SPEECH.MIX/bldging1');
 
           this.building[obj.Id] = {
             cost: obj.Cost,
@@ -137,10 +137,10 @@ export default class TickerElement extends UIElement {
             });
           }
 
-          sounds.playSound('constru1', {queue: true});
+          sounds.playSound('SPEECH.MIX/constru1', {queue: true});
         } else if ( (busy.current % 20) === 0 ) {
           if ( drain > 0 ) {
-            sounds.playSound('clock1', {volume: 0.3});
+            sounds.playSound('SOUNDS.MIX/clock1', {volume: 0.3});
           }
         }
       }
@@ -216,7 +216,7 @@ export default class TickerElement extends UIElement {
     const refund = busy.cost - busy.current;
     this.player.addCredits(refund);
 
-    this.engine.sounds.playSound('cancel1');
+    this.engine.sounds.playSound('SPEECH.MIX/cancel1');
     delete this.building[id];
   }
 }

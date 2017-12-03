@@ -83,7 +83,7 @@ export default class MovieScene extends GameScene {
       this.destroy();
     });
 
-    this.$video.src = `movies/${video}.webm`;
+    this.$video.src = `MOVIES.MIX/${video}.webm`;
     this.engine.canvas.parentNode.appendChild(this.$video);
   }
 

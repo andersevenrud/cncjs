@@ -14,7 +14,6 @@ const PALETTE = {};
 const ROOT = path.resolve(__dirname + '/../../');
 const SRC = path.resolve(ROOT, 'src/data');
 const DEST = path.resolve(ROOT, '.tmp/');
-const DIST = path.resolve(ROOT, 'dist');
 
 function rgbToHex(r, g, b) {
   return ([
@@ -124,7 +123,7 @@ const makeSpritesFromDirectory = (p, applyPalette, trans) => {
   return Promise.each(Object.keys(group), (prefix, idx) => {
     const src = path.resolve(SRC, path.basename(root), prefix);
     const target = prefix.replace(/(\s|\-)$/, '');
-    const dest = path.resolve(DEST, `sprites/${p}/${target}.png`);
+    const dest = path.resolve(DEST, `${p}/${target}.png`);
     const cmd = `convert '${src}*' -append ${dest}`;
     const tff = `/tmp/_cncjs_${p}_${idx}_`;
 

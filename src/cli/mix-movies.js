@@ -29,8 +29,10 @@ async function makeMovies() {
   const avis = await glob(path.join(SRC, 'MOVIES.MIX') + '/*.avi');
   for ( let i = 0; i < avis.length; i++ ) {
     const filename = avis[i];
-    const dest = path.join(DIST, 'movies', path.basename(filename))
+    const dest = path.join(DIST, 'MOVIES.MIX', path.basename(filename))
       .replace(/\.avi$/, '.webm');
+
+    fs.mkdirpSync(path.dirname(dest));
 
     if ( !fs.existsSync(dest) ) {
       await convertMovie(filename, dest);

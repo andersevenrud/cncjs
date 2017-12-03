@@ -63,7 +63,7 @@ export default class InfantryObject extends UnitObject {
     this.setAnimation(this.deathAnimation || 'Die1', {
       loop: false
     });
-    this.engine.sounds.playSound('nuyell', {source: this});
+    this.engine.sounds.playSound('SOUNDS.MIX/nuyell', {source: this});
   }
 
   takeDamage(dmg, weapon) {
