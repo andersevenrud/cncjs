@@ -16,7 +16,6 @@ import TerrainObject from 'game/objects/terrain';
 import StructureObject from 'game/objects/structure';
 import EffectObject from 'game/objects/effect';
 import ProjectileObject from 'game/objects/projectile';
-import Sprite from 'engine/sprite';
 import {copy} from 'engine/util';
 import {TILE_SIZE, WAYPOINT_NAMES} from 'game/globals';
 import {pointFromTile} from 'game/physics';
@@ -318,6 +317,7 @@ export default class Map {
    */
   async addObject(args, type = null) {
     type = type || args.type;
+    args.type = type;
 
     if ( !type ) {
       console.warn('Invalid object type given', type, args);

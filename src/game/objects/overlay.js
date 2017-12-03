@@ -34,7 +34,4 @@ export default class OverlayObject extends MapObject {
     }
   }
 
-  isBlocking() {
-    return this.type === 'smudge' || !this.isTiberium;
-  }
 }

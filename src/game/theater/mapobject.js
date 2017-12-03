@@ -23,8 +23,8 @@ export default class MapObject extends EngineObject {
     this.options = options;
     this.tileX = args.tileX;
     this.tileY = args.tileY;
-    this.sizeX = 0;
-    this.sizeY = 0;
+    this.sizeX = 1;
+    this.sizeY = 1;
     this.selected = false;
     this.zIndex = ZINDEX[this.type] || 1;
     this.animations = options.SequenceInfo || {};
@@ -59,8 +59,10 @@ export default class MapObject extends EngineObject {
       count: 0
     };
 
-    this.sizeX = Math.floor(this.sprite.width / TILE_SIZE);
-    this.sizeY = Math.floor(this.sprite.height / TILE_SIZE);
+    if ( this.type !== 'infantry' ) {
+      this.sizeX = Math.floor(this.sprite.width / TILE_SIZE);
+      this.sizeY = Math.floor(this.sprite.height / TILE_SIZE);
+    }
   }
 
   destroy() {

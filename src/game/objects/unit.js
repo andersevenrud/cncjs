@@ -17,7 +17,6 @@ import {TILE_SIZE} from 'game/globals';
 
     this.orders = [];
     this.rofCooldown = 0;
-    this.targetObject = null;
     this.targetX = null;
     this.targetY = null;
     this.directions = 0;
@@ -27,6 +26,9 @@ import {TILE_SIZE} from 'game/globals';
     this.hasFired = false;
     this.aiTick = 0;
     this.animation = new Animation({});
+
+    this.currentTarget = null;
+    this.currentOrder = null;
     this.currentPath = [];
   }
 
@@ -157,14 +159,16 @@ import {TILE_SIZE} from 'game/globals';
     }
 
     this.setPath(path, report);
-    this.targetObject = target;
+    this.currentOrder = 'attack';
+    this.currentTarget = target;
   }
 
   move(tileX, tileY, report = false) {
     const path = this.map.createPathGrid(this.tileX, this.tileY, tileX, tileY);
 
     this.setPath(path, report);
-    this.targetObject = null;
+    this.currentOrder = 'move';
+    this.currentTarget = null;
   }
 
   /**
@@ -203,12 +207,16 @@ import {TILE_SIZE} from 'game/globals';
    * Process AI
    */
   processAI() {
-    if ( this.targetObject && !this.isWithinRange(this.targetObject) ) {
+    if ( this.currentOrder === 'move' ) {
+      return;
+    }
+
+    if ( this.currentTarget && !this.isWithinRange(this.currentTarget) ) {
       if ( this.isFriendly() ) {
-        this.targetObject = null;
+        this.currentTarget = null;
       } else {
         // FIXME: Will chase forever
-        this.attack(this.targetObject);
+        this.attack(this.currentTarget);
         return;
       }
     }
@@ -231,7 +239,7 @@ import {TILE_SIZE} from 'game/globals';
    * @return {Boolean} If event occured
    */
   processTarget() {
-    const to = this.targetObject;
+    const to = this.currentTarget;
 
     this.attacking = false;
 
@@ -239,7 +247,7 @@ import {TILE_SIZE} from 'game/globals';
       const reachable = this.isWithinRange(to);
 
       if ( to.health <= 0 ) {
-        this.targetObject = null;
+        this.currentTarget = null;
       } else {
         this.attacking = reachable;
 
@@ -275,7 +283,7 @@ import {TILE_SIZE} from 'game/globals';
       return false;
     }
 
-    const movement = (this.options.Speed / TILE_SIZE) / (this.type === 'infantry' ? 2 : 4);
+    const movement = (this.options.Speed / 10) / (this.type === 'infantry' ? 2 : 4);
     const direction = getDirection({x: this.targetX, y: this.targetY}, this, this.directions);
     const angleRadians = (direction / this.directions) * 2 * Math.PI;
     const velX = (movement * Math.sin(angleRadians));
@@ -322,10 +330,14 @@ import {TILE_SIZE} from 'game/globals';
         this.direction = direction;
       }
     } else {
+      this.currentOrder = null;
+
       if ( this.orders.length ) {
         const order = this.orders.shift();
-        if ( order.action === 'move' ) {
+
+        if ( order.action === 'move' && order.path.length ) {
           this.currentPath = order.path;
+          this.currentOrder = 'move';
         }
       }
     }
@@ -345,7 +357,7 @@ import {TILE_SIZE} from 'game/globals';
       this.targetX = null;
       this.targetY = null;
       this.targetDirection = null;
-      this.targetObject = null;
+      this.currentTarget = null;
 
       return true;
     }
