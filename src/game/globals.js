@@ -6,7 +6,7 @@
 
 export const TILE_SIZE = 24;
 
-export const UPDATE_RATE = 1000 / 30; // 30Hz
+export const UPDATE_RATE = 30; // 30Hz
 
 export const MINIMAP_SIZE = [156, 138]; // 2px border
 

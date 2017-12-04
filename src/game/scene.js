@@ -85,7 +85,7 @@ export default class GameScene extends Scene {
       const km = this.engine.getConfig('keymap');
 
       const debug = [
-        `Render: ${(this.engine.fpsAverage).toFixed(0)} (${(this.engine.delta * 1000).toFixed(2)}ms) @ ${Math.round(1000 / this.engine.options.updateRate)}Hz tick`,
+        `Render: ${(this.engine.fpsAverage).toFixed(0)} (${(this.engine.delta * 1000).toFixed(2)}ms) @ ${Math.round(this.engine.options.updateRate)}Hz tick`,
         `Viewport: ${vw}x${vh} (${this.engine.getConfig('scale').toFixed(1)}x) @ ${this.gameX}x${this.gameY}`,
         ...this.debugOutput,
         '',

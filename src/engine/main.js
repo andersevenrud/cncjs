@@ -350,7 +350,6 @@ export default class Engine {
     const now = performance.now();
 
     let lastFrame;
-    let skipTicks = 1000 / this.options.updateRate;
     let lastTick = now;
 
     const step = (t) => {
@@ -366,6 +365,7 @@ export default class Engine {
        * NOTE: This is for our variable update rate. This makes sure that
        * it runs at a steady frequency (always "catches up").
        */
+      let skipTicks = 1000 / this.options.updateRate;
       while ( t > this.nextTick ) {
         this.fpsAverage += (this.fps - this.fpsAverage) / 10;
         this.nextTick += skipTicks;
