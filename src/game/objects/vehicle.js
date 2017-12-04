@@ -78,6 +78,14 @@ export default class VehicleObject extends UnitObject {
     return false;
   }
 
+  harvest(tileX, tileY, report = false) {
+    const tile = this.map.queryGrid(tileX, tileY);
+    if ( tile && tile.object && tile.object.isTiberium ) {
+      // TODO
+      this.move(tileX, tileY, report);
+    }
+  }
+
   expand() {
     if ( this.id === 'mcv' ) {
       this.destroy();

@@ -461,7 +461,8 @@ export default class TheaterScene extends GameScene {
 
       if ( this.level.map.selectedObjects.length === 1 ) {
         let obj = this.level.map.selectedObjects[0];
-        selected = `${obj.tileX}x${obj.tileY}x${obj.tileS} (${Math.round(obj.x)}x${Math.round(obj.y)}) ${obj.animation.name} o:${obj.animation.offset} f:${obj.animation.frame} d:${obj.direction}`;
+        const anim = obj.animation ? ` ${obj.animation.name} o:${obj.animation.offset} f:${obj.animation.frame} d:${obj.direction}` : '';
+        selected = `${obj.tileX}x${obj.tileY}x${obj.tileS} (${Math.round(obj.x)}x${Math.round(obj.y)}) ${anim}`;
       }
 
       this.debugOutput = [
@@ -509,7 +510,7 @@ export default class TheaterScene extends GameScene {
 
     let found = map.getObjectsFromPosition(clickX, clickY, true).filter((iter) => iter.isUnit());
     if ( !found.length ) {
-      found = map.getObjectsFromTile(tileX, tileY, true).filter((iter) => !iter.isMapOverlay());
+      found = map.getObjectsFromTile(tileX, tileY, true);//.filter((iter) => !iter.isMapOverlay());
     }
 
     if ( found.length ) {
@@ -543,6 +544,7 @@ export default class TheaterScene extends GameScene {
         const hasSelectedFriendly = hasSelected ? selected[0].isFriendly() : false;
         const clickedEnemy = found.length ? found[0].isEnemy() : false;
         const clickedFriendly = found.length ? found[0].isFriendly() : false;
+        const clickedTiberium = found.length ? found[0].isTiberium : false;
 
         const selectedObjects = map.selectedObjects.filter((obj) => obj.isFriendly());
         if ( hasSelectedAttackable && clickedEnemy ) {
@@ -550,10 +552,14 @@ export default class TheaterScene extends GameScene {
             o.attack(found[0], true);
           });
           return;
-        } else if ( hasSelectedMovable && hasSelectedFriendly && !clickedFriendly ) {
+        } else if ( hasSelectedMovable && hasSelectedFriendly && (!clickedFriendly || clickedTiberium) ) {
           selectedObjects.forEach((o) => {
             const d = tileFromPoint(clickX, clickY);
-            o.move(d.tileX, d.tileY, true);
+            if ( o.isHarvester() && clickedTiberium ) {
+              o.harvest(d.tileX, d.tileY, true);
+            } else {
+              o.move(d.tileX, d.tileY, true);
+            }
           });
           return;
         }
@@ -799,8 +805,17 @@ export default class TheaterScene extends GameScene {
         return 'expand';
       } else if ( selectedObject.isMovable() ) {
         const insideFog = map.fog.visible ? !map.fog.getVisibility(tileX, tileY) : false;
-        const insideTile = !currentObject;
-        return !insideTile || insideFog ? 'unavailable' : 'move';
+        const insideTile = !gridItem || gridItem.value < 100; // FIXME
+
+        if ( !insideTile || insideFog ) {
+          return 'unavailable';
+        }
+
+        if ( selectedObject.isHarvester() && currentObject && currentObject.isTiberium ) {
+          return 'attack';
+        }
+
+        return 'move';
       }
     }
 

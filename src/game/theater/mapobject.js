@@ -70,7 +70,7 @@ export default class MapObject extends EngineObject {
   }
 
   expand() {
-
+    // void
   }
 
   move(tileX, tileY) {
@@ -78,6 +78,10 @@ export default class MapObject extends EngineObject {
   }
 
   attack(target) {
+    // void
+  }
+
+  harvest(tileX, tileY) {
     // void
   }
 
@@ -348,7 +352,8 @@ export default class MapObject extends EngineObject {
   }
 
   isBlocking() {
-    return this.isUnit() || this.isStructure() || this.type === 'terrain' || this.isWall;
+    // FIXME
+    return this.isUnit() || this.isStructure() || this.type === 'terrain' || this.isWall || this.isTiberium;
   }
 
   isSelectable() {
@@ -368,7 +373,7 @@ export default class MapObject extends EngineObject {
   }
 
   isHarvester() {
-    return this.options.Harvester;
+    return this.options.Harvests;
   }
 
   getSpawnLocation() {

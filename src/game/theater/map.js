@@ -231,7 +231,7 @@ export default class Map {
       o.update();
 
       if ( !o.destroying && o.isBlocking() ) {
-        this.addToGrid(o);
+        this.addToGrid(o, o.isTiberium ? 0 : 100); // FIXME
       }
     }
   }
