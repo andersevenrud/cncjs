@@ -62,6 +62,15 @@ export default class StructureObject extends MapObject {
       if ( this.engine.scene.loaded && this.isFriendly() ) {
         this.engine.sounds.playSound('SOUNDS.MIX/constru2', {source: this});
       }
+
+      if ( this.id === 'proc' && !this.constructed ) {
+        this.map.addObject({
+          id: 'harv',
+          team: this.player.team,
+          tileX: this.tileX,
+          tileY: this.tileY + this.sizeY
+        }, 'unit');
+      }
     }
   }
 
