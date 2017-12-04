@@ -47,6 +47,8 @@ export default class Animation {
      */
     this.options = {};
 
+    this.wasDone = false;
+
     this.setOptions(options);
   }
 
@@ -87,6 +89,7 @@ export default class Animation {
     this.frames = options.frames;
     this.offset = options.offset;
     this.sprite = options.sprite;
+    this.wasDone = false;
 
     this.reset();
   }
@@ -108,12 +111,13 @@ export default class Animation {
       this.frame = this.getOffset();
       this.index = 0;
       this.done = true;
-      return;
+    } else {
+      this.done = this.index >= this.frames;
     }
 
-    this.done = this.index >= this.frames;
-
     if ( this.done ) {
+      this.wasDone = true;
+
       if ( this.loop ) {
         this.reset();
       } else {
@@ -149,6 +153,10 @@ export default class Animation {
    * @return {Boolean}
    */
   isFinished() {
+    if ( this.wasDone ) {
+      this.wasDone = false;
+      return true;
+    }
     return this.done;
   }
 
