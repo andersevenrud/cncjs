@@ -109,7 +109,11 @@ export default class Animation {
       this.index = 0;
       this.done = true;
       return;
-    } else if ( this.done ) {
+    }
+
+    this.done = this.index >= this.frames;
+
+    if ( this.done ) {
       if ( this.loop ) {
         this.reset();
       } else {
@@ -117,15 +121,14 @@ export default class Animation {
       }
     }
 
-    this.index = Math.min(this.frames - 1, this.index + this.step);
-    this.done = this.index >= this.frames - 1;
-
     const off = this.getOffset();
     if ( this.reverse ) {
       this.frame = off + parseInt(this.frames - this.index - 1, 10);
     } else {
       this.frame = off + parseInt(this.index, 10);
     }
+
+    this.index += this.step;
   }
 
   /**
