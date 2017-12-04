@@ -128,8 +128,11 @@ export default class StructureObject extends MapObject {
         this.constructed = true;
 
         const animationName = 'Idle' + DAMAGE_SUFFIX[this.getDamageState()];
-        this.setAnimation(this.animations[animationName] ? animationName : 'Idle', {
-          step: 0.25,
+        const anim = this.animations[animationName];
+        const defaultAnim = this.animations.Idle;
+
+        this.setAnimation(anim ? animationName : 'Idle', {
+          step: 1 / ((anim ? anim.delay : defaultAnim.delay) || 1),
           loop: true,
           sprite: this.sprite
         });
