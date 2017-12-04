@@ -109,6 +109,8 @@ export default class TickerElement extends UIElement {
     const sounds = this.engine.sounds;
     const elements = [];
 
+    const drainAmount = this.engine.options.debug === 3 ? 1000 : 10;
+
     let createTooltip = false;
     for ( let i = 0; i < max; i++ ) {
       const o = this.buildables[i + this.offset];
@@ -125,7 +127,7 @@ export default class TickerElement extends UIElement {
         : 0;
 
       if ( busy && !busy.done ) {
-        const drain = this.player.removeCredits(10);
+        const drain = this.player.removeCredits(drainAmount);
         busy.current = Math.max(0, busy.current - drain);
 
         if ( busy.current <= 0 ) {
