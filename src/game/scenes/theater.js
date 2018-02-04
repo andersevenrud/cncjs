@@ -470,7 +470,7 @@ export default class TheaterScene extends GameScene {
         `Objects: ${map.objects.length} (${map.visibleObjects} visible) (${map.selectedObjects.length} selected)`,
         `Tick: ${this.engine.currentTick} (${this.level.levelTick})`,
         `Map: ${map.id} - ${map.tilesX}x${map.tilesY} (${map.width}x${map.height})`,
-        `Player: ${mp.playerName} - ${mp.teamName} c:${mp.credits} p:${mp.power}`,
+        `Player: ${mp.playerName} - ${mp.teamName} c:${mp.credits} p:${mp.powerUsage}/${mp.powerProduction}`,
         selected ? `Selected: ${selected}` : '-'
       ];
     }

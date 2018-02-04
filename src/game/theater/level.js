@@ -259,6 +259,21 @@ export default class Level {
     }
   }
 
+  updatePower(obj) {
+    for ( let i = 0; i < this.players.length; i++ ) {
+      const player = this.players[i];
+      const objects = this.map.objects
+        .filter(o => o.player === this.players[i])
+        .filter(o => o.isStructure());
+
+      const drain = objects.map(o => o.options.PowerDrain || 0).reduce((a, v) => a + v, 0);
+      const prod = objects.map(o => o.options.PowerProduction || 0).reduce((a, v) => a + v, 0);
+
+      player.powerProduction = prod;
+      player.powerUsage = drain;
+    }
+  }
+
   // FIXME: Surely, there's a better name for this
   getMainPlayer() {
     return this.players.find(p => p.current);

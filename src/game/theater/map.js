@@ -133,6 +133,7 @@ export default class Map {
     this.loaded = true;
     this.baseGrid = copy(this.grid);
     this._sortObjects();
+    this.engine.scene.level.updatePower();
 
     console.groupEnd();
   }
@@ -271,6 +272,10 @@ export default class Map {
 
     obj._index = this.objects.push(obj) - 1;
 
+    if ( this.loaded ) {
+      this.engine.scene.level.updatePower(obj);
+    }
+
     this._sortObjects();
 
     return obj;
@@ -344,6 +349,10 @@ export default class Map {
 
       if ( foundSelected !== -1 ) {
         this.selectedObjects.splice(foundSelected, 1);
+      }
+
+      if ( this.loaded ) {
+        this.engine.scene.level.updatePower(obj);
       }
     }
   }

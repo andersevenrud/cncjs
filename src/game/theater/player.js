@@ -14,21 +14,10 @@ export default class Player {
     this.playerName = playerName;
     this.teamName = ['GDI', 'NOD'][this.team] || playerName;
     this.credits = (opts.Credits || 0) * 100;
-    this.power = 0;
+    this.powerProduction = 0;
+    this.powerUsage = 0;
     this.current = current === true;
     this.neutral = this.team === 2; // FIXME
-  }
-
-  addPower(p) {
-    this.power += parseInt(p, 10);
-  }
-
-  removePower(p) {
-    this.power -= parseInt(p, 10);
-  }
-
-  setPower(p) {
-    this.power = parseInt(p, 10);
   }
 
   addCredits(c) {
