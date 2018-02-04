@@ -75,7 +75,7 @@ export default class MiniMap extends UIElement {
       const obj = objects[i];
       const rect = obj.getRect();
 
-      if ( obj.isMapOverlay() && obj.sprite.render ) {
+      if ( obj.isMapOverlay() && obj.sprite && obj.sprite.render ) {
         obj.sprite.renderScaled(
           this.context,
           Math.round(rect.x1 / mx),
