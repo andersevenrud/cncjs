@@ -7,7 +7,7 @@ import { Entity, Sprite, MousePosition, Box, collidePoint, collideAABB } from '.
 import { Grid, AStarFinder, DiagonalMovement } from 'pathfinding';
 import { TheatreScene } from './scenes/theatre';
 import { TerrainEntity, InfantryEntity, EffectEntity, UnitEntity, OverlayEntity, StructureEntity } from './entities';
-import { MIXMapData, MIXMapEntityData, parseDimensions } from './mix';
+import { MIXMapData, MIXMapEntityData, wallNames, parseDimensions } from './mix';
 import { GameMapBaseEntity } from './entity';
 import { GameEngine } from './game';
 import { spriteFromName } from './sprites';
@@ -111,7 +111,7 @@ export class GameMapEntityFactory {
   }
 
   public async load(type: string, data: MIXMapEntityData): Promise<void> {
-    const Class: any = GameMapEntityFactory.entityMap[type];
+    const Class: any = GameMapEntityFactory.entityMap[this.getRealType(type, data)];
     if (Class) {
       const entity = new Class(data, this.map.engine, this.map);
       return this.map.addEntity(entity);
@@ -120,6 +120,14 @@ export class GameMapEntityFactory {
     }
 
     return undefined;
+  }
+
+  public getRealType(type: string, data: MIXMapEntityData): string {
+    if (wallNames.indexOf(data.name) !== -1) {
+      return 'structure';
+    }
+
+    return type;
   }
 }
 

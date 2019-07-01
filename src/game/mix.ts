@@ -377,6 +377,14 @@ export const playerMap: MIXPlayerName[] = [
   'Multi6'
 ];
 
+export const wallNames: string[] = [
+  'SBAG',
+  'CYCL',
+  'BRIK',
+  'BARB',
+  'WOOD'
+];
+
 export const soundMap: MIXMapEntitySounds = {
   'ACKNO': 4,
   'AFFIRM1': 1,

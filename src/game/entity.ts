@@ -9,7 +9,7 @@ import { GameMap } from './map';
 import { pointFromCell, cellFromPoint, CELL_SIZE } from './physics';
 import { MIXMapEntityData, MIXObject } from './mix';
 import { spriteFromName } from './sprites';
-import { MIXGrid, soundMap, healthBarColors } from './mix';
+import { MIXGrid, wallNames, soundMap, healthBarColors } from './mix';
 import { Vector } from 'vector2d';
 
 const HEALT_BAR_HEIGHT = 6;
@@ -285,7 +285,7 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
 
   protected updateWall(): void {
     if (this.sprite) {
-      if (['SBAG', 'CYCL', 'BRIK', 'BARB', 'WOOD'].indexOf(this.data.name) !== -1) {
+      if (wallNames.indexOf(this.data.name) !== -1) {
         const lastFrameIndex = this.frameOffset.y;
 
         const y = (true ? 0 : 16) + // FIXME
@@ -295,6 +295,7 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
            this.getSimilarEntity(new Vector(1, 0), 2); // right
 
         if (y != lastFrameIndex) {
+          this.direction = y;
           this.frameOffset.setY(y);
           this.sprite.resetLastFrame();
         }

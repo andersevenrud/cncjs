@@ -231,6 +231,7 @@ export class DynamicEntity extends GameMapEntity {
  * Structure Entity
  */
 export class StructureEntity extends GameMapEntity {
+  protected directions: number = 8;
   public dimension: Vector = new Vector(24, 24);
   protected properties: MIXStructure = this.engine.mix.structures.get(this.data.name) as MIXStructure;
   protected animation: string = 'Idle';
