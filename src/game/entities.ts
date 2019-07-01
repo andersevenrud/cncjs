@@ -634,9 +634,3 @@ export class EffectEntity extends GameMapEntity {
     return `CONQUER.MIX/${name.toLowerCase()}.png`;
   }
 }
-
-export const constructClasses: ConstructClassMap = {
-  structure: StructureEntity,
-  unit: UnitEntity,
-  infantry: InfantryEntity
-};

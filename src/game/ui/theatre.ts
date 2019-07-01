@@ -9,7 +9,6 @@ import { UITab, UISidebar, UIRadar, UIActions, UIStructureConstruction, UIFactor
 import { TAB_WIDTH, TAB_HEIGHT, RADAR_HEIGHT, ACTION_HEIGHT, SIDEBAR_WIDTH } from './elements';
 import { GameMapBaseEntity } from '../entity';
 import { GameMapMask } from '../map';
-import { constructClasses } from '../entities';
 import { cellFromPoint, isRectangleVisible } from '../physics';
 import { Vector } from 'vector2d';
 
@@ -114,15 +113,12 @@ export class TheatreUI extends UIScene {
     const type = this.scene.engine.mix.getType(name);
 
     if (type) {
-      const C: any = constructClasses[type];
-      const e = new C({
+      this.scene.map.factory.load(type, {
         name,
         cell,
         player: this.scene.player.getId(),
         theatre: this.scene.map.theatre
-      }, this.scene.engine, this.scene.map);
-
-      this.scene.map.addEntity(e);
+      });
     }
 
     this.placeConstruction = undefined;

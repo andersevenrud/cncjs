@@ -6,8 +6,8 @@
 import { Entity, Sprite, MousePosition, Box, collidePoint, collideAABB } from '../engine';
 import { Grid, AStarFinder, DiagonalMovement } from 'pathfinding';
 import { TheatreScene } from './scenes/theatre';
-import { TerrainEntity, InfantryEntity, UnitEntity,OverlayEntity,  StructureEntity } from './entities';
-import { MIXMapData, parseDimensions } from './mix';
+import { TerrainEntity, InfantryEntity, EffectEntity, UnitEntity, OverlayEntity, StructureEntity } from './entities';
+import { MIXMapData, MIXMapEntityData, parseDimensions } from './mix';
 import { GameMapBaseEntity } from './entity';
 import { GameEngine } from './game';
 import { spriteFromName } from './sprites';
@@ -93,6 +93,38 @@ export class GameMapMask extends Entity {
 }
 
 /**
+ * Map Entity Factory
+ */
+export class GameMapEntityFactory {
+  private readonly map: GameMap;
+  protected static readonly entityMap: any = {
+    terrain: TerrainEntity,
+    overlay: OverlayEntity,
+    effect: EffectEntity,
+    infantry: InfantryEntity,
+    unit: UnitEntity,
+    structure: StructureEntity
+  };
+
+  public constructor(map: GameMap) {
+    this.map = map;
+  }
+
+  public async load(type: string, data: MIXMapEntityData): Promise<void> {
+    const Class: any = GameMapEntityFactory.entityMap[type];
+    if (Class) {
+      const entity = new Class(data, this.map.engine, this.map);
+      return this.map.addEntity(entity);
+    } else {
+      console.warn('Invalid', type, data);
+    }
+
+    return undefined;
+  }
+}
+
+
+/**
  * Map
  */
 export class GameMap extends Entity {
@@ -114,6 +146,7 @@ export class GameMap extends Entity {
   public readonly infantry: Entity = new Entity();
   public readonly units: Entity = new Entity();
   public readonly overlay: Entity = new Entity();
+  public readonly factory: GameMapEntityFactory = new GameMapEntityFactory(this);
 
   public constructor(name: string, engine: GameEngine, scene: TheatreScene) {
     super();
@@ -152,20 +185,19 @@ export class GameMap extends Entity {
     this.overlay.setDimension(d);
     this.fow.setDimension(d);
 
-    const createEntityFrom = (list: any, cb: Function) => list.map(cb);
+    const createEntityFrom = (type: string, list: any) =>
+      list.map((data: any) => this.factory.load(type, data));
 
     await this.fow.init();
     await this.drawBaseMap(data);
 
-    const promises = [
-      ...createEntityFrom(data.terrain, (item: any) => new TerrainEntity(item, this.engine, this)),
-      ...createEntityFrom(data.overlays, (item: any) => new OverlayEntity(item, this.engine, this)),
-      ...createEntityFrom(data.structures, (item: any) => new StructureEntity(item, this.engine, this)),
-      ...createEntityFrom(data.infantry, (item: any) => new InfantryEntity(item, this.engine, this)),
-      ...createEntityFrom(data.units, (item: any) => new UnitEntity(item, this.engine, this))
-    ];
-
-    await Promise.all(promises.map(c => this.addEntity(c)));
+    await Promise.all([
+      ...createEntityFrom('terrain', data.terrain),
+      ...createEntityFrom('overlay', data.overlays),
+      ...createEntityFrom('structure', data.structures),
+      ...createEntityFrom('infantry', data.infantry),
+      ...createEntityFrom('unit', data.units)
+    ]);
 
     const start = data.waypoints.find(w => w.name === 'start');
     if (start) {
