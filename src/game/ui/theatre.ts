@@ -5,7 +5,7 @@
  */
 import { Box, UIEntity, UIScene, collideAABB, collidePoint } from '../../engine';
 import { TheatreScene } from '../scenes/theatre';
-import { UITab, UISidebar, UIRadar, UIActions, UIStructureConstruction, UIFactoryConstruction, UIActionsName } from './elements';
+import { UITab, UISidebar, UIRadar, UIActions, UIStructureConstruction, UIFactoryConstruction, UIActionsName, UIConstructionResponse } from './elements';
 import { TAB_WIDTH, TAB_HEIGHT, RADAR_HEIGHT, ACTION_HEIGHT, SIDEBAR_WIDTH } from './elements';
 import { GameMapBaseEntity } from '../entity';
 import { GameMapMask } from '../map';
@@ -101,13 +101,20 @@ export class TheatreUI extends UIScene {
     this.updated = false;
   }
 
-  private handleConstructionClick(name: string) {
-    this.placeConstruction = name;
-    const mask = new GameMapMask(name, this.scene.map);
-    this.scene.map.setMask(mask);
-
-    this.scene.engine.playArchiveSfx('SPEECH.MIX/bldging1.wav', 'gui', undefined, 'eva');
-    this.scene.engine.playArchiveSfx('SPEECH.MIX/constru1.wav', 'gui', undefined, 'eva');
+  private handleConstructionClick(state: UIConstructionResponse, name?: string) {
+    if (state === 'construct') {
+      this.scene.engine.playArchiveSfx('SPEECH.MIX/bldging1.wav', 'gui', undefined, 'eva');
+    } else if (state === 'finished') {
+      this.scene.engine.playArchiveSfx('SPEECH.MIX/constru1.wav', 'gui', undefined, 'eva');
+    } else if (state === 'cancel') {
+      this.scene.engine.playArchiveSfx('SPEECH.MIX/cancel1.wav', 'gui', undefined, 'eva');
+    } else if (state === 'busy') {
+      this.scene.engine.playArchiveSfx('SPEECH.MIX/bldg1.wav', 'gui', undefined, 'eva');
+    } else if (state === 'place') {
+      this.placeConstruction = name;
+      const mask = new GameMapMask(name!, this.scene.map);
+      this.scene.map.setMask(mask);
+    }
   }
 
   private handleConstructionPlot(cell: Vector) {

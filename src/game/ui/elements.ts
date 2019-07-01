@@ -4,7 +4,7 @@
  * @license MIT
  */
 
-import { Entity, Sprite, UIScene, UIEntity, collidePoint } from '../../engine';
+import { Entity, Sprite, UIScene, UIEntity, MouseButton, collidePoint } from '../../engine';
 import { GameEngine } from '../game';
 import { TheatreUI } from './theatre';
 import { spriteFromName } from '../sprites';
@@ -13,11 +13,11 @@ import { Vector } from 'vector2d';
 
 export type UIActionsName = 'sell' | 'repair';
 export type UIConstructionState = 'constructing' | 'hold' | 'ready';
+export type UIConstructionResponse = 'construct' | 'hold' | 'cancel' | 'busy' | 'place' | 'finished';
 export type UIConstructionProgress = [number, number]; // total / progress
 
 export interface UIConstructionItem {
   name: string;
-  index: number;
   state: UIConstructionState;
   progress: UIConstructionProgress;
 }
@@ -430,18 +430,48 @@ export abstract class UIConstruction extends GameUIEntity {
     await super.init();
   }
 
-  public onClick(position: Vector): void {
+  public onClick(position: Vector, button: MouseButton): void {
     const thumbnail = Math.floor(position.y / THUMB_HEIGHT);
-    const button = position.x / THUMB_WIDTH;
+    const index = position.x / THUMB_WIDTH;
 
     if (thumbnail > THUMB_COUNT - 1) {
-      if (button > 0.5) {
+      if (index > 0.5) {
         this.moveDown();
       } else {
         this.moveUp();
       }
     } else {
-      this.callback(this.names[thumbnail + this.offset].toUpperCase());
+      const found = this.names[thumbnail + this.offset];
+      if (found) {
+        const busy = this.items.get(found);
+        if (button === 'right') {
+          if (busy) {
+            this.items.delete(found);
+            this.callback('cancel');
+          }
+        } else {
+          if (busy) {
+            const progress = busy.progress[0] > 0
+              ? busy.progress[1] / busy.progress[0]
+              : 1;
+
+            if (progress >= 1.0) {
+              this.callback('place', found.toUpperCase());
+            } else {
+              this.callback('busy');
+            }
+          } else {
+            this.items.set(found, {
+              name: found,
+              state: 'constructing',
+              progress: [0, 0]
+            });
+
+            this.callback('construct');
+            this.callback('finished');
+          }
+        }
+      }
     }
   }
 
