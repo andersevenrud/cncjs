@@ -4,12 +4,14 @@
  * @license MIT
  */
 
-import { Entity, Sprite, UIScene, UIEntity, UIEntityHit } from '../../engine';
+import { Entity, Sprite, UIScene, UIEntity, UIEntityHit, collidePoint } from '../../engine';
 import { GameEngine } from '../game';
 import { TheatreUI } from './theatre';
 import { spriteFromName } from '../sprites';
 import { MIXFont, fontMap } from '../mix';
 import { Vector } from 'vector2d';
+
+export type UIActionsName = 'sell' | 'repair'
 
 export const SIDEBAR_WIDTH = 160;
 export const RADAR_WIDTH = 160;
@@ -223,21 +225,41 @@ export class UIActions extends GameUIEntity {
     ['buttonRepair', spriteFromName('UPDATEC.MIX/hrepair.png')]
   ]);
 
+  private names: string[] = ['sell', 'repair'];
+
+  private indexes: Vector[] = [
+    new Vector(0, 0),
+    new Vector(ACTION_WIDTH + 4, 0),
+    new Vector((ACTION_WIDTH + 4) * 2, 0)
+  ];
+
   public constructor(position: Vector, callback: Function, engine: GameEngine, ui: TheatreUI) {
     super('actions', position, callback, engine, ui);
   }
 
+  public onHit(hit: UIEntityHit): void {
+    const boxes = this.indexes.map(v => ({
+      x1: v.x,
+      y1: v.y,
+      x2: v.x + ACTION_WIDTH,
+      y2: ACTION_HEIGHT
+    }))
+
+    const hitButton = boxes.findIndex(box => collidePoint(hit.position, box));
+    const hitName = this.names[hitButton];
+    this.callback(hitName as UIActionsName);
+  }
+
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
     const sell = this.sprites.get('buttonSell') as Sprite;
-    const repair = this.sprites.get('buttonSell') as Sprite;
+    const repair = this.sprites.get('buttonRepair') as Sprite;
     const map = this.sprites.get('buttonMap') as Sprite;
 
-    const position = (o: number): Vector => new Vector((ACTION_WIDTH + 4) * o, 0);
     this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
 
-    sell.render(new Vector(0, 0), position(0), this.context);
-    repair.render(new Vector(0, 0), position(1), this.context);
-    map.render(new Vector(0, 2), position(2), this.context);
+    sell.render(new Vector(0, 0), this.indexes[0], this.context);
+    repair.render(new Vector(0, 0), this.indexes[1], this.context);
+    map.render(new Vector(0, 2), this.indexes[2], this.context);
 
     super.onRender(deltaTime, ctx);
 

@@ -5,7 +5,7 @@
  */
 import { Box, UIEntity, UIScene, collideAABB, collidePoint } from '../../engine';
 import { TheatreScene } from '../scenes/theatre';
-import { UITab, UISidebar, UIRadar, UIActions, UIStructureConstruction, UIFactoryConstruction } from './elements';
+import { UITab, UISidebar, UIRadar, UIActions, UIStructureConstruction, UIFactoryConstruction, UIActionsName } from './elements';
 import { TAB_WIDTH, TAB_HEIGHT, RADAR_HEIGHT, ACTION_HEIGHT, SIDEBAR_WIDTH } from './elements';
 import { GameMapBaseEntity } from '../entity';
 import { GameMapMask } from '../map';
@@ -14,10 +14,11 @@ import { Vector } from 'vector2d';
 
 export class TheatreUI extends UIScene {
   public readonly scene: TheatreScene;
-  protected sidebarVisible: boolean = false; // FIXME
+  protected sidebarVisible: boolean = true; // FIXME
   private selectionRectangleStart?: Vector;
   private selectionRectangle?: Box;
   private placeConstruction?: string;
+  private currentAction?: UIActionsName;
 
   public constructor(scene: TheatreScene) {
     super(scene.engine);
@@ -29,7 +30,7 @@ export class TheatreUI extends UIScene {
     const onMenuClick = () => {};
     const onCreditsClick = () => {};
     const onSidebarClick = () => this.toggleSidebar();
-    const onAction = () => {};
+    const onAction = (action?: UIActionsName) => (this.currentAction = action);
     const onConstruct = this.handleConstructionClick.bind(this);
     const engine = this.scene.engine;
 
@@ -65,6 +66,7 @@ export class TheatreUI extends UIScene {
       if (mouse.wasClicked('left')) {
         this.handleClick();
       } else if (mouse.wasClicked('right')) {
+        this.currentAction = undefined;
         this.placeConstruction = undefined;
         this.scene.map.setMask(undefined);
         this.scene.map.unselectEntities();
@@ -238,23 +240,29 @@ export class TheatreUI extends UIScene {
 
     let cursor = 'default';
     if (!this.isMouseOutsideViewport()) {
-      if (hovering && selected.length > 0 && hovering.isAttackable(selected[0]) && canAttack) {
-        cursor = 'attack';
-      } else if (hovering && hovering.isSelectable()) {
-        if (selected[0] === hovering &&  hovering.isDeployable()) {
-          cursor = 'expand';
-        } else {
-          cursor = 'select';
-        }
-      } else if (selected.length > 0) {
-        const movable = selected.some((s: GameMapBaseEntity): boolean => s.isMovable());
-        if (movable) {
-          const cell = cellFromPoint(pos);
-          const walkable = map.grid.isWalkableAt(cell.x, cell.y);
-          const revealed = map.fow.isRevealedAt(cell);
-          cursor = walkable || !revealed ? 'move' : 'unavailable';
-        } else {
-          cursor = 'default';
+      if (this.currentAction === 'sell') {
+        cursor = 'sell';
+      } else if (this.currentAction === 'repair') {
+        cursor = 'repair';
+      } else {
+        if (hovering && selected.length > 0 && hovering.isAttackable(selected[0]) && canAttack) {
+          cursor = 'attack';
+        } else if (hovering && hovering.isSelectable()) {
+          if (selected[0] === hovering &&  hovering.isDeployable()) {
+            cursor = 'expand';
+          } else {
+            cursor = 'select';
+          }
+        } else if (selected.length > 0) {
+          const movable = selected.some((s: GameMapBaseEntity): boolean => s.isMovable());
+          if (movable) {
+            const cell = cellFromPoint(pos);
+            const walkable = map.grid.isWalkableAt(cell.x, cell.y);
+            const revealed = map.fow.isRevealedAt(cell);
+            cursor = walkable || !revealed ? 'move' : 'unavailable';
+          } else {
+            cursor = 'default';
+          }
         }
       }
     }
