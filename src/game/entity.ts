@@ -168,6 +168,14 @@ export abstract class GameMapBaseEntity extends Entity {
     return this.health;
   }
 
+  public getPowerProduction(): number {
+    return 0;
+  }
+
+  public getPowerDrain(): number {
+    return 0;
+  }
+
   public canRotate(): boolean {
     return false;
   }

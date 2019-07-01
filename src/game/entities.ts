@@ -401,6 +401,14 @@ export class StructureEntity extends GameMapEntity {
     }
   }
 
+  public getPowerProduction(): number {
+    return this.properties.PowerProduction;
+  }
+
+  public getPowerDrain(): number {
+    return this.properties.PowerDrain;
+  }
+
   public isSellable(): boolean {
     return this.isPlayer();
   }

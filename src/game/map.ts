@@ -295,7 +295,19 @@ export class GameMap extends Entity {
       this.mask.onUpdate(deltaTime);
     }
 
-    this.entities.forEach(e => e.onUpdate(deltaTime));
+    const player = this.scene.player;
+    const power: [number, number] = [0, 0];
+
+    this.entities.forEach(e => {
+      if (e.isPlayer()) {
+        power[0] += e.getPowerProduction();
+        power[1] += e.getPowerDrain();
+      }
+
+      e.onUpdate(deltaTime);
+    });
+
+    player.setPower(power);
     this.fow.onUpdate(deltaTime);
   }
 

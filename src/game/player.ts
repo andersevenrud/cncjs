@@ -9,6 +9,7 @@ import { defaultTeamMap, MIXPlayerName, MIXTeamName } from './mix';
 export class Player {
   protected id: number = 0;
   protected credits: number = 0;
+  protected power: [number, number] = [0, 0]; // Avail / Used
   protected name: MIXPlayerName = 'GoodGuy';
   protected team: MIXTeamName = 'gdi';
 
@@ -24,7 +25,7 @@ export class Player {
   }
 
   public toString(): string {
-    return `${this.id} ${this.name} ${this.team} - ${this.credits}`;
+    return `${this.id} ${this.name}/${this.team} C:${this.credits} P:${this.power.join('/')}`;
   }
 
   public addCredits(credits: number): void {
@@ -41,6 +42,10 @@ export class Player {
 
   public setCredits(credits: number): void {
     this.credits = credits;
+  }
+
+  public setPower(power: [number, number]) {
+    this.power = power;
   }
 
   public getId(): number {
