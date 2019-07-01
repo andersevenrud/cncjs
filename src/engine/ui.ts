@@ -85,6 +85,8 @@ export class UIScene extends Entity {
         this.updated = true;
       }
     }
+
+    this.elements.forEach((el): void => el.onUpdate(deltaTime));
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
@@ -163,6 +165,10 @@ export class UIEntity extends Entity {
     this.calculatePosition();
 
     this.elements.forEach((el): void => el.onResize());
+  }
+
+  public onUpdate(deltaTime: number): void {
+    this.elements.forEach((el): void => el.onUpdate(deltaTime));
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
