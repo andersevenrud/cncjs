@@ -6,6 +6,7 @@
 import { Entity } from './entity';
 import { Box, collidePoint } from './physics';
 import { Core } from './core';
+import { MouseButton } from './mouse';
 import { isFloat, isNegative } from './utils';
 import { Vector } from 'vector2d';
 
@@ -50,11 +51,15 @@ export class UIScene extends Entity {
     const { mouse } = this.engine;
     const position = this.getRealMousePosition();
 
-    if (mouse.wasClicked('left')) {
+    const button = mouse.wasClicked('left')
+      ? 'left'
+      : mouse.wasClicked('right') ? 'right' : undefined;
+
+    if (button) {
       const hit = this.getCollidingEntity(position);
 
       if (hit) {
-        hit.element.onClick(hit.position);
+        hit.element.onClick(hit.position, button);
         this.onClick(hit);
         this.updated = true;
       }
@@ -174,7 +179,7 @@ export class UIEntity extends Entity {
   public onMouseDown(position: Vector): void {
   }
 
-  public onClick(position: Vector): void {
+  public onClick(position: Vector, button: MouseButton): void {
     this.callback();
   }
 
