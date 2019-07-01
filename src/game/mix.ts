@@ -387,6 +387,11 @@ export const wallNames: string[] = [
   'WOOD'
 ];
 
+export const irrelevantBulletImages: string[] = [
+  'FLAME',
+  'Laser'
+];
+
 export const soundMap: MIXMapEntitySounds = {
   'ACKNO': 4,
   'AFFIRM1': 1,

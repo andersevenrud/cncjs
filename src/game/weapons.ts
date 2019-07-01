@@ -6,8 +6,8 @@
 import { Sprite, randomBetweenInteger }  from '../engine';
 import { GameMap } from './map';
 import { GameMapBaseEntity, GameMapEntity } from './entity';
-import { MIXWeapon, MIXBullet, MIXWarhead } from './mix';
-import { cellFromPoint, getDirection } from './physics';
+import { MIXWeapon, MIXBullet, MIXWarhead, irrelevantBulletImages } from './mix';
+import { cellFromPoint, getDirection, CELL_SIZE } from './physics';
 import { spriteFromName } from './sprites';
 import { EffectEntity } from './entities';
 import { Vector } from 'vector2d';
@@ -29,7 +29,7 @@ export class ProjectileEntity extends GameMapBaseEntity {
     this.bulletName = name;
     this.bullet = weapon.map.engine.mix.bullets.get(name) as MIXBullet;
     this.warhead = weapon.map.engine.mix.warheads.get(this.bullet.Warhead) as MIXWarhead;
-    this.dimension = weapon.sprite.size.clone() as Vector;
+    this.dimension = weapon.sprite ? weapon.sprite.size.clone() as Vector : new Vector(CELL_SIZE, CELL_SIZE); //FIXME
     this.position = weapon.entity.getPosition();
     this.cell = cellFromPoint(this.position);
   }
@@ -103,9 +103,11 @@ export class ProjectileEntity extends GameMapBaseEntity {
   }
 
   public onRender(deltaTime: number) {
-    const frame = new Vector(0, this.direction);
-    const context = this.weapon.map.overlay.getContext();
-    this.weapon.sprite.render(frame, this.position, context);
+    if (this.weapon.sprite) {
+      const frame = new Vector(0, this.direction);
+      const context = this.weapon.map.overlay.getContext();
+      this.weapon.sprite.render(frame, this.position, context);
+    }
   }
 
   protected onHit() {
@@ -124,7 +126,7 @@ export class Weapon {
   public readonly weapon: MIXWeapon;
   public readonly map: GameMap;
   public readonly entity: GameMapEntity;
-  public readonly sprite: Sprite;
+  public readonly sprite?: Sprite;
   public readonly trailSprite?: Sprite;
   private tick: number = 0;
 
@@ -134,16 +136,22 @@ export class Weapon {
     this.entity = entity;
 
     const bullet = map.engine.mix.bullets.get(this.weapon.Projectile) as MIXBullet;
-    const spriteName = bullet.Image.toLowerCase();
-    this.sprite = spriteFromName(`CONQUER.MIX/${spriteName}.png`);
 
-    if (bullet.SmokeTrail) {
-      this.trailSprite = spriteFromName(`CONQUER.MIX/smokey.png`);
+
+    if (irrelevantBulletImages.indexOf(bullet.Image) === -1) {
+      const spriteName = bullet.Image.toLowerCase();
+      this.sprite = spriteFromName(`CONQUER.MIX/${spriteName}.png`);
+
+      if (bullet.SmokeTrail) {
+        this.trailSprite = spriteFromName(`CONQUER.MIX/smokey.png`);
+      }
     }
   }
 
   public async init(): Promise<void> {
-    await this.map.engine.loadArchiveSprite(this.sprite);
+    if (this.sprite) {
+      await this.map.engine.loadArchiveSprite(this.sprite);
+    }
 
     if (this.trailSprite) {
       await this.map.engine.loadArchiveSprite(this.trailSprite);
