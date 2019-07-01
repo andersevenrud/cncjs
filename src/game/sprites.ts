@@ -606,10 +606,7 @@ export const spriteMap: any[] = [
   // Construction animaions
   ['CONQUER.MIX/afldmake.png', 96, 48, 14],
   ['CONQUER.MIX/atwrmake.png', 24, 48, 14],
-  ['CONQUER.MIX/barbmake.png', 24, 24, 20],
   ['CONQUER.MIX/biomake.png', 48, 48, 16],
-  ['CONQUER.MIX/brikmake.png', 24, 24, 20],
-  ['CONQUER.MIX/cyclmake.png', 24, 24, 20],
   ['CONQUER.MIX/eyemake.png', 48, 48, 20],
   ['CONQUER.MIX/factmake.png', 72, 48, 32],
   ['CONQUER.MIX/fixmake.png', 72, 72, 20],
@@ -625,11 +622,9 @@ export const spriteMap: any[] = [
   ['CONQUER.MIX/procmake.png', 72, 72, 20],
   ['CONQUER.MIX/pylemake.png', 48, 48, 20],
   ['CONQUER.MIX/sammake.png', 48, 24, 30],
-  ['CONQUER.MIX/sbagmake.png', 24, 24, 20],
   ['CONQUER.MIX/silomake.png', 48, 24, 20],
   ['CONQUER.MIX/tmplmake.png', 72, 72, 36],
   ['CONQUER.MIX/weapmake.png', 72, 72, 20],
-  ['CONQUER.MIX/woodmake.png', 24, 24, 20],
 
   // UI
   ['GENERAL.MIX/africa.png', 320, 200, 176],
@@ -816,5 +811,5 @@ export const spriteFromName = (n: string): Sprite => {
   }
 
   console.warn('spriteFromName()', n, 'not found');
-  return new Sprite(n, new Vector(24, 24), 1);
+  return new Sprite(n, new Vector(24, 24), 0);
 };

@@ -282,7 +282,7 @@ export class StructureEntity extends GameMapEntity {
     const spriteName = `CONQUER.MIX/${this.data.name.toLowerCase()}make.png`;
     const sprite = spriteFromName(spriteName);
 
-    if (sprite) {
+    if (sprite.frames > 0) {
       try {
         await this.engine.loadArchiveSprite(sprite);
 
