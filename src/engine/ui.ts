@@ -30,6 +30,7 @@ export class UIScene extends Entity {
   protected elements: UIEntity[] = [];
   protected updated: boolean = true;
   protected scaled?: UISceneScale;
+  protected lastDownElement?: UIEntity;
 
   public constructor(engine: Core) {
     super();
@@ -42,29 +43,41 @@ export class UIScene extends Entity {
     }
   }
 
-  public onHit(hit: UIEntityHit): void {
-    this.updated = true;
+  public onClick(hit: UIEntityHit): void {
   }
 
   public onUpdate(deltaTime: number): void {
     const { mouse } = this.engine;
+    const position = this.getRealMousePosition();
 
     if (mouse.wasClicked('left')) {
-      const position = mouse.getVector();
-      if (this.scaled) {
-        position.subtract(this.scaled.offset);
-        position.divS(this.scaled.scale)
-      }
-
-      const hit = this.elements
-        .filter((el): boolean => el.isClickable())
-        .map((el): UIEntityHit | undefined => el.collides(position, this.scaled))
-        .filter((res): boolean => !!res)
-        [0];
+      const hit = this.getCollidingEntity(position);
 
       if (hit) {
-        hit.element.onHit(hit);
-        this.onHit(hit);
+        hit.element.onClick(hit.position);
+        this.onClick(hit);
+        this.updated = true;
+      }
+    } else if (mouse.isPressed('left')) {
+      const hit = this.getCollidingEntity(position);
+
+      if (hit) {
+        if (this.lastDownElement && this.lastDownElement !== hit.element) {
+          this.lastDownElement.onMouseUp(hit.position);
+        }
+
+        if (this.lastDownElement !== hit.element) {
+          hit.element.onMouseDown(hit.position);
+          this.updated = true;
+        }
+
+        this.lastDownElement = hit.element;
+      }
+    } else {
+      if (this.lastDownElement) {
+        this.lastDownElement.onMouseUp(position);
+        this.lastDownElement = undefined;
+        this.updated = true;
       }
     }
   }
@@ -85,6 +98,24 @@ export class UIScene extends Entity {
 
     this.updated = true;
     this.elements.forEach((el): void => el.onResize());
+  }
+
+  protected getRealMousePosition(): Vector {
+    const position = this.engine.mouse.getVector();
+    if (this.scaled) {
+      position.subtract(this.scaled.offset);
+      position.divS(this.scaled.scale)
+    }
+
+    return position;
+  }
+
+  protected getCollidingEntity(position: Vector): UIEntityHit | undefined {
+    return this.elements
+      .filter((el): boolean => el.isClickable())
+      .map((el): UIEntityHit | undefined => el.collides(position, this.scaled))
+      .filter((res): boolean => !!res)
+      [0];
   }
 
   public setScale(scaled?: UISceneScale): void {
@@ -137,7 +168,13 @@ export class UIEntity extends Entity {
     this.elements.forEach((el): void => el.onRender(deltaTime, this.context));
   }
 
-  public onHit(hit: UIEntityHit): void {
+  public onMouseUp(position: Vector): void {
+  }
+
+  public onMouseDown(position: Vector): void {
+  }
+
+  public onClick(position: Vector): void {
     this.callback();
   }
 
