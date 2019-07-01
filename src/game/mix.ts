@@ -321,7 +321,7 @@ export interface MIXWarhead {
   TargetWalls: number;
   TargetWood: number;
   InfantryDeath: number;
-  verses: number[];
+  Verses: number[];
 }
 
 export interface MIXWeapon {
@@ -352,11 +352,11 @@ export const arrayMap: string[] = [
   'Prerequisites',
   'Theaters',
   'SecondaryTypeCells',
-  'verses'
+  'Verses'
 ];
 
 export const arrayNumberMap: string[] = [
-  'verses'
+  'Verses'
 ];
 
 export const defaultTeamMap: MIXTeamName[] = [
@@ -621,6 +621,8 @@ export const fontMap: MIXFontMap = {
   }
 };
 
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
 const parseInteger = (val: any): number =>
   String(val).match(/h$/)
     ? parseInt(val, 16)
@@ -658,7 +660,7 @@ const transformValue = (key: string, value: string, filename: string): any => {
 const transformObject = (obj: any, filename: string, name: string): any => {
   const keys = Object.keys(obj);
   return keys.reduce((accumulator, key): any => {
-    return {...accumulator, [key]: transformValue(key, obj[key], filename)};
+    return {...accumulator, [capitalize(key)]: transformValue(key, obj[key], filename)};
   }, {});
 };
 

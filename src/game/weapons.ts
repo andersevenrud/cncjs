@@ -111,7 +111,7 @@ export class ProjectileEntity extends GameMapBaseEntity {
   protected onHit() {
     const damage = this.weapon.weapon.Damage;
     const armor = this.target.getArmor();
-    const take = 256 / this.warhead.verses[armor];
+    const take = 256 / this.warhead.Verses[armor];
     const finalDamage = damage * take;
 
     // TODO: Apparently if there's multiple units in same cell, you divide by three
