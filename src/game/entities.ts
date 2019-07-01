@@ -427,6 +427,8 @@ export class StructureEntity extends GameMapEntity {
  */
 export class UnitEntity extends DynamicEntity {
   public dimension: Vector = new Vector(16, 16);
+  protected wakeSprite?: Sprite;
+  protected wakeAnimation?: Animation;
   protected properties: MIXUnit = this.engine.mix.units.get(this.data.name) as MIXUnit;
 
   public async init(): Promise<void> {
@@ -434,6 +436,15 @@ export class UnitEntity extends DynamicEntity {
 
     if (this.sprite) {
       this.dimension = this.sprite.size.clone() as Vector;
+    }
+
+    if (this.data.name === 'BOAT') { // FIXME
+      this.wakeSprite = spriteFromName('CONQUER.MIX/wake.png');
+
+      const half = this.wakeSprite.frames / 2;
+      this.wakeAnimation = new Animation('Idle', new Vector(0, 0), half, 0.2);
+
+      await this.engine.loadArchiveSprite(this.wakeSprite);
     }
   }
 
@@ -473,6 +484,14 @@ export class UnitEntity extends DynamicEntity {
     return false;
   }
 
+  public onUpdate(deltaTime: number): void {
+    super.onUpdate(deltaTime);
+
+    if (this.wakeAnimation) {
+      this.wakeAnimation.onUpdate();
+    }
+  }
+
   public onRender(deltaTime: number): void {
     const context = this.map.units.getContext();
     super.onRender(deltaTime);
@@ -481,9 +500,21 @@ export class UnitEntity extends DynamicEntity {
       return;
     }
 
-    const frame = new Vector(this.frameOffset.x, Math.round(this.direction));
     const position = this.getTruncatedPosition();
-    this.sprite!.render(frame, position, context);
+
+    if (this.wakeSprite) {
+      const o = new Vector(0, this.direction === 8 ? this.wakeSprite.frames / 2 : 0);
+      const f = this.wakeAnimation!.getFrameIndex(o);
+      const p = position.clone().add(new Vector(
+        -this.dimension.x / 2,
+        this.dimension.y / 2
+      )) as Vector;
+
+      this.wakeSprite.render(f, p, context);
+    }
+
+    const frame = new Vector(this.frameOffset.x, Math.round(this.direction));
+    this.sprite.render(frame, position, context);
   }
 
   public getRotationSpeed(): number {
