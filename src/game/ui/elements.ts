@@ -11,7 +11,16 @@ import { spriteFromName } from '../sprites';
 import { MIXFont, fontMap } from '../mix';
 import { Vector } from 'vector2d';
 
-export type UIActionsName = 'sell' | 'repair'
+export type UIActionsName = 'sell' | 'repair';
+export type UIConstructionState = 'constructing' | 'hold' | 'ready';
+export type UIConstructionProgress = [number, number]; // total / progress
+
+export interface UIConstructionItem {
+  name: string;
+  index: number;
+  state: UIConstructionState;
+  progress: UIConstructionProgress;
+}
 
 export const SIDEBAR_WIDTH = 160;
 export const RADAR_WIDTH = 160;
@@ -403,6 +412,7 @@ export abstract class UIConstruction extends GameUIEntity {
   protected offset: number = 0;
   private strip: Entity = new Entity();
   private names: string[] = [];
+  private items: Map<string, UIConstructionItem> = new Map();
 
   public async init(): Promise<void> {
     this.setDimension(new Vector(THUMB_WIDTH, THUMB_HEIGHT * THUMB_COUNT + BUTTON_HEIGHT + 1));
