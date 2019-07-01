@@ -424,8 +424,8 @@ export abstract class UIConstruction extends GameUIEntity {
       index++;
     }
 
-    this.sprites.set('buttonDown', spriteFromName('UPDATEC.MIX/hstripup.png'));
-    this.sprites.set('buttonUp', spriteFromName('UPDATEC.MIX/hstripdn.png'));
+    this.sprites.set('buttonDown', spriteFromName('UPDATEC.MIX/hstripdn.png'));
+    this.sprites.set('buttonUp', spriteFromName('UPDATEC.MIX/hstripup.png'));
     this.sprites.set('pips', spriteFromName('UPDATEC.MIX/hpips.png'));
     await super.init();
   }
@@ -480,7 +480,6 @@ export abstract class UIConstruction extends GameUIEntity {
     const up = this.sprites.get('buttonUp') as Sprite;
     const down = this.sprites.get('buttonDown') as Sprite;
 
-    this.context.fillStyle = '#000000';
     this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
 
     this.strip.getContext().clearRect(0, 0, this.strip.dimension.x, this.strip.dimension.y);
@@ -489,13 +488,18 @@ export abstract class UIConstruction extends GameUIEntity {
     for (let i = 0; i < this.names.length; i++) {
       const sprite = this.sprites.get(this.names[i]) as Sprite;
       const position = new Vector(0, index * THUMB_HEIGHT);
-      this.context.fillRect(position.x, position.y, sprite.size.x, sprite.size.y);
+      this.context.clearRect(position.x, position.y, sprite.size.x, sprite.size.y);
       sprite.render(frame, position, this.strip.getContext());
       index++;
     }
 
-    down.render(new Vector(0, 0), new Vector(0, this.strip.dimension.y + 1), this.context);
-    up.render(new Vector(0, 0), new Vector(BUTTON_WIDTH, this.strip.dimension.y + 1), this.context);
+    if (this.offset > 0) {
+      up.render(new Vector(0, 0), new Vector(0, this.strip.dimension.y + 1), this.context);
+    }
+
+    if (this.offset < this.names.length - THUMB_COUNT) {
+      down.render(new Vector(0, 0), new Vector(BUTTON_WIDTH, this.strip.dimension.y + 1), this.context);
+    }
 
     this.context.drawImage(this.strip.getCanvas(), 0, 0, this.strip.dimension.x, this.strip.dimension.y);
     ctx.drawImage(this.canvas, 0, 0, this.dimension.x, this.dimension.y, this.position.x, this.position.y, this.dimension.x, this.dimension.y);
@@ -507,7 +511,7 @@ export abstract class UIConstruction extends GameUIEntity {
   }
 
   public moveDown(): void {
-    this.offset = Math.min(this.sprites.size - THUMB_COUNT - 2, this.offset + 1);
+    this.offset = Math.min(this.names.length - THUMB_COUNT, this.offset + 1);
     console.debug('UIConstruction::moveDown()', this.offset);
   }
 }
