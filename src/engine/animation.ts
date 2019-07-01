@@ -17,8 +17,9 @@ export class Animation extends EventEmitter {
   protected readonly loop: boolean = true;
   protected current: number = 0.0;
   protected stopped: boolean = false;
+  protected reversed: boolean = false;
 
-  public constructor(name: string, offset: Vector, count: number, speed: number, loop: boolean = true) {
+  public constructor(name: string, offset: Vector, count: number, speed: number, loop: boolean = true, reversed: boolean = false) {
     super();
 
     this.name = name;
@@ -26,6 +27,7 @@ export class Animation extends EventEmitter {
     this.count = count;
     this.speed = speed;
     this.loop = loop;
+    this.reversed = reversed;
   }
 
   /**
@@ -51,10 +53,20 @@ export class Animation extends EventEmitter {
   }
 
   /**
+   * Set if playing in reverse
+   */
+  public setReversed(reversed: boolean): void {
+    this.reversed = reversed;
+  }
+
+  /**
    * Get current frame
    */
   public getFrameIndex(offset: Vector = new Vector(0, 0)): Vector {
-    const frame = Math.floor(this.current);
+    let frame = Math.floor(this.current);
+    if (this.reversed) {
+      frame = this.count - frame;
+    }
 
     return this.offset
       .clone()
