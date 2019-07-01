@@ -69,6 +69,7 @@ export interface MIXObject {
   Owner: string[];
   SecondaryWeapon: string;
   PrimaryWeapon: string;
+  Armor?: number;
   Speed?: number;
   Sight?: number;
   Cost: number;
@@ -83,7 +84,6 @@ export interface MIXCursorMap {
 
 export interface MIXAircraft extends MIXObject {
   TurningSpeed: number;
-  Armor: number;
   BuildLevel: number;
   HitPoints: number;
   Ammo: number;
@@ -234,7 +234,6 @@ export interface MIXStructure extends MIXObject {
   PowerDrain: number;
   PowerProduction: number;
   TiberiumStorage: number;
-  Armor: number;
   BuildLevel: number;
   StartFacing: number;
   Factory: string;
@@ -291,7 +290,6 @@ export interface MIXTileSet {
 export interface MIXUnit extends MIXObject {
   TurnSpeed: number;
   MovementType: number;
-  Armor: number;
   BuildLevel: number;
   Ammo: number;
   CycleGraphics: boolean;
@@ -323,7 +321,7 @@ export interface MIXWarhead {
   TargetWalls: number;
   TargetWood: number;
   InfantryDeath: number;
-  verse: number[];
+  verses: number[];
 }
 
 export interface MIXWeapon {
@@ -354,7 +352,11 @@ export const arrayMap: string[] = [
   'Prerequisites',
   'Theaters',
   'SecondaryTypeCells',
-  'Verses'
+  'verses'
+];
+
+export const arrayNumberMap: string[] = [
+  'verses'
 ];
 
 export const defaultTeamMap: MIXTeamName[] = [
@@ -634,7 +636,7 @@ const stringToArray = (str: string): string[] => str === 'None'
   : str.split(',');
 
 const transformValue = (key: string, value: string, filename: string): any => {
-  if (filename === 'GAME.DAT/infanims.ini') {
+  if (filename === 'GAME.DAT/infanims.ini' || arrayNumberMap.indexOf(key) !== -1) {
     return stringToArray(value).map((i): number => parseInt(i, 10));
   } else if (arrayMap.indexOf(key) !== -1) {
     try {

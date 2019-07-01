@@ -522,6 +522,10 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
     return 0;
   }
 
+  public getArmor(): number {
+    return this.properties!.Armor || 0;
+  }
+
   public canReveal(): boolean {
     // FIXME: Neutral ?
     return this.map.scene.player.getId() === this.data.player;

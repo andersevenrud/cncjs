@@ -13,6 +13,7 @@ import { EffectEntity } from './entities';
 import { Vector } from 'vector2d';
 
 export class ProjectileEntity extends GameMapBaseEntity {
+  protected readonly bulletName: string;
   protected readonly bullet: MIXBullet;
   protected readonly warhead: MIXWarhead;
   protected readonly target: GameMapEntity;
@@ -25,6 +26,7 @@ export class ProjectileEntity extends GameMapBaseEntity {
 
     this.target = target;
     this.weapon = weapon;
+    this.bulletName = name;
     this.bullet = weapon.map.engine.mix.bullets.get(name) as MIXBullet;
     this.warhead = weapon.map.engine.mix.warheads.get(this.bullet.Warhead) as MIXWarhead;
     this.dimension = weapon.sprite.size.clone() as Vector;
@@ -107,7 +109,13 @@ export class ProjectileEntity extends GameMapBaseEntity {
   }
 
   protected onHit() {
-    this.target.takeDamage(20);
+    const damage = this.weapon.weapon.Damage;
+    const armor = this.target.getArmor();
+    const take = 256 / this.warhead.verses[armor];
+    const finalDamage = damage * take;
+
+    // TODO: Apparently if there's multiple units in same cell, you divide by three
+    this.target.takeDamage(finalDamage);
     this.destroy();
   }
 }
