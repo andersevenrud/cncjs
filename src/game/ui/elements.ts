@@ -4,7 +4,7 @@
  * @license MIT
  */
 
-import { Entity, Sprite, UIScene, UIEntity, UIEntityHit, collidePoint } from '../../engine';
+import { Entity, Sprite, UIScene, UIEntity, collidePoint } from '../../engine';
 import { GameEngine } from '../game';
 import { TheatreUI } from './theatre';
 import { spriteFromName } from '../sprites';
@@ -26,6 +26,9 @@ export const THUMB_WIDTH = 64;
 export const THUMB_HEIGHT = 48;
 export const THUMB_COUNT = 4;
 
+/**
+ * Game UI Entity abstraction
+ */
 export class GameUIEntity extends UIEntity {
   protected readonly sprites: Map<string, Sprite> = new Map();
   protected readonly engine: GameEngine;
@@ -46,6 +49,9 @@ export class GameUIEntity extends UIEntity {
   }
 }
 
+/**
+ * Text
+ */
 export class UIText extends GameUIEntity {
   private label: string;
   private font: string;
@@ -113,6 +119,9 @@ export class UIText extends GameUIEntity {
   }
 }
 
+/**
+ * Button
+ */
 export class UIButton extends GameUIEntity {
   private backgroundPattern: CanvasPattern | null = null;
   private label: string;
@@ -151,6 +160,9 @@ export class UIButton extends GameUIEntity {
   }
 }
 
+/**
+ * Box
+ */
 export class UIBox extends GameUIEntity {
   private customPosition?: string;
   private decorations: boolean = false;
@@ -190,6 +202,9 @@ export class UIBox extends GameUIEntity {
   }
 }
 
+/**
+ * Tabs
+ */
 export class UITab extends GameUIEntity {
   public dimension: Vector = new Vector(TAB_WIDTH, TAB_HEIGHT);
   private frame: Vector = new Vector(0, 0);
@@ -225,6 +240,9 @@ export class UITab extends GameUIEntity {
   }
 }
 
+/**
+ * Action buttons
+ */
 export class UIActions extends GameUIEntity {
   public dimension: Vector = new Vector(RADAR_WIDTH, ACTION_HEIGHT);
   public sprites: Map<string, Sprite> = new Map([
@@ -301,6 +319,9 @@ export class UIActions extends GameUIEntity {
   }
 }
 
+/**
+ * Radar
+ */
 export class UIRadar extends GameUIEntity {
   public dimension: Vector = new Vector(RADAR_WIDTH, RADAR_HEIGHT);
   private frame: Vector = new Vector(0, 0);
@@ -322,6 +343,9 @@ export class UIRadar extends GameUIEntity {
   }
 }
 
+/**
+ * Sidebar
+ */
 export class UISidebar extends GameUIEntity {
   private backgroundPattern: CanvasPattern | null = null;
   public dimension: Vector = new Vector(SIDEBAR_WIDTH, SIDEBAR_WIDTH);
@@ -372,7 +396,10 @@ export class UISidebar extends GameUIEntity {
   }
 }
 
-export class UIConstruction extends GameUIEntity {
+/**
+ * Construction strip
+ */
+export abstract class UIConstruction extends GameUIEntity {
   protected offset: number = 0;
   private strip: Entity = new Entity();
   private names: string[] = [];
@@ -389,6 +416,7 @@ export class UIConstruction extends GameUIEntity {
 
     this.sprites.set('buttonDown', spriteFromName('UPDATEC.MIX/hstripup.png'));
     this.sprites.set('buttonUp', spriteFromName('UPDATEC.MIX/hstripdn.png'));
+    this.sprites.set('pips', spriteFromName('UPDATEC.MIX/hpips.png'));
     await super.init();
   }
 
@@ -444,6 +472,9 @@ export class UIConstruction extends GameUIEntity {
   }
 }
 
+/**
+ * Factory construction strip
+ */
 export class UIFactoryConstruction extends UIConstruction {
   protected readonly sprites: Map<string, Sprite> = new Map([
     ['e1', spriteFromName('TEMPICNH.MIX/e1icnh.png')],
@@ -469,6 +500,9 @@ export class UIFactoryConstruction extends UIConstruction {
   ]);
 }
 
+/**
+ * Structure construction strip
+ */
 export class UIStructureConstruction extends UIConstruction {
   protected readonly sprites: Map<string, Sprite> = new Map([
     ['nuke', spriteFromName('TEMPICNH.MIX/nukeicnh.png')],
