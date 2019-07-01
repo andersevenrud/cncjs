@@ -154,14 +154,21 @@ export class TheatreUI extends UIScene {
       if (attack) {
         selected.forEach((s, i) => s.attack(hit, i === 0));
       } else {
-        const deployable = selected.filter(s => s.isDeployable());
-        if (deployable.length > 0) {
-          deployable[0].deploy();
-          this.toggleSidebar(true); // FIXME
+        if (this.currentAction === 'sell') {
+          hit.sell();
+        } else if (this.currentAction === 'repair') {
+          hit.repair();
         } else {
-          map.unselectEntities();
-          hit.setSelected(true);
+          const deployable = selected.filter(s => s.isDeployable());
+          if (deployable.length > 0) {
+            deployable[0].deploy();
+            this.toggleSidebar(true); // FIXME
+          } else {
+            map.unselectEntities();
+            hit.setSelected(true);
+          }
         }
+
         console.log('Hit', point, cell, hit);
       }
     } else {
@@ -241,9 +248,9 @@ export class TheatreUI extends UIScene {
     let cursor = 'default';
     if (!this.isMouseOutsideViewport()) {
       if (this.currentAction === 'sell') {
-        cursor = 'sell';
+        cursor = hovering && hovering.isSellable() ? 'sell' : 'cannotSell';
       } else if (this.currentAction === 'repair') {
-        cursor = 'repair';
+        cursor = hovering && hovering.isRepairable() ? 'repair' : 'cannotRepair';
       } else {
         if (hovering && selected.length > 0 && hovering.isAttackable(selected[0]) && canAttack) {
           cursor = 'attack';

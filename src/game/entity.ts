@@ -90,6 +90,12 @@ export abstract class GameMapBaseEntity extends Entity {
   public attack(target: GameMapBaseEntity, report: boolean = false): void {
   }
 
+  public sell(): void {
+  }
+
+  public repair(): void {
+  }
+
   public deploy(): void {
   }
 
@@ -199,6 +205,14 @@ export abstract class GameMapBaseEntity extends Entity {
   }
 
   public isDeployable(): boolean {
+    return false;
+  }
+
+  public isSellable(): boolean {
+    return false;
+  }
+
+  public isRepairable(): boolean {
     return false;
   }
 

@@ -340,6 +340,15 @@ export class StructureEntity extends GameMapEntity {
     }
   }
 
+  public sell(): void {
+    // TODO: Refund credits
+    // TODO: Deconstruct animation
+    this.reportDestroy = undefined;
+    this.destroy();
+
+    this.engine.playArchiveSfx('SOUNDS.MIX/cashturn.wav', 'gui');
+  }
+
   public onUpdate(deltaTime: number): void {
     const animation = this.animations.get(this.animation);
     const instance = this.constructing ? this.constructionAnimation : animation;
@@ -372,6 +381,14 @@ export class StructureEntity extends GameMapEntity {
     if (this.overlaySprite && !this.constructing) {
       this.renderSprite(deltaTime, this.map.overlay.getContext(), this.overlaySprite, new Vector(0, 0));// FIXME
     }
+  }
+
+  public isSellable(): boolean {
+    return this.isPlayer();
+  }
+
+  public isRepairable(): boolean {
+    return this.isPlayer(); // FIXME Check health
   }
 
   public isSelectable(): boolean {
@@ -410,6 +427,7 @@ export class UnitEntity extends DynamicEntity {
   }
 
   public die(): boolean {
+    // TODO: Crowded unit should spawn a low-health infantry
     if (super.die()) {
       const name = this.properties!.DeathAnimation;
       const effect = new EffectEntity({
