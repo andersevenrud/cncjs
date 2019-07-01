@@ -193,7 +193,6 @@ export class UIBox extends GameUIEntity {
 export class UITab extends GameUIEntity {
   public dimension: Vector = new Vector(TAB_WIDTH, TAB_HEIGHT);
   private frame: Vector = new Vector(0, 0);
-  private label: string;
 
   public sprites: Map<string, Sprite> = new Map([
     ['tabs', spriteFromName('UPDATEC.MIX/htabs.png')]
@@ -202,15 +201,24 @@ export class UITab extends GameUIEntity {
   public constructor(name: string, label: string, position: Vector, callback: Function, engine: GameEngine, ui: TheatreUI) {
     super(name, position, callback, engine, ui);
     this.position = position;
-    this.label = label;
 
     const child = new UIText(name + '-label', label, '8point', new Vector(0.5, 0.5), engine, ui);
     this.addChild(child);
   }
 
+  public onMouseDown(position: Vector): void {
+    this.frame.setY(1);
+  }
+
+  public onMouseUp(position: Vector): void {
+    this.frame.setY(0);
+  }
+
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
+    this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
+
     const sprite = this.sprites.get('tabs') as Sprite;
-    sprite.render(this.frame, this.position, ctx);
+    sprite.render(this.frame, new Vector(0, 0), this.context);
 
     super.onRender(deltaTime, this.context);
     ctx.drawImage(this.canvas, this.position.x, this.position.y);
@@ -233,19 +241,34 @@ export class UIActions extends GameUIEntity {
     new Vector((ACTION_WIDTH + 4) * 2, 0)
   ];
 
+  private frames: Vector[] = [
+    new Vector(0, 0),
+    new Vector(0, 0),
+    new Vector(0, 2)
+  ];
+
   public constructor(position: Vector, callback: Function, engine: GameEngine, ui: TheatreUI) {
     super('actions', position, callback, engine, ui);
   }
 
-  public onHit(hit: UIEntityHit): void {
-    const boxes = this.indexes.map(v => ({
-      x1: v.x,
-      y1: v.y,
-      x2: v.x + ACTION_WIDTH,
-      y2: ACTION_HEIGHT
-    }))
+  public onMouseDown(position: Vector): void {
+    const hitButton = this.getButtonHit(position);
+    if (hitButton !== -1 && this.frames[hitButton].y !== 2) {
+      this.frames[hitButton].setY(1);
+    }
+  }
 
-    const hitButton = boxes.findIndex(box => collidePoint(hit.position, box));
+  public onMouseUp(position: Vector): void {
+    this.frames[0].setY(0);
+    this.frames[1].setY(0);
+
+    if (this.frames[2].y !== 2) {
+      this.frames[2].setY(0);
+    }
+  }
+
+  public onClick(position: Vector): void {
+    const hitButton = this.getButtonHit(position);
     const hitName = this.names[hitButton];
     this.callback(hitName as UIActionsName);
   }
@@ -257,13 +280,24 @@ export class UIActions extends GameUIEntity {
 
     this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
 
-    sell.render(new Vector(0, 0), this.indexes[0], this.context);
-    repair.render(new Vector(0, 0), this.indexes[1], this.context);
-    map.render(new Vector(0, 2), this.indexes[2], this.context);
+    sell.render(this.frames[0], this.indexes[0], this.context);
+    repair.render(this.frames[1], this.indexes[1], this.context);
+    map.render(this.frames[2], this.indexes[2], this.context);
 
     super.onRender(deltaTime, ctx);
 
     ctx.drawImage(this.canvas, this.position.x, this.position.y);
+  }
+
+  protected getButtonHit(position: Vector): number {
+    const boxes = this.indexes.map(v => ({
+      x1: v.x,
+      y1: v.y,
+      x2: v.x + ACTION_WIDTH,
+      y2: ACTION_HEIGHT
+    }))
+
+    return boxes.findIndex(box => collidePoint(position, box));
   }
 }
 
@@ -358,9 +392,9 @@ export class UIConstruction extends GameUIEntity {
     await super.init();
   }
 
-  public onHit(hit: UIEntityHit): void {
-    const thumbnail = Math.floor(hit.position.y / THUMB_HEIGHT);
-    const button = hit.position.x / THUMB_WIDTH;
+  public onClick(position: Vector): void {
+    const thumbnail = Math.floor(position.y / THUMB_HEIGHT);
+    const button = position.x / THUMB_WIDTH;
 
     if (thumbnail > THUMB_COUNT - 1) {
       if (button > 0.5) {
