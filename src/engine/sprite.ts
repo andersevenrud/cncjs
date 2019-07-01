@@ -84,7 +84,7 @@ export class Sprite {
     if (!this.lastFrame || !this.lastFrame.equals(frame)) {
       this.lastFrameBufferContext.clearRect(0, 0, dw, dh);
       this.lastFrameBufferContext.drawImage(this.image.canvas, sx, sy, sw, sh, 0, 0, dw, dh);
-      this.lastFrame = frame;
+      this.lastFrame = frame.clone() as Vector;
     }
 
     //context.clearRect(dx, dy, dw, dh);
