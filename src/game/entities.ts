@@ -271,8 +271,10 @@ export class StructureEntity extends GameMapEntity {
       await this.engine.loadArchiveSprite(this.overlaySprite);
     }
 
+    await this.initMake();
+
     if (this.map.isCreated()) {
-      await this.initMake();
+      this.playSfx('constru2');
     } else {
       this.constructing = false;
     }
@@ -297,16 +299,13 @@ export class StructureEntity extends GameMapEntity {
 
         this.constructionSprite = sprite;
         this.constructionAnimation = new Animation(this.data.name + 'MAKE', new Vector(0, 0), sprite.frames, 0.5);
-        this.constructionAnimation.on('done', () => {
+        this.constructionAnimation.once('done', () => {
           this.constructing = false;
-          this.constructionSprite = undefined;
         });
       } catch (e) {
         console.error('StructureEntity::initConstruct()', e);
       }
     }
-
-    this.playSfx('constru2');
   }
 
   protected async initBib(): Promise<void> {
@@ -344,7 +343,18 @@ export class StructureEntity extends GameMapEntity {
     // TODO: Refund credits
     // TODO: Deconstruct animation
     this.reportDestroy = undefined;
-    this.destroy();
+
+    if (this.constructionAnimation) {
+      this.constructing = true;
+      this.constructionAnimation.reset();
+      this.constructionAnimation.setReversed(true);
+      this.constructionAnimation.once('done', () => {
+        this.constructing = false;
+        this.destroy();
+      });
+    } else {
+      this.destroy();
+    }
 
     this.engine.playArchiveSfx('SOUNDS.MIX/cashturn.wav', 'gui');
   }
