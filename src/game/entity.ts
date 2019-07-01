@@ -360,11 +360,12 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
     );
   }
 
-  protected renderSprite(deltaTime: number, context: CanvasRenderingContext2D, sprite?: Sprite): void {
+  protected renderSprite(deltaTime: number, context: CanvasRenderingContext2D, sprite?: Sprite, frame?: Vector): void {
     const s = sprite || this.sprite;
+    const f = frame || this.frame;
     if (s) {
       const position = this.getTruncatedPosition(this.offset);
-      const canvas = s.render(this.frame, position, context);
+      const canvas = s.render(f, position, context);
 
       // FIXME: optimize
       if (this.overlap) {

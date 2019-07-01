@@ -238,6 +238,8 @@ export class StructureEntity extends GameMapEntity {
   protected bibOffset: number = 0;
   protected bib?: HTMLCanvasElement;
   protected constructing: boolean = true;
+  protected overlaySprite?: Sprite;
+  protected overlayAnimation?: Animation;
   protected constructionSprite?: Sprite;
   protected constructionAnimation?: Animation;
   protected reportDestroy?: string = 'CRUMBLE';
@@ -260,6 +262,13 @@ export class StructureEntity extends GameMapEntity {
       this.animations.set('Idle', new GameMapEntityAnimation(name, new Vector(0, anim.StartFrame), anim.Frames, 0.1, 0));
       this.animations.set('Idle-Damaged', new GameMapEntityAnimation(name, new Vector(0, anim.StartFrame + damageOffset), anim.Frames, 0.1, 0));
       this.animations.set('Idle-Destroyed', new GameMapEntityAnimation(name, new Vector(0, anim.StartFrame + (damageOffset * 2)), 1, 0.1, 0));
+    }
+
+    if (this.data.name === 'WEAP') {
+      this.overlaySprite = spriteFromName(`CONQUER.MIX/weap2.png`);
+      this.overlayAnimation = new Animation('Idle', new Vector(0, 0), this.overlaySprite.frames, 0.1, false);
+      this.overlap = undefined;
+      await this.engine.loadArchiveSprite(this.overlaySprite);
     }
 
     if (this.map.isCreated()) {
@@ -359,6 +368,10 @@ export class StructureEntity extends GameMapEntity {
     }
 
     super.onRender(deltaTime);
+
+    if (this.overlaySprite && !this.constructing) {
+      this.renderSprite(deltaTime, this.map.overlay.getContext(), this.overlaySprite, new Vector(0, 0));// FIXME
+    }
   }
 
   public isSelectable(): boolean {

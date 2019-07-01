@@ -723,6 +723,7 @@ export const spriteMap: any[] = [
 
   // Structures
   ['CONQUER.MIX/weap.png', 72, 72, 3],
+  ['CONQUER.MIX/weap2.png', 72, 72, 20],
   ['CONQUER.MIX/gtwr.png', 24, 24, 3],
   ['CONQUER.MIX/atwr.png', 24, 48, 3],
   ['CONQUER.MIX/obli.png', 24, 48, 9],
