@@ -758,6 +758,7 @@ export const spriteMap: any[] = [
   ['CONQUER.MIX/e3.png', 50, 39, 548, [26, 16, 16, 16]],
   ['CONQUER.MIX/e4.png', 50, 39, 660, [26, 16, 16, 16]],
   ['CONQUER.MIX/e5.png', 50, 39, 248, [26, 16, 16, 16]],
+  ['CONQUER.MIX/e6.png', 50, 39, 248, [26, 16, 16, 16]],
   ['CONQUER.MIX/rmbo.png', 50, 39, 468, [26, 16, 16, 16]],
   ['CONQUER.MIX/c1.png', 50, 39, 375, [26, 16, 16, 16]],
   ['CONQUER.MIX/c10.png', 50, 39, 375, [26, 16, 16, 16]],

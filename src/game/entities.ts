@@ -99,12 +99,20 @@ export class DynamicEntity extends GameMapEntity {
 
     if (this.properties!.PrimaryWeapon) {
       this.primaryWeapon = new Weapon(this.properties!.PrimaryWeapon, this.map, this);
-      await this.primaryWeapon.init();
+      try {
+        await this.primaryWeapon.init();
+      } catch (e) {
+        console.warn('PrimaryWeapon exception', e);
+      }
     }
 
     if (this.properties!.SecondaryWeapon) {
       this.secondaryWeapon = new Weapon(this.properties!.SecondaryWeapon, this.map, this);
-      await this.secondaryWeapon.init();
+      try {
+        await this.secondaryWeapon.init();
+      } catch (e) {
+        console.warn('SecondaryWeapon exception', e);
+      }
     }
   }
 
