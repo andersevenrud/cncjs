@@ -115,7 +115,7 @@ export class TheatreUI extends UIScene {
     } else if (state === 'hold') {
       this.scene.engine.playArchiveSfx('SPEECH.MIX/onhold1.wav', 'gui', {}, 'eva');
     } else if (state === 'tick') {
-      this.scene.engine.playArchiveSfx('SOUNDS.MIX/clock1.wav', 'gui', { volume: 0.25 });
+      this.scene.engine.playArchiveSfx('SOUNDS.MIX/clock1.wav', 'gui', { volume: 0.25, block: true });
       this.scene.player.subScredits(1.0); // FIXME
     } else if (state === 'place') {
       const name = item!.name.toUpperCase();
