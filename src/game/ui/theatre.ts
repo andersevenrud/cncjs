@@ -49,17 +49,27 @@ export class TheatreUI extends UIScene {
     let menu: UIBox, settings: UIBox, visuals: UIBox, sounds: UIBox;
 
     const onNull = () => {};
+
     const onMenuClick = () => {
       menu.setVisible(true);
       this.menuOpen = true;
     };
+
     const onClose = () => {
       menu.setVisible(false);
       this.menuOpen = false;
     };
+
     const onControlsOpen = () => {
       menu.setVisible(false);
       settings.setVisible(true);
+    };
+
+    const onAbort = () => {
+      this.scene.engine.sound.playlist.pause();
+      this.scene.engine.playArchiveSfx('SPEECH.MIX/batlcon1.wav', 'gui', {
+        done: () => this.scene.engine.pushMenuScene()
+      }, 'eva');
     };
 
     const onCreditsClick = () => {};
@@ -87,7 +97,7 @@ export class TheatreUI extends UIScene {
     menu.addChild(new UIButton('save-mission', 'Save mission', new Vector(250, 18), new Vector(0.5, 64), onClose, this.scene.engine, this));
     menu.addChild(new UIButton('delete-mission', 'Delete mission', new Vector(250, 18), new Vector(0.5, 88), onClose, this.scene.engine, this));
     menu.addChild(new UIButton('game-controls', 'Game Controls', new Vector(250, 18), new Vector(0.5, 112), onControlsOpen, this.scene.engine, this));
-    menu.addChild(new UIButton('abort-mission', 'Abort mission', new Vector(250, 18), new Vector(0.5, 136), onClose, this.scene.engine, this));
+    menu.addChild(new UIButton('abort-mission', 'Abort mission', new Vector(250, 18), new Vector(0.5, 136), onAbort, this.scene.engine, this));
 
     menu.addChild(new UIButton('resume-mission', 'Resume mission', new Vector(125, 18), new Vector(18, 200), onClose, this.scene.engine, this));
     menu.addChild(new UIButton('restate-mission', 'Restate', new Vector(125, 18), new Vector(282, 200), onClose, this.scene.engine, this));
