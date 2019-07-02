@@ -135,7 +135,12 @@ export class UIScene extends Entity {
   }
 
   public getElementByName(name: string): UIEntity | undefined {
-    return this.elements.find((el): boolean => el.name === name);
+    const tree: UIEntity[] = [
+      ...this.elements,
+      ...(([] as UIEntity[]).concat(...this.elements.map(el => el.getElements())))
+    ];
+
+    return tree.find((el): boolean => el.name === name);
   }
 }
 
@@ -273,6 +278,10 @@ export class UIEntity extends Entity {
 
   public isUpdated(): boolean {
     return this.updated;
+  }
+
+  public getElements(): UIEntity[] {
+    return this.elements;
   }
 
   public getBox(scaled?: UISceneScale): Box {
