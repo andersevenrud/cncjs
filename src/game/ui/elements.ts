@@ -13,7 +13,7 @@ import { Vector } from 'vector2d';
 
 export type UIActionsName = 'sell' | 'repair';
 export type UIConstructionState = 'constructing' | 'hold' | 'ready';
-export type UIConstructionResponse = 'construct' | 'hold' | 'cancel' | 'busy' | 'place' | 'finished';
+export type UIConstructionResponse = 'construct' | 'hold' | 'cancel' | 'busy' | 'place' | 'finished' | 'tick';
 
 export interface UIConstructionItem {
   name: string;
@@ -83,19 +83,7 @@ export class UIText extends GameUIEntity {
   public async init(): Promise<void> {
     await super.init();
 
-    const sprite = this.sprites.get(this.font) as Sprite;
-    const { width, height, calculated } = this.calculateString();
-    const color = 0; // FIXME
-
-    this.setDimension(new Vector(width, height));
-
-    for ( let i = 0; i < calculated.length; i++ ) {
-      const { left, index } = calculated[i];
-
-      if (index >= 0) {
-        sprite.render(new Vector(color, index), new Vector(left, 0), this.context);
-      }
-    }
+    this.setLabel(this.label);
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
@@ -125,6 +113,23 @@ export class UIText extends GameUIEntity {
     }
 
     return {width, height, calculated};
+  }
+
+  public setLabel(label: string): void {
+    const sprite = this.sprites.get(this.font) as Sprite;
+
+    const { width, height, calculated } = this.calculateString();
+    const color = 0; // FIXME
+
+    this.setDimension(new Vector(width, height));
+
+    for ( let i = 0; i < calculated.length; i++ ) {
+      const { left, index } = calculated[i];
+
+      if (index >= 0) {
+        sprite.render(new Vector(color, index), new Vector(left, 0), this.context);
+      }
+    }
   }
 }
 
@@ -246,6 +251,11 @@ export class UITab extends GameUIEntity {
 
     super.onRender(deltaTime, this.context);
     ctx.drawImage(this.canvas, this.position.x, this.position.y);
+  }
+
+  public setLabel(label: string):void {
+    const el = this.elements[0] as UIText;
+    el.setLabel(label);
   }
 }
 
@@ -450,7 +460,7 @@ export abstract class UIConstruction extends GameUIEntity {
           if (busy) {
             if (busy.state === 'hold' || busy.state === 'ready') {
               this.items.delete(found);
-              this.callback('cancel');
+              this.callback('cancel', busy);
             } else {
               busy.state = 'hold';
               this.callback('hold');
@@ -463,25 +473,26 @@ export abstract class UIConstruction extends GameUIEntity {
               : 1;
 
             if (progress >= 1.0) {
-              this.callback('place', found.toUpperCase());
+              this.callback('place', busy);
 
               // FIXME: Do this when it is actually placed
               this.items.delete(found);
             } else if (busy.state === 'hold') {
               busy.state = 'constructing';
-              this.callback('construct');
+              this.callback('construct', busy);
             } else {
               this.callback('busy');
             }
           } else {
-            this.items.set(found, {
+            const item = {
               name: found,
-              state: 'constructing',
+              state: 'constructing' as UIConstructionState,
               cost: 100,
               progress: 0
-            });
+            };
 
-            this.callback('construct');
+            this.items.set(found, item);
+            this.callback('construct', item);
           }
         }
       }
@@ -494,7 +505,9 @@ export abstract class UIConstruction extends GameUIEntity {
     for (let item of this.items.values()) {
       if (item.progress < item.cost) {
         if (item.state === 'constructing') {
-          item.progress = Math.min(item.cost, item.progress + 1);
+          // FIXME: Rule
+          item.progress = Math.min(item.cost, item.progress + 1.0);
+          this.callback('tick', item);
         }
       } else if (item.state != 'ready') {
         this.callback('finished');

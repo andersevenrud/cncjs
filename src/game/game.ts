@@ -7,6 +7,7 @@ import {
   Engine,
   Sprite,
   Scene,
+  SoundEffect,
   DataArchive,
   DataArchiveImageLoader,
   DataArchiveSoundLoader
@@ -19,7 +20,6 @@ import { ScoreScene } from './scenes/score';
 import { LoadingScene } from './scenes/loading';
 import { Cursor } from './cursor';
 import { MIX, MIXPlayerName } from './mix';
-import { Vector } from 'vector2d';
 
 declare var window: any;
 
@@ -52,11 +52,11 @@ export class GameEngine extends Engine {
     return await sprite.init(image);
   }
 
-  public async playArchiveSfx(source: string, node: string, position?: Vector, queue?: string) {
+  public async playArchiveSfx(source: string, node: string, sound: Partial<SoundEffect> = {}, queue?: string) {
     try {
       this.sound.playSfx({
         context: await this.sfxLoader.fetch(source),
-        position
+        ...sound
       }, node, queue);
     } catch (e) {
       console.warn('GameMapBaseEntity::playSfx()', e);

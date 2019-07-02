@@ -80,7 +80,7 @@ export abstract class GameMapBaseEntity extends Entity {
     const source = `SOUNDS.MIX/${name.toLowerCase()}${suffix}.wav`;
     console.debug('GameMapBaseEntity::playSfx()', { source, name, count });
 
-    return this.engine.playArchiveSfx(source, 'sfx', this.position);
+    return this.engine.playArchiveSfx(source, 'sfx', { position: this.position });
   }
 
   public die(): boolean {

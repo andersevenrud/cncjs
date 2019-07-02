@@ -5,7 +5,7 @@
  */
 import { Box, UIEntity, UIScene, collideAABB, collidePoint } from '../../engine';
 import { TheatreScene } from '../scenes/theatre';
-import { UITab, UISidebar, UIRadar, UIActions, UIStructureConstruction, UIFactoryConstruction, UIActionsName, UIConstructionResponse } from './elements';
+import { UITab, UISidebar, UIRadar, UIActions, UIStructureConstruction, UIFactoryConstruction, UIActionsName, UIConstructionResponse, UIConstructionItem } from './elements';
 import { TAB_WIDTH, TAB_HEIGHT, RADAR_HEIGHT, ACTION_HEIGHT, SIDEBAR_WIDTH } from './elements';
 import { GameMapBaseEntity } from '../entity';
 import { GameMapMask } from '../map';
@@ -31,7 +31,7 @@ export class TheatreUI extends UIScene {
     const onCreditsClick = () => {};
     const onSidebarClick = () => this.toggleSidebar();
     const onAction = (action?: UIActionsName) => (this.currentAction = action);
-    const onConstruct = this.handleConstructionClick.bind(this);
+    const onConstruct = this.handleConstructionCallback.bind(this);
     const engine = this.scene.engine;
 
     this.elements.push(new UITab('tab-menu', 'Menu', new Vector(0, 0), onMenuClick, engine, this));
@@ -101,20 +101,24 @@ export class TheatreUI extends UIScene {
     this.updated = false;
   }
 
-  private handleConstructionClick(state: UIConstructionResponse, name?: string) {
+  private handleConstructionCallback(state: UIConstructionResponse, item?: UIConstructionItem) {
     if (state === 'construct') {
-      this.scene.engine.playArchiveSfx('SPEECH.MIX/bldging1.wav', 'gui', undefined, 'eva');
+      this.scene.engine.playArchiveSfx('SPEECH.MIX/bldging1.wav', 'gui', {}, 'eva');
     } else if (state === 'finished') {
-      this.scene.engine.playArchiveSfx('SPEECH.MIX/constru1.wav', 'gui', undefined, 'eva');
+      this.scene.engine.playArchiveSfx('SPEECH.MIX/constru1.wav', 'gui', {}, 'eva');
     } else if (state === 'cancel') {
-      this.scene.engine.playArchiveSfx('SPEECH.MIX/cancel1.wav', 'gui', undefined, 'eva');
+      this.scene.engine.playArchiveSfx('SPEECH.MIX/cancel1.wav', 'gui', {}, 'eva');
+      this.scene.player.addCredits(item!.progress);
     } else if (state === 'busy') {
-      this.scene.engine.playArchiveSfx('SPEECH.MIX/bldg1.wav', 'gui', undefined, 'eva');
+      this.scene.engine.playArchiveSfx('SPEECH.MIX/bldg1.wav', 'gui', {}, 'eva');
     } else if (state === 'hold') {
-      this.scene.engine.playArchiveSfx('SPEECH.MIX/onhold1.wav', 'gui', undefined, 'eva');
+      this.scene.engine.playArchiveSfx('SPEECH.MIX/onhold1.wav', 'gui', {}, 'eva');
+    } else if (state === 'tick') {
+      this.scene.engine.playArchiveSfx('SOUNDS.MIX/clock1.wav', 'gui', { volume: 0.25 });
     } else if (state === 'place') {
+      const name = item!.name.toUpperCase();
       this.placeConstruction = name;
-      const mask = new GameMapMask(name!, this.scene.map);
+      const mask = new GameMapMask(name, this.scene.map);
       this.scene.map.setMask(mask);
     }
   }
