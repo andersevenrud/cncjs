@@ -137,7 +137,7 @@ export class UIText extends GameUIEntity {
     super.onUpdate(deltaTime);
 
     const label = this.getRealLabel();
-    if (label !== this.currentLabel) {
+    if (label !== this.currentLabel || this.updated) {
       this.updated = true;
       this.currentLabel = label;
       this.currentCalc = this.calculateString(this.currentLabel);
@@ -145,7 +145,7 @@ export class UIText extends GameUIEntity {
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
-    if (this.updated) {
+    if (this.updated && this.visible) {
       const sprite = this.sprites.get(this.font) as Sprite;
       const { width, height, calculated } = this.currentCalc!;
       const color = 0; // FIXME
@@ -154,7 +154,7 @@ export class UIText extends GameUIEntity {
       this.calculatePosition();
       this.context.clearRect(0, 0, width, height);
 
-      for ( let i = 0; i < calculated.length; i++ ) {
+      for (let i = 0; i < calculated.length; i++) {
         const { left, index } = calculated[i];
 
         if (index >= 0) {

@@ -10,16 +10,13 @@ import { UIBox, UIButton, UIText, UISlider } from './elements';
 import { Vector } from 'vector2d';
 import packageJson from '../../../package.json';
 
-export const createGameControlsMenu = (engine: GameEngine, ui: UIScene) => {
+export const createGameControlsMenu = (engine: GameEngine, ui: UIScene, onClose: Function) => {
   const onNull = () => {};
   const settings = new UIBox('game-controls', new Vector(464, 282), new Vector(90, 20), onNull, engine, ui);
-
-  const onClose = () => settings.setVisible(false);
 
   const buttonVisuals = new UIButton('game-controls_visuals', 'Visual Controls', new Vector(250, 18), new Vector(0.5, 180), onNull, engine, ui);
   const buttonSound = new UIButton('game-controls_sound', 'Sound Controls', new Vector(250, 18), new Vector(0.5, 210), onNull, engine, ui);
   const buttonBack = new UIButton('game-controls_back', 'Options Menu', new Vector(200, 18), new Vector(0.5, 250), onClose, engine, ui);
-
 
   settings.addChild(new UIText('title', 'Game Controls', '6point', new Vector(0.5, 6), engine, ui));
   settings.addChild(buttonVisuals);
@@ -48,7 +45,10 @@ export class MainMenuUI extends UIScene {
     const onNull = () => {};
 
     const menu = new UIBox('menu', new Vector(300, 270), new Vector(170, 0), onNull, this.scene.engine, this);
-    const settings = createGameControlsMenu(this.scene.engine, this);
+    const settings = createGameControlsMenu(this.scene.engine, this, () => {
+      settings.setVisible(false);
+      menu.setVisible(true);
+    });
 
     const onNewGame = () => this.scene.onNewGame();
     const onGameControls = () => {
@@ -82,6 +82,7 @@ export class MainMenuUI extends UIScene {
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
+    this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
     super.onRender(deltaTime, ctx);
   }
 }
