@@ -156,8 +156,8 @@ export class UIEntity extends Entity {
   public readonly name: string;
   protected visible: boolean = true;
   protected clickable: boolean = true;
-  protected updated: boolean = false;
-  private wasUpdated: boolean = false;
+  protected updated: boolean = true;
+  protected wasUpdated: boolean = false;
 
   public constructor(name: string, position: Vector, callback: Function, ui: UIScene) {
     super();

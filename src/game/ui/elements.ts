@@ -134,14 +134,14 @@ export class UIText extends GameUIEntity {
   }
 
   public onUpdate(deltaTime: number): void {
-    super.onUpdate(deltaTime);
-
     const label = this.getRealLabel();
-    if (label !== this.currentLabel || this.updated) {
+    if (label !== this.currentLabel) {
       this.currentLabel = label;
       this.currentCalc = this.calculateString(this.currentLabel);
-      this.updated = true;
+      this.wasUpdated = true;
     }
+
+    super.onUpdate(deltaTime);
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
