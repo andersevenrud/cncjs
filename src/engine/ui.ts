@@ -86,7 +86,12 @@ export class UIScene extends Entity {
       }
     }
 
-    this.elements.forEach((el): void => el.onUpdate(deltaTime));
+    this.elements.forEach((el): void => {
+      el.onUpdate(deltaTime);
+      if (el.isUpdated()) {
+        this.updated = true;
+      }
+    });
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
@@ -146,6 +151,7 @@ export class UIEntity extends Entity {
   public readonly name: string;
   protected visible: boolean = true;
   protected clickable: boolean = true;
+  protected updated: boolean = false;
 
   public constructor(name: string, position: Vector, callback: Function, ui: UIScene) {
     super();
@@ -168,7 +174,14 @@ export class UIEntity extends Entity {
   }
 
   public onUpdate(deltaTime: number): void {
-    this.elements.forEach((el): void => el.onUpdate(deltaTime));
+    this.updated = false;
+
+    this.elements.forEach((el): void => {
+      el.onUpdate(deltaTime);
+      if (el.isUpdated()) {
+        this.updated =  true;
+      }
+    });
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
@@ -256,6 +269,10 @@ export class UIEntity extends Entity {
 
   public isClickable(): boolean {
     return this.clickable && this.visible;
+  }
+
+  public isUpdated(): boolean {
+    return this.updated;
   }
 
   public getBox(scaled?: UISceneScale): Box {
