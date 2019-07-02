@@ -14,6 +14,7 @@ import { Vector } from 'vector2d';
 export type UIActionsName = 'sell' | 'repair';
 export type UIConstructionState = 'constructing' | 'hold' | 'ready';
 export type UIConstructionResponse = 'construct' | 'hold' | 'cancel' | 'busy' | 'place' | 'finished' | 'tick';
+export type UIBorderType = 'inset' | 'outset'
 
 export interface UIConstructionItem {
   name: string;
@@ -74,6 +75,33 @@ export class GameUIEntity extends UIEntity {
 
     await super.init();
   }
+
+  public drawBorder(type: UIBorderType) {
+    const dimension = this.dimension;
+    const context = this.context;
+    const topBorder = type === 'outset' ? '#ffffff' : '#80858b';
+    const bottomBorder = type === 'inset' ? '#ffffff' : '#80858b';
+
+    context.lineWidth = 1;
+
+    context.strokeStyle = topBorder;
+    context.beginPath();
+    context.moveTo(dimension.x, 0);
+    context.lineTo(0, 0);
+    context.moveTo(0, 0);
+    context.lineTo(0, dimension.y);
+    context.closePath();
+    context.stroke();
+
+    context.strokeStyle = bottomBorder;
+    context.beginPath();
+    context.moveTo(0, this.dimension.y);
+    context.lineTo(dimension.x, dimension.y);
+    context.moveTo(dimension.x, this.dimension.y);
+    context.lineTo(dimension.x, 0);
+    context.closePath();
+    context.stroke();
+  }
 }
 
 /**
@@ -88,7 +116,8 @@ export class UIText extends GameUIEntity {
 
   public sprites: Map<string, Sprite> = new Map([
     ['8point', spriteFromName('CCLOCAL.MIX/8point.png')],
-    ['6point', spriteFromName('CCLOCAL.MIX/6point.png')]
+    ['6point', spriteFromName('CCLOCAL.MIX/6point.png')],
+    ['vcr', spriteFromName('CCLOCAL.MIX/vcr.png')]
   ]);
 
   public constructor(name: string, label: string | Function, font: string, position: Vector, engine: GameEngine, ui: UIScene) {
@@ -143,12 +172,12 @@ export class UIText extends GameUIEntity {
     const letters = label.split('');
     let { width, height, glyphs } = this.typeface;
 
-    for ( let i = 0; i < letters.length; i++ ) {
+    for (let i = 0; i < letters.length; i++) {
       const cc =  letters[i].charCodeAt(0);
       const index = cc - 33;
 
-      if ( index >= 0 ) {
-        const [w, h] = glyphs[index];
+      if (index >= 0) {
+        const [w, h] = glyphs[index] || [this.typeface.width, this.typeface.height];
         calculated.push({ index, width: w, height: h, left: width });
         width += w;
       } else {
@@ -173,6 +202,7 @@ export class UIText extends GameUIEntity {
 export class UIButton extends GameUIEntity {
   private backgroundPattern: CanvasPattern | null = null;
   private label: string;
+  private active: boolean = false;
 
   public sprites: Map<string, Sprite> = new Map([
     ['background', spriteFromName('UPDATEC.MIX/btexture.png')]
@@ -189,6 +219,14 @@ export class UIButton extends GameUIEntity {
     this.addChild(child);
   }
 
+  public onMouseDown(position: Vector): void {
+    this.active = true;
+  }
+
+  public onMouseUp(position: Vector): void {
+    this.active = false;
+  }
+
   public async init(): Promise<void> {
     await super.init();
 
@@ -199,12 +237,15 @@ export class UIButton extends GameUIEntity {
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
     this.context.textAlign = 'center';
     this.context.textBaseline = 'middle';
-    this.context.strokeStyle = '#80858b';
     this.context.fillStyle = this.backgroundPattern as CanvasPattern;
     this.context.fillRect(0, 0, this.dimension.x, this.dimension.y);
-    this.context.strokeRect(0, 0, this.dimension.x, this.dimension.y);
+    this.drawBorder(this.active ? 'inset' : 'outset');
     super.onRender(deltaTime, ctx);
     ctx.drawImage(this.canvas, this.position.x, this.position.y);
+  }
+
+  public isActive(): boolean {
+    return this.active;
   }
 }
 
@@ -213,7 +254,7 @@ export class UIButton extends GameUIEntity {
  */
 export class UIBox extends GameUIEntity {
   private customPosition?: string;
-  private decorations: boolean = false;
+  private decorations: number = -1;
 
   public sprites: Map<string, Sprite> = new Map([
     ['decorations', spriteFromName('CONQUER.MIX/options.png')]
@@ -230,23 +271,79 @@ export class UIBox extends GameUIEntity {
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
-    this.context.lineWidth = 1;
-    this.context.strokeStyle = '#80858b';
-    this.context.fillStyle = '#000000';
-    this.context.fillRect(0, 0, this.dimension.x, this.dimension.y);
-    this.context.strokeRect(0, 0, this.dimension.x, this.dimension.y);
+    this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
 
-    const sprite = this.sprites.get('decorations') as Sprite;
-    sprite.render(new Vector(0, 0), new Vector(-sprite.size.x / 2 + 12, -sprite.size.y / 2 + 12), this.context);
-    sprite.render(new Vector(0, 1), new Vector(this.dimension.x - sprite.size.x / 2 - 12, -sprite.size.y / 2 + 12), this.context);
+    if (this.isVisible()) {
+      this.context.lineWidth = 1;
+      this.context.strokeStyle = '#80858b';
+      this.context.fillStyle = '#000000';
+      this.context.fillRect(0, 0, this.dimension.x, this.dimension.y);
+      this.context.strokeRect(0, 0, this.dimension.x, this.dimension.y);
 
-    super.onRender(deltaTime, ctx);
+      if (this.decorations >= 0) {
+        const offset = this.decorations * 2;
+        const sprite = this.sprites.get('decorations') as Sprite;
+        sprite.render(new Vector(0, offset), new Vector(-sprite.size.x / 2 + 12, -sprite.size.y / 2 + 12), this.context);
+        sprite.render(new Vector(0, offset + 1), new Vector(this.dimension.x - sprite.size.x / 2 - 12, -sprite.size.y / 2 + 12), this.context);
+      }
+
+      super.onRender(deltaTime, ctx);
+    }
 
     ctx.drawImage(this.canvas, this.position.x, this.position.y);
   }
 
-  public setDecorations(enabled: boolean) {
-    this.decorations =  true;
+  public setDecorations(decoration: number) {
+    this.decorations =  decoration;
+  }
+}
+
+/**
+ * Slider
+ */
+export class UISlider extends GameUIEntity {
+  private value: number = 0.5;
+  private backgroundPattern: CanvasPattern | null = null;
+  private button: UIButton;
+
+  public sprites: Map<string, Sprite> = new Map([
+    ['background', spriteFromName('UPDATEC.MIX/btexture.png')],
+  ]);
+
+  public constructor(name: string, dimension: Vector, position: Vector, callback: Function, engine: GameEngine, ui: UIScene) {
+    super(name, position, callback, engine, ui);
+    this.setDimension(dimension);
+
+    const onNull = () => {};
+    this.button = new UIButton(name + '_button', '', new Vector(32, dimension.y), new Vector(0, 0), onNull, engine, ui);
+  }
+
+  public async init(): Promise<void> {
+    this.addChild(this.button);
+    await super.init();
+
+    const bs = this.sprites.get('background') as Sprite;
+    this.backgroundPattern = bs.createPattern(new Vector(0, 1));
+  }
+
+  public onClick(position: Vector): void {
+    const value = position.x / this.dimension.x - 32;
+    console.error(value);
+    this.value = value;
+    this.callback(value);
+  }
+
+  public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
+    this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
+
+    if (this.isVisible()) {
+      this.context.fillStyle = this.backgroundPattern || '#000000';
+      this.context.fillRect(0, 0, this.dimension.x, this.dimension.y);
+      this.drawBorder('inset');
+      super.onRender(deltaTime, ctx);
+    }
+
+    ctx.drawImage(this.canvas, this.position.x, this.position.y);
   }
 }
 
