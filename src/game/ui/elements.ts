@@ -23,6 +23,7 @@ export interface UIConstructionItem {
 }
 
 export const SIDEBAR_WIDTH = 160;
+export const SIDEBAR_HEIGHT = 484;
 export const RADAR_WIDTH = 160;
 export const RADAR_HEIGHT = 142;
 export const ACTION_WIDTH = 49;
@@ -34,6 +35,10 @@ export const BUTTON_HEIGHT = 24;
 export const THUMB_WIDTH = 64;
 export const THUMB_HEIGHT = 48;
 export const THUMB_COUNT = 4;
+export const POWER_WIDTH = 20;
+export const POWER_HEIGHT = 224;
+export const INDICATOR_WIDTH = 19;
+export const INDICATOR_HEIGHT = 7;
 
 /**
  * Game UI Entity abstraction
@@ -366,11 +371,59 @@ export class UIRadar extends GameUIEntity {
 }
 
 /**
+ * Power bar
+ */
+export class UIPowerBar extends GameUIEntity {
+  private indicatorPosition: number = 0.5;
+
+  public sprites: Map<string, Sprite> = new Map([
+    ['bar', spriteFromName('UPDATEC.MIX/hpwrbar.png')],
+    ['indicator', spriteFromName('UPDATEC.MIX/hpower.png')]
+  ]);
+
+  public constructor(position: Vector, callback: Function, engine: GameEngine, ui: TheatreUI) {
+    super('powerbar', position, callback, engine, ui);
+  }
+
+  public async init(): Promise<void> {
+    this.setDimension(new Vector(POWER_WIDTH, POWER_HEIGHT));
+    await super.init();
+  }
+
+  public onUpdate(deltaTime: number): void {
+    super.onUpdate(deltaTime);
+  }
+
+  public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
+    if (!this.isVisible()) {
+      return;
+    }
+
+    this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
+    this.context.fillStyle = '#ffffff';
+    this.context.fillRect(0, 0, this.dimension.x, this.dimension.y);
+
+    const bar = this.sprites.get('bar') as Sprite;
+    const indicator = this.sprites.get('indicator') as Sprite;
+    const indicatorPosition = new Vector(
+      0,
+      POWER_HEIGHT * this.indicatorPosition - (INDICATOR_HEIGHT / 2)
+    );
+
+    bar.render(new Vector(0, 2), new Vector(0, 0), this.context);
+    bar.render(new Vector(0, 3), new Vector(0, 80), this.context);
+    indicator.render(new Vector(0, 0), indicatorPosition, this.context);
+    super.onRender(deltaTime, ctx);
+    ctx.drawImage(this.canvas, this.position.x, this.position.y);
+  }
+}
+
+/**
  * Sidebar
  */
 export class UISidebar extends GameUIEntity {
   private backgroundPattern: CanvasPattern | null = null;
-  public dimension: Vector = new Vector(SIDEBAR_WIDTH, SIDEBAR_WIDTH);
+  public dimension: Vector = new Vector(SIDEBAR_WIDTH, SIDEBAR_HEIGHT);
 
   public sprites: Map<string, Sprite> = new Map([
     ['sidebarTop', spriteFromName('UPDATEC.MIX/hside1.png')],
@@ -414,7 +467,7 @@ export class UISidebar extends GameUIEntity {
 
     super.onRender(deltaTime, ctx);
 
-    ctx.drawImage(this.canvas, 0, 0, this.dimension.x, this.dimension.y, this.position.x, this.position.y, this.dimension.x, this.dimension.y);
+    ctx.drawImage(this.canvas, this.position.x, this.position.y);
   }
 }
 

@@ -5,8 +5,23 @@
  */
 import { Box, UIEntity, UIScene, collideAABB, collidePoint } from '../../engine';
 import { TheatreScene } from '../scenes/theatre';
-import { UITab, UISidebar, UIRadar, UIActions, UIStructureConstruction, UIFactoryConstruction, UIActionsName, UIConstructionResponse, UIConstructionItem } from './elements';
-import { TAB_WIDTH, TAB_HEIGHT, RADAR_HEIGHT, ACTION_HEIGHT, SIDEBAR_WIDTH } from './elements';
+import {
+  TAB_WIDTH,
+  TAB_HEIGHT,
+  RADAR_HEIGHT,
+  ACTION_HEIGHT,
+  SIDEBAR_WIDTH,
+  UITab,
+  UISidebar,
+  UIRadar,
+  UIActions,
+  UIStructureConstruction,
+  UIFactoryConstruction,
+  UIActionsName,
+  UIConstructionResponse,
+  UIConstructionItem,
+  UIPowerBar
+} from './elements';
 import { GameMapBaseEntity } from '../entity';
 import { GameMapMask } from '../map';
 import { cellFromPoint, isRectangleVisible } from '../physics';
@@ -44,6 +59,7 @@ export class TheatreUI extends UIScene {
     sidebar.addChild(new UIActions(new Vector(4, RADAR_HEIGHT + 2), onAction, engine, this));
     sidebar.addChild(new UIStructureConstruction('structures', new Vector(20,  RADAR_HEIGHT + ACTION_HEIGHT + 6), onConstruct, engine, this));
     sidebar.addChild(new UIFactoryConstruction('factories', new Vector(90,  RADAR_HEIGHT + ACTION_HEIGHT + 6), onConstruct, engine, this));
+    sidebar.addChild(new UIPowerBar(new Vector(0,  RADAR_HEIGHT + ACTION_HEIGHT + 2), onNull, engine, this));
     sidebar.setVisible(this.sidebarVisible);
 
     this.elements.push(sidebar);

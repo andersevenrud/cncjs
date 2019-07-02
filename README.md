@@ -6,7 +6,7 @@ Written on a custom engine using canvas 2d renderer.
 
 ## Requirements
 
-You need a copy of the orignal game (Gold edition) or a later.
+You need a copy of the orignal game (Gold edition) v1.06c or a later.
 
 Should run on any modern browser or device that supports ES6.
 
