@@ -134,14 +134,14 @@ export class UIText extends GameUIEntity {
   }
 
   public onUpdate(deltaTime: number): void {
+    super.onUpdate(deltaTime);
+
     const label = this.getRealLabel();
     if (label !== this.currentLabel) {
       this.currentLabel = label;
       this.currentCalc = this.calculateString(this.currentLabel);
-      this.wasUpdated = true;
+      this.updated = true;
     }
-
-    super.onUpdate(deltaTime);
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
@@ -153,6 +153,7 @@ export class UIText extends GameUIEntity {
       this.setDimension(new Vector(width, height));
       this.calculatePosition();
       this.context.clearRect(0, 0, width, height);
+      this.updated = false;
 
       for (let i = 0; i < calculated.length; i++) {
         const { left, index } = calculated[i];
@@ -349,7 +350,6 @@ export class UISlider extends GameUIEntity {
 
   public onClick(position: Vector): void {
     const value = position.x / this.dimension.x - 32;
-    console.error(value);
     this.value = value;
     this.callback(value);
   }

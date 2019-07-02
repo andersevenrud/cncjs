@@ -32,6 +32,7 @@ export class UIScene extends Entity {
   protected updated: boolean = true;
   protected scaled?: UISceneScale;
   protected lastDownElement?: UIEntity;
+  protected inited: boolean = false;
 
   public constructor(engine: Core) {
     super();
@@ -42,12 +43,18 @@ export class UIScene extends Entity {
     for (let i = 0; i < this.elements.length; i++) {
       await this.elements[i].init();
     }
+
+    this.inited = true;
   }
 
   public onClick(hit: UIEntityHit): void {
   }
 
   public onUpdate(deltaTime: number): void {
+    if (!this.inited) {
+      return;
+    }
+
     const { mouse } = this.engine;
     const position = this.getRealMousePosition();
 
@@ -95,6 +102,10 @@ export class UIScene extends Entity {
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
+    if (!this.inited) {
+      return;
+    }
+
     if (this.updated) {
       this.elements.forEach((el): void => el.onRender(deltaTime, this.context));
     }
@@ -157,7 +168,6 @@ export class UIEntity extends Entity {
   protected visible: boolean = true;
   protected clickable: boolean = true;
   protected updated: boolean = true;
-  protected wasUpdated: boolean = false;
 
   public constructor(name: string, position: Vector, callback: Function, ui: UIScene) {
     super();
@@ -180,16 +190,12 @@ export class UIEntity extends Entity {
   }
 
   public onUpdate(deltaTime: number): void {
-    this.updated = this.wasUpdated;
-
     this.elements.forEach((el): void => {
       el.onUpdate(deltaTime);
       if (el.isUpdated()) {
         this.updated =  true;
       }
     });
-
-    this.wasUpdated = false;
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
@@ -264,7 +270,6 @@ export class UIEntity extends Entity {
   }
 
   public triggerUpdate(): void {
-    this.wasUpdated = true;
     this.updated = true;
     this.elements.forEach((el: UIEntity) => el.triggerUpdate());
   }
