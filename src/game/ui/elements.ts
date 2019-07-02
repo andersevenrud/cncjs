@@ -22,6 +22,19 @@ export interface UIConstructionItem {
   progress: number;
 }
 
+export interface UITextCalculationOffset {
+  left: number;
+  index: number;
+  width: number;
+  height: number;
+}
+
+export interface UITextCalculation {
+  width: number;
+  height: number;
+  calculated: UITextCalculationOffset[];
+}
+
 export const SIDEBAR_WIDTH = 160;
 export const SIDEBAR_HEIGHT = 484;
 export const RADAR_WIDTH = 160;
@@ -70,7 +83,8 @@ export class UIText extends GameUIEntity {
   private label: string | Function;
   private font: string;
   private typeface: MIXFont;
-  private lastLabel: string = '';
+  private currentLabel: string = '';
+  private currentCalc?: UITextCalculation;
 
   public sprites: Map<string, Sprite> = new Map([
     ['8point', spriteFromName('CCLOCAL.MIX/8point.png')],
@@ -90,18 +104,26 @@ export class UIText extends GameUIEntity {
     await super.init();
   }
 
-  public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
-    const label = this.getRealLabel();
-    if (this.lastLabel !== label) {
-      this.lastLabel = label;
+  public onUpdate(deltaTime: number): void {
+    super.onUpdate(deltaTime);
 
+    const label = this.getRealLabel();
+    if (label !== this.currentLabel) {
+      this.updated = true;
+      this.currentLabel = label;
+      this.currentCalc = this.calculateString(this.currentLabel);
+    }
+  }
+
+  public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
+    if (this.updated) {
       const sprite = this.sprites.get(this.font) as Sprite;
-      const { width, height, calculated } = this.calculateString(label);
+      const { width, height, calculated } = this.currentCalc!;
       const color = 0; // FIXME
 
       this.setDimension(new Vector(width, height));
-      this.context.clearRect(0, 0, width, height);
       this.calculatePosition();
+      this.context.clearRect(0, 0, width, height);
 
       for ( let i = 0; i < calculated.length; i++ ) {
         const { left, index } = calculated[i];
@@ -113,11 +135,10 @@ export class UIText extends GameUIEntity {
     }
 
     super.onRender(deltaTime, ctx);
-
     ctx.drawImage(this.canvas, this.position.x, this.position.y);
   }
 
-  private calculateString(label: string): any { // FIXME
+  private calculateString(label: string): UITextCalculation {
     const calculated = [];
     const letters = label.split('');
     let { width, height, glyphs } = this.typeface;
@@ -128,10 +149,10 @@ export class UIText extends GameUIEntity {
 
       if ( index >= 0 ) {
         const [w, h] = glyphs[index];
-        calculated.push({ index, w, h, left: width });
+        calculated.push({ index, width: w, height: h, left: width });
         width += w;
       } else {
-        calculated.push({ index, w: width, h: height, left: width });
+        calculated.push({ index, width, height, left: width });
         width += 8;
       }
     }
