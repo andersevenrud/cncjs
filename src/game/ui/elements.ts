@@ -299,6 +299,27 @@ export class UIBox extends GameUIEntity {
 }
 
 /**
+ * List VIew
+ */
+export class UIListView extends GameUIEntity {
+  public constructor(name: string, dimension: Vector, position: Vector, callback: Function, engine: GameEngine, ui: UIScene) {
+    super(name, position, callback, engine, ui);
+    this.setDimension(dimension);
+  }
+
+  public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
+    this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
+
+    if (this.isVisible()) {
+      this.drawBorder('inset');
+      super.onRender(deltaTime, ctx);
+    }
+
+    ctx.drawImage(this.canvas, this.position.x, this.position.y);
+  }
+}
+
+/**
  * Slider
  */
 export class UISlider extends GameUIEntity {
