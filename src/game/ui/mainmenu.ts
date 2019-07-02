@@ -25,11 +25,11 @@ export const createSoundControlsMenu = (engine: GameEngine, ui: UIScene, onClose
   settings.addChild(new UIListView('game-controls_themes', new Vector(428, 120), new Vector(18, 100), onNull, engine, ui))
 
   settings.addChild(new UIButton('game-controls_sound-stop', 'ST', new Vector(32, 18), new Vector(18, 250), onNull, engine, ui));
-  settings.addChild(new UIButton('game-controls_sound-play', 'PL', new Vector(32, 18), new Vector(60, 250), onNull, engine, ui));
-  settings.addChild(new UIText('label_shuffle', 'Shuffle', '8point', new Vector(100, 254), engine, ui));
-  settings.addChild(new UIButton('game-controls_sound-shuffle', '1', new Vector(32, 18), new Vector(170, 250), onNull, engine, ui));
+  settings.addChild(new UIButton('game-controls_sound-play', 'PL', new Vector(32, 18), new Vector(56, 250), onNull, engine, ui));
+  settings.addChild(new UIText('label_shuffle', 'Shuffle', '8point', new Vector(104, 254), engine, ui));
+  settings.addChild(new UIButton('game-controls_sound-shuffle', '1', new Vector(32, 18), new Vector(160, 250), onNull, engine, ui));
   settings.addChild(new UIText('label_repeat', 'Repeat', '8point', new Vector(200, 254), engine, ui));
-  settings.addChild(new UIButton('game-controls_sound-repeat', '1', new Vector(32, 18), new Vector(264, 250), onNull, engine, ui));
+  settings.addChild(new UIButton('game-controls_sound-repeat', '1', new Vector(32, 18), new Vector(254, 250), onNull, engine, ui));
 
   settings.addChild(new UIButton('sound-controls_back', 'Options Menu', new Vector(140, 18), new Vector(306, 250), onClose, engine, ui));
 

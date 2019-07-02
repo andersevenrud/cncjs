@@ -156,15 +156,14 @@ export class UIText extends GameUIEntity {
 
       for (let i = 0; i < calculated.length; i++) {
         const { left, index } = calculated[i];
-
-        if (index >= 0) {
-          sprite.render(new Vector(color, index), new Vector(left, 0), this.context);
-        }
+        sprite.render(new Vector(color, index), new Vector(left, 0), this.context);
       }
     }
 
     super.onRender(deltaTime, ctx);
-    ctx.drawImage(this.canvas, this.position.x, this.position.y);
+    if (this.dimension.x > 0 && this.dimension.y > 0) {
+      ctx.drawImage(this.canvas, this.position.x, this.position.y);
+    }
   }
 
   private calculateString(label: string): UITextCalculation {
@@ -172,21 +171,22 @@ export class UIText extends GameUIEntity {
     const letters = label.split('');
     let { width, height, glyphs } = this.typeface;
 
+    let currentWidth = 0;
     for (let i = 0; i < letters.length; i++) {
       const cc =  letters[i].charCodeAt(0);
       const index = cc - 33;
 
       if (index >= 0) {
         const [w, h] = glyphs[index] || [this.typeface.width, this.typeface.height];
-        calculated.push({ index, width: w, height: h, left: width });
-        width += w;
+        calculated.push({ index, width: w, height: h, left: currentWidth });
+        currentWidth += w;
       } else {
-        calculated.push({ index, width, height, left: width });
-        width += 8;
+        calculated.push({ index, width, height, left: currentWidth });
+        currentWidth += 8;
       }
     }
 
-    return { width, height, calculated };
+    return { width: currentWidth, height, calculated };
   }
 
   public getRealLabel(): string {
