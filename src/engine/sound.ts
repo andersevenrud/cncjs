@@ -19,6 +19,7 @@ export interface SoundEffect {
   position?: Vector;
   repeat?: boolean;
   done?: Function;
+  block?: boolean;
 }
 
 export interface SoundNodes {
@@ -87,7 +88,7 @@ export class SoundOutput extends IODevice {
   private readonly soundQueue: Map<string, SoundEffect[]> = new Map();
   private readonly musicElement: HTMLAudioElement = document.createElement('audio');
   private musicGainNode: GainNode = this.context.createGain();
-  private sfxNodes: GainNode[] = [];
+  private sfxNodes: SoundEffect[] = [];
   private position: Vector = new Vector(0, 0);
   private muted: boolean = false;
 
@@ -194,6 +195,12 @@ export class SoundOutput extends IODevice {
     if (queue) {
       this.playSfxQueued(sound, node, queue);
     } else {
+      if (sound.block) {
+        const found = this.sfxNodes.find(s => s.context === sound.context);
+        if (found) {
+          return;
+        }
+      }
       this.playSfxDirect(sound, node);
     }
   }
@@ -262,11 +269,11 @@ export class SoundOutput extends IODevice {
       source.connect(gainNode);
     }
 
-    this.sfxNodes.push(gainNode);
+    this.sfxNodes.push(sound);
 
     source.addEventListener('ended', (): void => {
       const foundIndex = this.sfxNodes
-        .findIndex((n: GainNode): boolean => n === gainNode);
+        .findIndex((s: SoundEffect): boolean => s === sound);
 
       this.sfxNodes.splice(foundIndex, 1);
 
