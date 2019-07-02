@@ -14,12 +14,12 @@ import { Vector } from 'vector2d';
 export type UIActionsName = 'sell' | 'repair';
 export type UIConstructionState = 'constructing' | 'hold' | 'ready';
 export type UIConstructionResponse = 'construct' | 'hold' | 'cancel' | 'busy' | 'place' | 'finished';
-export type UIConstructionProgress = [number, number]; // total / progress
 
 export interface UIConstructionItem {
   name: string;
   state: UIConstructionState;
-  progress: UIConstructionProgress;
+  cost: number;
+  progress: number;
 }
 
 export const SIDEBAR_WIDTH = 160;
@@ -427,6 +427,8 @@ export abstract class UIConstruction extends GameUIEntity {
     this.sprites.set('buttonDown', spriteFromName('UPDATEC.MIX/hstripdn.png'));
     this.sprites.set('buttonUp', spriteFromName('UPDATEC.MIX/hstripup.png'));
     this.sprites.set('pips', spriteFromName('UPDATEC.MIX/hpips.png'));
+    this.sprites.set('clock', spriteFromName('UPDATEC.MIX/hclock.png'));
+
     await super.init();
   }
 
@@ -446,17 +448,28 @@ export abstract class UIConstruction extends GameUIEntity {
         const busy = this.items.get(found);
         if (button === 'right') {
           if (busy) {
-            this.items.delete(found);
-            this.callback('cancel');
+            if (busy.state === 'hold' || busy.state === 'ready') {
+              this.items.delete(found);
+              this.callback('cancel');
+            } else {
+              busy.state = 'hold';
+              this.callback('hold');
+            }
           }
         } else {
           if (busy) {
-            const progress = busy.progress[0] > 0
-              ? busy.progress[1] / busy.progress[0]
+            const progress = busy.cost > 0
+              ? busy.progress / busy.cost
               : 1;
 
             if (progress >= 1.0) {
               this.callback('place', found.toUpperCase());
+
+              // FIXME: Do this when it is actually placed
+              this.items.delete(found);
+            } else if (busy.state === 'hold') {
+              busy.state = 'constructing';
+              this.callback('construct');
             } else {
               this.callback('busy');
             }
@@ -464,21 +477,41 @@ export abstract class UIConstruction extends GameUIEntity {
             this.items.set(found, {
               name: found,
               state: 'constructing',
-              progress: [0, 0]
+              cost: 100,
+              progress: 0
             });
 
             this.callback('construct');
-            this.callback('finished');
           }
         }
       }
     }
   }
 
+  public onUpdate(deltaTime: number): void {
+    super.onUpdate(deltaTime);
+
+    for (let item of this.items.values()) {
+      if (item.progress < item.cost) {
+        if (item.state === 'constructing') {
+          item.progress = Math.min(item.cost, item.progress + 1);
+        }
+      } else if (item.state != 'ready') {
+        this.callback('finished');
+        item.state = 'ready';
+      }
+
+      this.updated = true;
+    }
+  }
+
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
+    const sctx = this.strip.getContext();
     const frame = new Vector(0, 0);
     const up = this.sprites.get('buttonUp') as Sprite;
     const down = this.sprites.get('buttonDown') as Sprite;
+    const clock = this.sprites.get('clock') as Sprite;
+    const pip = this.sprites.get('pips') as Sprite;
 
     this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
 
@@ -489,7 +522,33 @@ export abstract class UIConstruction extends GameUIEntity {
       const sprite = this.sprites.get(this.names[i]) as Sprite;
       const position = new Vector(0, index * THUMB_HEIGHT);
       this.context.clearRect(position.x, position.y, sprite.size.x, sprite.size.y);
-      sprite.render(frame, position, this.strip.getContext());
+      sprite.render(frame, position, sctx);
+
+      const state = this.items.get(this.names[i]);
+      if (state) {
+        let p = state.progress / state.cost;
+        let f = new Vector(0, Math.round(clock.frames * p))
+
+        sctx.globalCompositeOperation = 'destination-out';
+        clock.render(f, new Vector(
+          position.x,
+          position.y
+        ), sctx);
+        sctx.globalCompositeOperation = 'source-over';
+
+        if (state.state === 'ready') {
+          pip.render(new Vector(0, 3), new Vector(
+            position.x + (sprite.size.x / 2) - (pip.size.x / 2),
+            position.y + (sprite.size.y / 2) - (pip.size.y / 2)
+          ), sctx);
+        } else if (state.state === 'hold') {
+          pip.render(new Vector(0, 4), new Vector(
+            position.x + (sprite.size.x / 2) - (pip.size.x / 2),
+            position.y + (sprite.size.y / 2) - (pip.size.y / 2)
+          ), sctx);
+        }
+      }
+
       index++;
     }
 

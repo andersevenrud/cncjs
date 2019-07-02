@@ -60,9 +60,9 @@ export class TheatreUI extends UIScene {
   public onUpdate(deltaTime: number): void {
     const { mouse } = this.engine;
 
-    if (this.isMouseOutsideViewport()) {
-      super.onUpdate(deltaTime);
-    } else {
+    super.onUpdate(deltaTime);
+
+    if (!this.isMouseOutsideViewport()) {
       if (mouse.wasClicked('left')) {
         this.handleClick();
       } else if (mouse.wasClicked('right')) {
@@ -110,6 +110,8 @@ export class TheatreUI extends UIScene {
       this.scene.engine.playArchiveSfx('SPEECH.MIX/cancel1.wav', 'gui', undefined, 'eva');
     } else if (state === 'busy') {
       this.scene.engine.playArchiveSfx('SPEECH.MIX/bldg1.wav', 'gui', undefined, 'eva');
+    } else if (state === 'hold') {
+      this.scene.engine.playArchiveSfx('SPEECH.MIX/onhold1.wav', 'gui', undefined, 'eva');
     } else if (state === 'place') {
       this.placeConstruction = name;
       const mask = new GameMapMask(name!, this.scene.map);
