@@ -20,8 +20,12 @@ import {
   UIActionsName,
   UIConstructionResponse,
   UIConstructionItem,
-  UIPowerBar
+  UIPowerBar,
+  UIButton,
+  UIText,
+  UIBox
 } from './elements';
+import { createSoundControlsMenu, createVisualControlsMenu, createGameControlsMenu } from './mainmenu';
 import { GameMapBaseEntity } from '../entity';
 import { GameMapMask } from '../map';
 import { cellFromPoint, isRectangleVisible } from '../physics';
@@ -34,6 +38,7 @@ export class TheatreUI extends UIScene {
   private selectionRectangle?: Box;
   private placeConstruction?: string;
   private currentAction?: UIActionsName;
+  private menuOpen: boolean = false;
 
   public constructor(scene: TheatreScene) {
     super(scene.engine);
@@ -41,8 +46,22 @@ export class TheatreUI extends UIScene {
   }
 
   public async init(): Promise<void> {
+    let menu: UIBox, settings: UIBox, visuals: UIBox, sounds: UIBox;
+
     const onNull = () => {};
-    const onMenuClick = () => {};
+    const onMenuClick = () => {
+      menu.setVisible(true);
+      this.menuOpen = true;
+    };
+    const onClose = () => {
+      menu.setVisible(false);
+      this.menuOpen = false;
+    };
+    const onControlsOpen = () => {
+      menu.setVisible(false);
+      settings.setVisible(true);
+    };
+
     const onCreditsClick = () => {};
     const onSidebarClick = () => this.toggleSidebar();
     const onAction = (action?: UIActionsName) => (this.currentAction = action);
@@ -62,7 +81,49 @@ export class TheatreUI extends UIScene {
     sidebar.addChild(new UIPowerBar(new Vector(0,  RADAR_HEIGHT + ACTION_HEIGHT + 2), onNull, engine, this));
     sidebar.setVisible(this.sidebarVisible);
 
+    menu = new UIBox('menu', new Vector(420, 230), new Vector(0.5, 0.5), onNull, this.scene.engine, this);
+    menu.addChild(new UIText('title', 'Menu', '6point', new Vector(0.5, 6), this.scene.engine, this));
+    menu.addChild(new UIButton('load-mission', 'Load mission', new Vector(250, 18), new Vector(0.5, 40), onClose, this.scene.engine, this));
+    menu.addChild(new UIButton('save-mission', 'Save mission', new Vector(250, 18), new Vector(0.5, 64), onClose, this.scene.engine, this));
+    menu.addChild(new UIButton('delete-mission', 'Delete mission', new Vector(250, 18), new Vector(0.5, 88), onClose, this.scene.engine, this));
+    menu.addChild(new UIButton('game-controls', 'Game Controls', new Vector(250, 18), new Vector(0.5, 112), onControlsOpen, this.scene.engine, this));
+    menu.addChild(new UIButton('abort-mission', 'Abort mission', new Vector(250, 18), new Vector(0.5, 136), onClose, this.scene.engine, this));
+
+    menu.addChild(new UIButton('resume-mission', 'Resume mission', new Vector(125, 18), new Vector(18, 200), onClose, this.scene.engine, this));
+    menu.addChild(new UIButton('restate-mission', 'Restate', new Vector(125, 18), new Vector(282, 200), onClose, this.scene.engine, this));
+
+    settings = createGameControlsMenu(this.scene.engine, this, new Vector(0.5, 0.5), (action: string) => {
+      settings.setVisible(false);
+      if (action === 'close') {
+        menu.setVisible(true);
+      } else if (action === 'visuals') {
+        visuals.setVisible(true);
+      } else if (action === 'sounds') {
+        sounds.setVisible(true);
+      }
+    });
+
+    visuals = createVisualControlsMenu(this.scene.engine, this, new Vector(0.5, 0.5), () => {
+      visuals.setVisible(false);
+      settings.setVisible(true);
+    });
+
+    sounds = createSoundControlsMenu(this.scene.engine, this, new Vector(0.5, 0.5), () => {
+      sounds.setVisible(false);
+      settings.setVisible(true);
+    });
+
+    menu.setDecorations(1);
+    settings.setVisible(false);
+    visuals.setVisible(false);
+    sounds.setVisible(false);
+    menu.setVisible(false);
+
     this.elements.push(sidebar);
+    this.elements.push(menu);
+    this.elements.push(settings);
+    this.elements.push(visuals);
+    this.elements.push(sounds);
 
     await super.init();
   }
@@ -79,18 +140,21 @@ export class TheatreUI extends UIScene {
 
     super.onUpdate(deltaTime);
 
-    if (!this.isMouseOutsideViewport()) {
-      if (mouse.wasClicked('left')) {
-        this.handleClick();
-      } else if (mouse.wasClicked('right')) {
-        this.currentAction = undefined;
-        this.placeConstruction = undefined;
-        this.scene.map.setMask(undefined);
-        this.scene.map.unselectEntities();
+    if (!this.menuOpen) {
+      if (!this.isMouseOutsideViewport()) {
+        if (mouse.wasClicked('left')) {
+          this.handleClick();
+        } else if (mouse.wasClicked('right')) {
+          this.currentAction = undefined;
+          this.placeConstruction = undefined;
+          this.scene.map.setMask(undefined);
+          this.scene.map.unselectEntities();
+        }
       }
+
+      this.updateSelectionRectangle();
     }
 
-    this.updateSelectionRectangle();
     this.updateCursor();
   }
 
@@ -277,7 +341,7 @@ export class TheatreUI extends UIScene {
     const canAttack = selected.some(s => s.canAttack());
 
     let cursor = 'default';
-    if (!this.isMouseOutsideViewport()) {
+    if (!this.menuOpen && !this.isMouseOutsideViewport()) {
       if (this.currentAction === 'sell') {
         cursor = hovering && hovering.isSellable() ? 'sell' : 'cannotSell';
       } else if (this.currentAction === 'repair') {
@@ -311,6 +375,10 @@ export class TheatreUI extends UIScene {
   private isMouseOutsideViewport(): boolean {
     const pos = this.engine.mouse.getVector();
     return !collidePoint(pos, this.scene.getScaledViewport());
+  }
+
+  public isMenuOpen(): boolean {
+    return this.menuOpen;
   }
 
   public getSidebarVisible(): boolean {

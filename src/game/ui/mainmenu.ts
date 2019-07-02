@@ -10,9 +10,9 @@ import { UIBox, UIButton, UIText, UISlider, UIListView } from './elements';
 import { Vector } from 'vector2d';
 import packageJson from '../../../package.json';
 
-export const createSoundControlsMenu = (engine: GameEngine, ui: UIScene, onClose: Function) => {
+export const createSoundControlsMenu = (engine: GameEngine, ui: UIScene, position: Vector, onClose: Function) => {
   const onNull = () => {};
-  const settings = new UIBox('sound-controls', new Vector(464, 282), new Vector(90, 20), onNull, engine, ui);
+  const settings = new UIBox('sound-controls', new Vector(464, 282), position, onNull, engine, ui);
 
   settings.addChild(new UIText('title', 'Sound controls', '6point', new Vector(0.5, 6), engine, ui));
 
@@ -37,9 +37,9 @@ export const createSoundControlsMenu = (engine: GameEngine, ui: UIScene, onClose
   return settings;
 };
 
-export const createVisualControlsMenu = (engine: GameEngine, ui: UIScene, onClose: Function) => {
+export const createVisualControlsMenu = (engine: GameEngine, ui: UIScene, position: Vector, onClose: Function) => {
   const onNull = () => {};
-  const settings = new UIBox('visual-controls', new Vector(464, 282), new Vector(90, 20), onNull, engine, ui);
+  const settings = new UIBox('visual-controls', new Vector(464, 282), position, onNull, engine, ui);
 
   settings.addChild(new UIText('title', 'Visual controls', '6point', new Vector(0.5, 6), engine, ui));
   settings.addChild(new UIButton('visual-controls_back', 'Options Menu', new Vector(200, 18), new Vector(0.5, 250), onClose, engine, ui));
@@ -49,13 +49,13 @@ export const createVisualControlsMenu = (engine: GameEngine, ui: UIScene, onClos
   return settings;
 };
 
-export const createGameControlsMenu = (engine: GameEngine, ui: UIScene, callback: Function) => {
+export const createGameControlsMenu = (engine: GameEngine, ui: UIScene, position: Vector, callback: Function) => {
   const onNull = () => {};
   const onClose = () => callback('close');
   const onVisuals = () => callback('visuals');
   const onSounds = () => callback('sounds');
 
-  const settings = new UIBox('game-controls', new Vector(464, 282), new Vector(90, 20), onNull, engine, ui);
+  const settings = new UIBox('game-controls', new Vector(464, 282), position, onNull, engine, ui);
 
   settings.addChild(new UIText('title', 'Game Controls', '6point', new Vector(0.5, 6), engine, ui));
   settings.addChild(new UIButton('game-controls_visuals', 'Visual Controls', new Vector(250, 18), new Vector(0.5, 180), onVisuals, engine, ui));
@@ -92,7 +92,7 @@ export class MainMenuUI extends UIScene {
 
     menu = new UIBox('menu', new Vector(300, 270), new Vector(170, 0), onNull, this.scene.engine, this);
 
-    settings = createGameControlsMenu(this.scene.engine, this, (action: string) => {
+    settings = createGameControlsMenu(this.scene.engine, this, new Vector(90, 20), (action: string) => {
       settings.setVisible(false);
       if (action === 'close') {
         menu.setVisible(true);
@@ -103,12 +103,12 @@ export class MainMenuUI extends UIScene {
       }
     });
 
-    visuals = createVisualControlsMenu(this.scene.engine, this, () => {
+    visuals = createVisualControlsMenu(this.scene.engine, this, new Vector(90, 20), () => {
       visuals.setVisible(false);
       settings.setVisible(true);
     });
 
-    sounds = createSoundControlsMenu(this.scene.engine, this, () => {
+    sounds = createSoundControlsMenu(this.scene.engine, this, new Vector(90, 20), () => {
       sounds.setVisible(false);
       settings.setVisible(true);
     });

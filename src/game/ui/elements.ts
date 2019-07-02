@@ -138,14 +138,14 @@ export class UIText extends GameUIEntity {
 
     const label = this.getRealLabel();
     if (label !== this.currentLabel || this.updated) {
-      this.updated = true;
       this.currentLabel = label;
       this.currentCalc = this.calculateString(this.currentLabel);
+      this.updated = true;
     }
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
-    if (this.updated && this.visible) {
+    if (this.updated && this.visible && this.currentCalc) {
       const sprite = this.sprites.get(this.font) as Sprite;
       const { width, height, calculated } = this.currentCalc!;
       const color = 0; // FIXME

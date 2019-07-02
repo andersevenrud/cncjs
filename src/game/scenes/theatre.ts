@@ -94,39 +94,45 @@ export class TheatreScene extends Scene {
     }
 
     const { keyboard, mouse } = this.engine;
+    const skip = this.ui.isMenuOpen();
 
-    if (keyboard.isPressed(['w', 'arrowup'])) {
-      this.map.moveRelative(new Vector(0, 10));
-    } else if (keyboard.isPressed(['s', 'arrowdown'])) {
-      this.map.moveRelative(new Vector(0, -10));
-    }
-
-    if (keyboard.isPressed(['a', 'arrowleft'])) {
-      this.map.moveRelative(new Vector(10, 0));
-    } else if (keyboard.isPressed(['d', 'arrowright'])) {
-      this.map.moveRelative(new Vector(-10, 0));
-    }
-
-    if (this.engine.debugMode) {
-      if (keyboard.wasClicked('F10')) {
-        this.map.toggleFow();
+    if (!skip) {
+      if (keyboard.isPressed(['w', 'arrowup'])) {
+        this.map.moveRelative(new Vector(0, 10));
+      } else if (keyboard.isPressed(['s', 'arrowdown'])) {
+        this.map.moveRelative(new Vector(0, -10));
       }
 
-      if (keyboard.wasClicked('Delete')) {
-        this.map.getSelectedEntities().forEach(e => e.takeDamage(Number.MAX_VALUE));
-      } else if (keyboard.wasClicked('End')) {
-        const cell = cellFromPoint(this.map.getRealMousePosition(mouse.getVector()));
-        this.map.getSelectedEntities().forEach(e => e.setCell(cell, true));
-      } else if (keyboard.wasClicked('PageDown')) {
-        this.map.getSelectedEntities().forEach(e => e.setHealth(e.getHealth() - 4));
-      } else if (keyboard.wasClicked('PageUp')) {
-        this.map.getSelectedEntities().forEach(e => e.setHealth(e.getHealth() + 4));
+      if (keyboard.isPressed(['a', 'arrowleft'])) {
+        this.map.moveRelative(new Vector(10, 0));
+      } else if (keyboard.isPressed(['d', 'arrowright'])) {
+        this.map.moveRelative(new Vector(-10, 0));
+      }
+
+      if (this.engine.debugMode) {
+        if (keyboard.wasClicked('F10')) {
+          this.map.toggleFow();
+        }
+
+        if (keyboard.wasClicked('Delete')) {
+          this.map.getSelectedEntities().forEach(e => e.takeDamage(Number.MAX_VALUE));
+        } else if (keyboard.wasClicked('End')) {
+          const cell = cellFromPoint(this.map.getRealMousePosition(mouse.getVector()));
+          this.map.getSelectedEntities().forEach(e => e.setCell(cell, true));
+        } else if (keyboard.wasClicked('PageDown')) {
+          this.map.getSelectedEntities().forEach(e => e.setHealth(e.getHealth() - 4));
+        } else if (keyboard.wasClicked('PageUp')) {
+          this.map.getSelectedEntities().forEach(e => e.setHealth(e.getHealth() + 4));
+        }
       }
     }
 
     this.ui.onUpdate(deltaTime);
-    this.map.onUpdate(deltaTime);
-    this.updateSoundContext();
+
+    if (!skip) {
+      this.map.onUpdate(deltaTime);
+      this.updateSoundContext();
+    }
   }
 
   public onRender(deltaTime: number): void {
