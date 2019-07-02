@@ -157,6 +157,7 @@ export class UIEntity extends Entity {
   protected visible: boolean = true;
   protected clickable: boolean = true;
   protected updated: boolean = false;
+  private wasUpdated: boolean = false;
 
   public constructor(name: string, position: Vector, callback: Function, ui: UIScene) {
     super();
@@ -179,7 +180,7 @@ export class UIEntity extends Entity {
   }
 
   public onUpdate(deltaTime: number): void {
-    this.updated = false;
+    this.updated = this.wasUpdated;
 
     this.elements.forEach((el): void => {
       el.onUpdate(deltaTime);
@@ -187,6 +188,8 @@ export class UIEntity extends Entity {
         this.updated =  true;
       }
     });
+
+    this.wasUpdated = false;
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
@@ -260,12 +263,19 @@ export class UIEntity extends Entity {
     this.elements.push(child);
   }
 
+  public triggerUpdate(): void {
+    this.wasUpdated = true;
+    this.updated = true;
+    this.elements.forEach((el: UIEntity) => el.triggerUpdate());
+  }
+
   public setParent(parent: UIEntity): void {
     this.parent = parent;
   }
 
   public setVisible(v: boolean): void {
     this.visible = v;
+    this.triggerUpdate();
   }
 
   public isVisible(): boolean {
