@@ -348,9 +348,11 @@ export class StructureEntity extends GameMapEntity {
   }
 
   public sell(): void {
-    // TODO: Refund credits
-    // TODO: Deconstruct animation
     this.reportDestroy = undefined;
+
+    this.map.scene.player.addCredits(
+      this.properties.Cost / 2
+    );
 
     if (this.constructionAnimation) {
       this.constructing = true;
