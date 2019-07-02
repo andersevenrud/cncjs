@@ -62,16 +62,17 @@ export class GameUIEntity extends UIEntity {
  * Text
  */
 export class UIText extends GameUIEntity {
-  private label: string;
+  private label: string | Function;
   private font: string;
   private typeface: MIXFont;
+  private lastLabel: string = '';
 
   public sprites: Map<string, Sprite> = new Map([
     ['8point', spriteFromName('CCLOCAL.MIX/8point.png')],
     ['6point', spriteFromName('CCLOCAL.MIX/6point.png')]
   ]);
 
-  public constructor(name: string, label: string, font: string, position: Vector, engine: GameEngine, ui: UIScene) {
+  public constructor(name: string, label: string | Function, font: string, position: Vector, engine: GameEngine, ui: UIScene) {
     super(name, position, () => {}, engine, ui);
     this.position = position;
     this.label = label;
@@ -82,20 +83,38 @@ export class UIText extends GameUIEntity {
 
   public async init(): Promise<void> {
     await super.init();
-
-    this.setLabel(this.label);
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
+    const label = this.getRealLabel();
+    if (this.lastLabel !== label) {
+      this.lastLabel = label;
+
+      const sprite = this.sprites.get(this.font) as Sprite;
+      const { width, height, calculated } = this.calculateString(label);
+      const color = 0; // FIXME
+
+      this.setDimension(new Vector(width, height));
+      this.context.clearRect(0, 0, width, height);
+      this.calculatePosition();
+
+      for ( let i = 0; i < calculated.length; i++ ) {
+        const { left, index } = calculated[i];
+
+        if (index >= 0) {
+          sprite.render(new Vector(color, index), new Vector(left, 0), this.context);
+        }
+      }
+    }
+
     super.onRender(deltaTime, ctx);
 
-    ctx.fillStyle = '#ffffff';
     ctx.drawImage(this.canvas, this.position.x, this.position.y);
   }
 
-  private calculateString(): any { // FIXME
+  private calculateString(label: string): any { // FIXME
     const calculated = [];
-    const letters = this.label.split('');
+    const letters = label.split('');
     let { width, height, glyphs } = this.typeface;
 
     for ( let i = 0; i < letters.length; i++ ) {
@@ -112,24 +131,13 @@ export class UIText extends GameUIEntity {
       }
     }
 
-    return {width, height, calculated};
+    return { width, height, calculated };
   }
 
-  public setLabel(label: string): void {
-    const sprite = this.sprites.get(this.font) as Sprite;
-
-    const { width, height, calculated } = this.calculateString();
-    const color = 0; // FIXME
-
-    this.setDimension(new Vector(width, height));
-
-    for ( let i = 0; i < calculated.length; i++ ) {
-      const { left, index } = calculated[i];
-
-      if (index >= 0) {
-        sprite.render(new Vector(color, index), new Vector(left, 0), this.context);
-      }
-    }
+  public getRealLabel(): string {
+    return typeof this.label === 'function'
+      ? this.label()
+      : this.label;
   }
 }
 
@@ -227,7 +235,7 @@ export class UITab extends GameUIEntity {
     ['tabs', spriteFromName('UPDATEC.MIX/htabs.png')]
   ]);
 
-  public constructor(name: string, label: string, position: Vector, callback: Function, engine: GameEngine, ui: TheatreUI) {
+  public constructor(name: string, label: string | Function, position: Vector, callback: Function, engine: GameEngine, ui: TheatreUI) {
     super(name, position, callback, engine, ui);
     this.position = position;
 
@@ -245,17 +253,12 @@ export class UITab extends GameUIEntity {
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
     this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
-
     const sprite = this.sprites.get('tabs') as Sprite;
     sprite.render(this.frame, new Vector(0, 0), this.context);
 
     super.onRender(deltaTime, this.context);
-    ctx.drawImage(this.canvas, this.position.x, this.position.y);
-  }
 
-  public setLabel(label: string):void {
-    const el = this.elements[0] as UIText;
-    el.setLabel(label);
+    ctx.drawImage(this.canvas, this.position.x, this.position.y);
   }
 }
 

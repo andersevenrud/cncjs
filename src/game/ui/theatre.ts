@@ -32,10 +32,11 @@ export class TheatreUI extends UIScene {
     const onSidebarClick = () => this.toggleSidebar();
     const onAction = (action?: UIActionsName) => (this.currentAction = action);
     const onConstruct = this.handleConstructionCallback.bind(this);
+    const emitCredits = () => String(this.scene.player.getCredits());
     const engine = this.scene.engine;
 
     this.elements.push(new UITab('tab-menu', 'Menu', new Vector(0, 0), onMenuClick, engine, this));
-    this.elements.push(new UITab('tab-credits', '0', new Vector(-TAB_WIDTH, 0), onCreditsClick, engine, this));
+    this.elements.push(new UITab('tab-credits', emitCredits, new Vector(-TAB_WIDTH, 0), onCreditsClick, engine, this));
     this.elements.push(new UITab('tab-sidebar', 'Sidebar', new Vector(-0, 0), onSidebarClick, engine, this));
 
     const sidebar = new UISidebar(new Vector(-0, TAB_HEIGHT), onNull, engine, this);
@@ -115,6 +116,7 @@ export class TheatreUI extends UIScene {
       this.scene.engine.playArchiveSfx('SPEECH.MIX/onhold1.wav', 'gui', {}, 'eva');
     } else if (state === 'tick') {
       this.scene.engine.playArchiveSfx('SOUNDS.MIX/clock1.wav', 'gui', { volume: 0.25 });
+      this.scene.player.subScredits(1.0); // FIXME
     } else if (state === 'place') {
       const name = item!.name.toUpperCase();
       this.placeConstruction = name;
