@@ -67,28 +67,31 @@ export class GameMapMask extends Entity {
     const w = this.dimension.x / CELL_SIZE;
     const h = this.dimension.y / CELL_SIZE;
 
-    ctx.fillRect(this.position.x, this.position.y, this.dimension.x, this.dimension.y);
+    this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
+    this.context.fillRect(0, 0, this.dimension.x, this.dimension.y);
 
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
         const cx = this.cell.x + x;
         const cy = this.cell.y + y;
-        let dx = this.position.x + (x * CELL_SIZE);
-        let dy = this.position.y + (y * CELL_SIZE);
+        let dx = x * CELL_SIZE;
+        let dy = y * CELL_SIZE;
 
         // FIXME: Units and infantry
         const occupied = !this.map.grid.isWalkableAt(cx, cy);
         if (occupied) {
-          ctx.fillStyle = this.red || '#ff0000';
+          this.context.fillStyle = this.red || '#ff0000';
         } else if (h > 1 && y > h - 2) {
-          ctx.fillStyle = this.yellow || '#ffff00';
+          this.context.fillStyle = this.yellow || '#ffff00';
         } else {
-          ctx.fillStyle = this.white || '#ffffff';
+          this.context.fillStyle = this.white || '#ffffff';
         }
 
-        ctx.fillRect(dx, dy, CELL_SIZE, CELL_SIZE);
+        this.context.fillRect(dx, dy, CELL_SIZE, CELL_SIZE);
       }
     }
+
+    ctx.drawImage(this.canvas, this.position.x, this.position.y);
   }
 }
 
