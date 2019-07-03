@@ -148,6 +148,8 @@ export class SoundOutput extends IODevice {
 
     this.musicGainNode = this.createMediaGainNode(this.musicElement);
     this.musicGainNode.connect(this.mainGainNode);
+    this.musicGainNode.gain.value = this.engine.configuration.sound.musicVolume;
+    this.nodes.music = this.musicGainNode;
 
     this.sfxGainNode.connect(this.mainGainNode);
     this.sfxGainNode.gain.value = this.engine.configuration.sound.sfxVolume;
