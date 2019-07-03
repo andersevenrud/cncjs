@@ -59,18 +59,16 @@ export const INDICATOR_HEIGHT = 7;
  */
 export class GameUIEntity extends UIEntity {
   protected readonly sprites: Map<string, Sprite> = new Map();
-  protected readonly engine: GameEngine;
   public readonly ui: UIScene;
 
-  public constructor(name: string, position: Vector, engine: GameEngine, ui: UIScene) {
+  public constructor(name: string, position: Vector, ui: UIScene) {
     super(name, position, ui);
-    this.engine = engine;
     this.ui = ui;
   }
 
   public async init(): Promise<void> {
     for (const sprite of this.sprites.values()) {
-      await this.engine.loadArchiveSprite(sprite);
+      await (this.ui.engine as GameEngine).loadArchiveSprite(sprite);
     }
 
     await super.init();
@@ -120,8 +118,8 @@ export class UIText extends GameUIEntity {
     ['vcr', spriteFromName('CCLOCAL.MIX/vcr.png')]
   ]);
 
-  public constructor(name: string, label: string | Function, font: string, position: Vector, engine: GameEngine, ui: UIScene) {
-    super(name, position, engine, ui);
+  public constructor(name: string, label: string | Function, font: string, position: Vector, ui: UIScene) {
+    super(name, position, ui);
     this.position = position;
     this.label = label;
     this.font = font;
@@ -209,14 +207,14 @@ export class UIButton extends GameUIEntity {
     ['background', spriteFromName('UPDATEC.MIX/btexture.png')]
   ]);
 
-  public constructor(name: string, label: string, dimension: Vector, position: Vector, engine: GameEngine, ui: UIScene) {
-    super(name, position, engine, ui);
+  public constructor(name: string, label: string, dimension: Vector, position: Vector, ui: UIScene) {
+    super(name, position, ui);
     this.position = position;
     this.label = label;
 
     this.setDimension(dimension);
 
-    const child = new UIText(name + '-label', label, '6point', new Vector(0.5, 0.5), engine, ui);
+    const child = new UIText(name + '-label', label, '6point', new Vector(0.5, 0.5), ui);
     this.addChild(child);
   }
 
@@ -263,8 +261,8 @@ export class UIBox extends GameUIEntity {
     ['decorations', spriteFromName('CONQUER.MIX/options.png')]
   ]);
 
-  public constructor(name: string, dimension: Vector, position: Vector, engine: GameEngine, ui: UIScene) {
-    super(name, position, engine, ui);
+  public constructor(name: string, dimension: Vector, position: Vector, ui: UIScene) {
+    super(name, position, ui);
 
     if (typeof position === 'string') {
       this.customPosition = position;
@@ -305,8 +303,8 @@ export class UIBox extends GameUIEntity {
  * List VIew
  */
 export class UIListView extends GameUIEntity {
-  public constructor(name: string, dimension: Vector, position: Vector, engine: GameEngine, ui: UIScene) {
-    super(name, position, engine, ui);
+  public constructor(name: string, dimension: Vector, position: Vector, ui: UIScene) {
+    super(name, position, ui);
     this.setDimension(dimension);
   }
 
@@ -336,14 +334,14 @@ export class UISlider extends GameUIEntity {
     ['background', spriteFromName('UPDATEC.MIX/btexture.png')],
   ]);
 
-  public constructor(name: string, value: number, dimension: Vector, position: Vector, engine: GameEngine, ui: UIScene) {
-    super(name, position, engine, ui);
+  public constructor(name: string, value: number, dimension: Vector, position: Vector, ui: UIScene) {
+    super(name, position, ui);
     this.setDimension(dimension);
 
     this.value = value;
     const maxX = this.dimension.x - 32;
     const newX = maxX * this.value;
-    this.button = new UIButton(name + '_button', '', new Vector(32, dimension.y), new Vector(newX, 0), engine, ui);
+    this.button = new UIButton(name + '_button', '', new Vector(32, dimension.y), new Vector(newX, 0), ui);
   }
 
   public async init(): Promise<void> {
@@ -355,7 +353,7 @@ export class UISlider extends GameUIEntity {
     this.backgroundPattern = bs.createPattern(new Vector(0, 1));
 
     this.button.on('mousedown', () => {
-      this.dragStart = this.engine.mouse.getVector();
+      this.dragStart = this.ui.engine.mouse.getVector();
       this.buttonStart = this.button.getPosition();
     });
 
@@ -366,7 +364,7 @@ export class UISlider extends GameUIEntity {
 
   public onUpdate(deltaTime: number): void {
     if (this.dragStart) {
-      const diff = this.engine.mouse.getVector().x - this.dragStart.x;
+      const diff = this.ui.engine.mouse.getVector().x - this.dragStart.x;
       const maxX = this.dimension.x - this.button.dimension.x;
       const newX = Math.min(maxX, Math.max(0, this.buttonStart!.x + diff));
 
@@ -406,11 +404,11 @@ export class UITab extends GameUIEntity {
     ['tabs', spriteFromName('UPDATEC.MIX/htabs.png')]
   ]);
 
-  public constructor(name: string, label: string | Function, position: Vector, engine: GameEngine, ui: TheatreUI) {
-    super(name, position, engine, ui);
+  public constructor(name: string, label: string | Function, position: Vector, ui: TheatreUI) {
+    super(name, position, ui);
     this.position = position;
 
-    const child = new UIText(name + '-label', label, '8point', new Vector(0.5, 0.5), engine, ui);
+    const child = new UIText(name + '-label', label, '8point', new Vector(0.5, 0.5), ui);
     this.addChild(child);
   }
 
@@ -458,8 +456,8 @@ export class UIActions extends GameUIEntity {
     new Vector(0, 2)
   ];
 
-  public constructor(position: Vector, engine: GameEngine, ui: TheatreUI) {
-    super('actions', position, engine, ui);
+  public constructor(position: Vector, ui: TheatreUI) {
+    super('actions', position, ui);
   }
 
   public onMouseDown(position: Vector): void {
@@ -524,8 +522,8 @@ export class UIRadar extends GameUIEntity {
     ['radarNod', spriteFromName('UPDATEC.MIX/hradar_nod.png')]
   ]);
 
-  public constructor(position: Vector, engine: GameEngine, ui: TheatreUI) {
-    super('radar', position, engine, ui);
+  public constructor(position: Vector, ui: TheatreUI) {
+    super('radar', position, ui);
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
@@ -548,8 +546,8 @@ export class UIPowerBar extends GameUIEntity {
     ['indicator', spriteFromName('UPDATEC.MIX/hpower.png')]
   ]);
 
-  public constructor(position: Vector, engine: GameEngine, ui: TheatreUI) {
-    super('powerbar', position, engine, ui);
+  public constructor(position: Vector, ui: TheatreUI) {
+    super('powerbar', position, ui);
   }
 
   public async init(): Promise<void> {
@@ -598,8 +596,8 @@ export class UISidebar extends GameUIEntity {
     ['background', spriteFromName('UPDATEC.MIX/btexture.png')],
   ]);
 
-  public constructor(position: Vector, engine: GameEngine, ui: TheatreUI) {
-    super('sidebar', position, engine, ui);
+  public constructor(position: Vector, ui: TheatreUI) {
+    super('sidebar', position, ui);
   }
 
   public async init(): Promise<void> {

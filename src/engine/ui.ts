@@ -28,7 +28,7 @@ export interface UISceneScale {
  * UI Scene
  */
 export class UIScene extends Entity {
-  protected readonly engine: Core;
+  public readonly engine: Core;
   protected elements: UIEntity[] = [];
   protected updated: boolean = true;
   protected scaled?: UISceneScale;

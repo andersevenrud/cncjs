@@ -79,7 +79,7 @@
 - [ ] Remove 'data' from entity constructor and rely on methods
 - [ ] Don't render unreveiled units (inside FOW)
 - [ ] Cache bib's
-- [ ] Remove 'engine' from UIEntity constructor
+- [ ] Optimize UI Entities rendering
 
 ## Tools
 

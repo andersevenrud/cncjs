@@ -52,44 +52,43 @@ export class TheatreUI extends UIScene {
   public async init(): Promise<void> {
     const onConstruct = this.handleConstructionCallback.bind(this);
     const emitCredits = () => String(this.scene.player.getCredits());
-    const engine = this.scene.engine;
     const mission = this.scene.engine.mix.mission.get(this.scene.name.toUpperCase()) as MIXMission;
-    const tabMenu = new UITab('tab-menu', 'Menu', new Vector(0, 0), engine, this);
-    const tabSidebar = new UITab('tab-sidebar', 'Sidebar', new Vector(-0, 0), engine, this);
+    const tabMenu = new UITab('tab-menu', 'Menu', new Vector(0, 0), this);
+    const tabSidebar = new UITab('tab-sidebar', 'Sidebar', new Vector(-0, 0), this);
 
     this.elements.push(tabMenu);
-    this.elements.push(new UITab('tab-credits', emitCredits, new Vector(-TAB_WIDTH, 0), engine, this));
+    this.elements.push(new UITab('tab-credits', emitCredits, new Vector(-TAB_WIDTH, 0), this));
     this.elements.push(tabSidebar);
 
-    const sidebar = new UISidebar(new Vector(-0, TAB_HEIGHT), engine, this);
-    sidebar.addChild(new UIRadar(new Vector(0, 0), engine, this));
-    const btnActions = sidebar.addChild(new UIActions(new Vector(4, RADAR_HEIGHT + 2), engine, this));
-    const elStructures = sidebar.addChild(new UIStructureConstruction('structures', new Vector(20,  RADAR_HEIGHT + ACTION_HEIGHT + 6), engine, this));
-    const elFactories = sidebar.addChild(new UIFactoryConstruction('factories', new Vector(90,  RADAR_HEIGHT + ACTION_HEIGHT + 6), engine, this));
-    sidebar.addChild(new UIPowerBar(new Vector(0,  RADAR_HEIGHT + ACTION_HEIGHT + 2), engine, this));
+    const sidebar = new UISidebar(new Vector(-0, TAB_HEIGHT), this);
+    sidebar.addChild(new UIRadar(new Vector(0, 0), this));
+    const btnActions = sidebar.addChild(new UIActions(new Vector(4, RADAR_HEIGHT + 2), this));
+    const elStructures = sidebar.addChild(new UIStructureConstruction('structures', new Vector(20,  RADAR_HEIGHT + ACTION_HEIGHT + 6), this));
+    const elFactories = sidebar.addChild(new UIFactoryConstruction('factories', new Vector(90,  RADAR_HEIGHT + ACTION_HEIGHT + 6), this));
+    sidebar.addChild(new UIPowerBar(new Vector(0,  RADAR_HEIGHT + ACTION_HEIGHT + 2), this));
     sidebar.setVisible(this.sidebarVisible);
 
-    const menu = new UIBox('menu', new Vector(420, 230), new Vector(0.5, 0.5), this.scene.engine, this);
-    menu.addChild(new UIText('title', 'Menu', '6point', new Vector(0.5, 6), this.scene.engine, this));
-    menu.addChild(new UIButton('load-mission', 'Load mission', new Vector(250, 18), new Vector(0.5, 40), this.scene.engine, this));
-    menu.addChild(new UIButton('save-mission', 'Save mission', new Vector(250, 18), new Vector(0.5, 64), this.scene.engine, this));
-    menu.addChild(new UIButton('delete-mission', 'Delete mission', new Vector(250, 18), new Vector(0.5, 88), this.scene.engine, this));
-    const btnControls = menu.addChild(new UIButton('game-controls', 'Game Controls', new Vector(250, 18), new Vector(0.5, 112), this.scene.engine, this));
-    const btnAbort = menu.addChild(new UIButton('abort-mission', 'Abort mission', new Vector(250, 18), new Vector(0.5, 136), this.scene.engine, this));
+    const menu = new UIBox('menu', new Vector(420, 230), new Vector(0.5, 0.5), this);
+    menu.addChild(new UIText('title', 'Menu', '6point', new Vector(0.5, 6), this));
+    menu.addChild(new UIButton('load-mission', 'Load mission', new Vector(250, 18), new Vector(0.5, 40), this));
+    menu.addChild(new UIButton('save-mission', 'Save mission', new Vector(250, 18), new Vector(0.5, 64), this));
+    menu.addChild(new UIButton('delete-mission', 'Delete mission', new Vector(250, 18), new Vector(0.5, 88), this));
+    const btnControls = menu.addChild(new UIButton('game-controls', 'Game Controls', new Vector(250, 18), new Vector(0.5, 112), this));
+    const btnAbort = menu.addChild(new UIButton('abort-mission', 'Abort mission', new Vector(250, 18), new Vector(0.5, 136), this));
 
-    const btnClose = menu.addChild(new UIButton('resume-mission', 'Resume mission', new Vector(125, 18), new Vector(18, 200), this.scene.engine, this));
-    const btnRestate = menu.addChild(new UIButton('restate-mission', 'Restate', new Vector(125, 18), new Vector(282, 200), this.scene.engine, this));
+    const btnClose = menu.addChild(new UIButton('resume-mission', 'Resume mission', new Vector(125, 18), new Vector(18, 200), this));
+    const btnRestate = menu.addChild(new UIButton('restate-mission', 'Restate', new Vector(125, 18), new Vector(282, 200), this));
 
-    const [settings, visuals, sounds] = createGameMenus(this.scene.engine, this, new Vector(0.5, 0.5), menu);
+    const [settings, visuals, sounds] = createGameMenus(this, new Vector(0.5, 0.5), menu);
 
-    const restate = new UIBox('restate', new Vector(560, 170), new Vector(0.5, 0.5), this.scene.engine, this);
-    restate.addChild(new UIText('title', 'Mission Statement', '6point', new Vector(0.5, 6), this.scene.engine, this));
-    const btnCloseRestate = restate.addChild(new UIButton('close-restate', 'Game Controls', new Vector(250, 18), new Vector(0.5, 136), this.scene.engine, this));
+    const restate = new UIBox('restate', new Vector(560, 170), new Vector(0.5, 0.5), this);
+    restate.addChild(new UIText('title', 'Mission Statement', '6point', new Vector(0.5, 6), this));
+    const btnCloseRestate = restate.addChild(new UIButton('close-restate', 'Game Controls', new Vector(250, 18), new Vector(0.5, 136), this));
 
     if (mission) {
       for (let i = 0; i < Object.keys(mission).length; i++) {
         let line: string = (mission as any)[i + 1];
-        restate.addChild(new UIText(`line-${i}`, line, '8point', new Vector(18, 38 + (i * 20)), this.scene.engine, this));
+        restate.addChild(new UIText(`line-${i}`, line, '8point', new Vector(18, 38 + (i * 20)), this));
       }
     }
 
