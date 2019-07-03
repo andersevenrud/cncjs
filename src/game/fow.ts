@@ -54,6 +54,11 @@ export class FOW extends Entity {
     if (!this.updated) {
       return;
     }
+
+    if (this.map.engine.frames % 10 !== 0) {
+      return;
+    }
+
     this.updated = false;
 
     this.context.globalCompositeOperation = 'destination-out';
