@@ -57,6 +57,7 @@ export abstract class Engine implements Core {
   protected scene: Scene;
   protected debug: boolean = true;
   public time: number = 0;
+  public ticks: number = 0;
   public readonly keyboard: KeyboardInput;
   public readonly mouse: MouseInput;
   public readonly sound: SoundOutput;
@@ -186,6 +187,7 @@ export abstract class Engine implements Core {
         this.fpsAverage += (this.fps - this.fpsAverage) / 10;
         this.nextTick += skipTicks;
         this.onUpdate(performance.now() - t);
+        this.ticks++;
       }
 
       lastTick = t;
