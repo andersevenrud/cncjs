@@ -222,10 +222,12 @@ export class UIButton extends GameUIEntity {
 
   public onMouseDown(position: Vector): void {
     this.active = true;
+    this.emit('mousedown');
   }
 
   public onMouseUp(position: Vector): void {
     this.active = false;
+    this.emit('mouseup');
   }
 
   public async init(): Promise<void> {
@@ -324,33 +326,59 @@ export class UIListView extends GameUIEntity {
  * Slider
  */
 export class UISlider extends GameUIEntity {
-  private value: number = 0.5;
+  private value: number = 0.0;
   private backgroundPattern: CanvasPattern | null = null;
   private button: UIButton;
+  private dragStart?: Vector;
+  private buttonStart?: Vector;
 
   public sprites: Map<string, Sprite> = new Map([
     ['background', spriteFromName('UPDATEC.MIX/btexture.png')],
   ]);
 
-  public constructor(name: string, dimension: Vector, position: Vector, engine: GameEngine, ui: UIScene) {
+  public constructor(name: string, value: number, dimension: Vector, position: Vector, engine: GameEngine, ui: UIScene) {
     super(name, position, engine, ui);
     this.setDimension(dimension);
 
-    this.button = new UIButton(name + '_button', '', new Vector(32, dimension.y), new Vector(0, 0), engine, ui);
+    this.value = value;
+    const maxX = this.dimension.x - 32;
+    const newX = maxX * this.value;
+    this.button = new UIButton(name + '_button', '', new Vector(32, dimension.y), new Vector(newX, 0), engine, ui);
   }
 
   public async init(): Promise<void> {
     this.addChild(this.button);
+
     await super.init();
 
     const bs = this.sprites.get('background') as Sprite;
     this.backgroundPattern = bs.createPattern(new Vector(0, 1));
+
+    this.button.on('mousedown', () => {
+      this.dragStart = this.engine.mouse.getVector();
+      this.buttonStart = this.button.getPosition();
+    });
+
+    this.button.on('mouseup', () => {
+      this.dragStart = undefined;
+    });
   }
 
-  public onClick(position: Vector): void {
-    const value = position.x / this.dimension.x - 32;
-    this.value = value;
-    this.emit('changed', value);
+  public onUpdate(deltaTime: number): void {
+    if (this.dragStart) {
+      const diff = this.engine.mouse.getVector().x - this.dragStart.x;
+      const maxX = this.dimension.x - this.button.dimension.x;
+      const newX = Math.min(maxX, Math.max(0, this.buttonStart!.x + diff));
+
+      const value = newX / maxX;
+      this.button.setPosition(new Vector(newX, 0));
+      if  (value != this.value) {
+        this.emit('change', value);
+      }
+      this.value = value;
+    }
+
+    super.onUpdate(deltaTime);
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {

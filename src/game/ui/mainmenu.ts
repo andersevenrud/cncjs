@@ -12,14 +12,16 @@ import packageJson from '../../../package.json';
 
 export const createSoundControlsMenu = (engine: GameEngine, ui: UIScene, position: Vector): UIBox => {
   const settings = new UIBox('sound-controls', new Vector(464, 282), position, engine, ui);
+  const musicVolume = engine.sound.getVolume('music');
+  const soundVolume = engine.sound.getVolume('sfx');
 
   settings.addChild(new UIText('title', 'Sound controls', '6point', new Vector(0.5, 6), engine, ui));
 
   settings.addChild(new UIText('label_music-volume', 'Music volume', '8point', new Vector(18, 60), engine, ui));
-  settings.addChild(new UISlider('game-controls_music-volume', new Vector(272, 10), new Vector(140, 60), engine, ui));
+  const sliderMusicVolume = settings.addChild(new UISlider('game-controls_music-volume', musicVolume, new Vector(272, 10), new Vector(140, 60), engine, ui));
 
   settings.addChild(new UIText('label_sound-volume', 'Sound volume', '8point', new Vector(18, 80), engine, ui));
-  settings.addChild(new UISlider('game-controls_sound-volume', new Vector(272, 10), new Vector(140, 80), engine, ui));
+  const sliderSoundVolume = settings.addChild(new UISlider('game-controls_sound-volume', soundVolume, new Vector(272, 10), new Vector(140, 80), engine, ui));
 
   settings.addChild(new UIListView('game-controls_themes', new Vector(428, 120), new Vector(18, 100), engine, ui))
 
@@ -31,6 +33,15 @@ export const createSoundControlsMenu = (engine: GameEngine, ui: UIScene, positio
   settings.addChild(new UIButton('game-controls_sound-repeat', '1', new Vector(32, 18), new Vector(254, 250), engine, ui));
 
   settings.addChild(new UIButton('sound-controls_back', 'Options Menu', new Vector(140, 18), new Vector(306, 250), engine, ui));
+
+  sliderMusicVolume.on('change', (value: number) => {
+    engine.sound.setVolume(value, 'music');
+  });
+
+  sliderSoundVolume.on('change', (value: number) => {
+    engine.sound.setVolume(value, 'sfx');
+    engine.sound.setVolume(value, 'gui');
+  });
 
   settings.setDecorations(1);
   return settings;
@@ -49,6 +60,8 @@ export const createVisualControlsMenu = (engine: GameEngine, ui: UIScene, positi
 
 export const createGameControlsMenu = (engine: GameEngine, ui: UIScene, position: Vector): UIBox => {
   const settings = new UIBox('game-controls', new Vector(464, 282), position, engine, ui);
+  const gameSpeed = 1.0;
+  const scrollSpeed = 0.5;
 
   settings.addChild(new UIText('title', 'Game Controls', '6point', new Vector(0.5, 6), engine, ui));
   settings.addChild(new UIButton('game-controls_visuals', 'Visual Controls', new Vector(250, 18), new Vector(0.5, 180), engine, ui));
@@ -56,10 +69,10 @@ export const createGameControlsMenu = (engine: GameEngine, ui: UIScene, position
   settings.addChild(new UIButton('game-controls_back', 'Options Menu', new Vector(200, 18), new Vector(0.5, 250), engine, ui));
 
   settings.addChild(new UIText('label_game-speed', 'Game Speed'.toUpperCase(), '6point', new Vector(18, 60), engine, ui));
-  settings.addChild(new UISlider('game-controls_slider_speed', new Vector(400, 18), new Vector(0.5, 80), engine, ui));
+  settings.addChild(new UISlider('game-controls_slider_speed', gameSpeed, new Vector(400, 18), new Vector(0.5, 80), engine, ui));
 
   settings.addChild(new UIText('label_scroll-speed', 'Scroll Speed'.toUpperCase(), '6point', new Vector(18, 110), engine, ui));
-  settings.addChild(new UISlider('game-controls_scroll_speed', new Vector(400, 18), new Vector(0.5, 130), engine, ui));
+  settings.addChild(new UISlider('game-controls_scroll_speed', scrollSpeed, new Vector(400, 18), new Vector(0.5, 130), engine, ui));
 
   settings.setDecorations(1);
   return settings;
