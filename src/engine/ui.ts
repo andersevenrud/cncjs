@@ -9,6 +9,7 @@ import { Core } from './core';
 import { MouseButton } from './mouse';
 import { isFloat, isNegative } from './utils';
 import { Vector } from 'vector2d';
+import EventEmitter, { ListenerFn } from 'eventemitter3';
 
 /**
  * UI Entity Hit
@@ -162,25 +163,36 @@ export class UIEntity extends Entity {
   protected readonly originalPosition: Vector;
   protected parent?: UIEntity;
   public readonly ui: UIScene;
-  protected readonly callback: Function;
   protected readonly elements: UIEntity[] = [];
   public readonly name: string;
   protected visible: boolean = true;
   protected clickable: boolean = true;
   protected updated: boolean = true;
+  protected readonly ee: EventEmitter = new EventEmitter();
 
-  public constructor(name: string, position: Vector, callback: Function, ui: UIScene) {
+  public constructor(name: string, position: Vector, ui: UIScene) {
     super();
     this.name = name;
     this.ui = ui;
     this.originalPosition = position;
-    this.callback = callback;
   }
 
   public async init(): Promise<void> {
     for (let i = 0; i < this.elements.length; i++) {
       await this.elements[i].init();
     }
+  }
+
+  public on(name: string, cb: ListenerFn): void {
+    this.ee.on(name, cb);
+  }
+
+  public off(name: string, cb: ListenerFn): void {
+    this.ee.off(name, cb);
+  }
+
+  protected emit(name: string, ...args: any[]): void {
+    this.ee.emit(name, ...args);
   }
 
   public onResize(): void {
@@ -213,7 +225,7 @@ export class UIEntity extends Entity {
   }
 
   public onClick(position: Vector, button: MouseButton): void {
-    this.callback();
+    this.emit('click', position, button);
   }
 
   public calculatePosition(): void {
@@ -264,9 +276,10 @@ export class UIEntity extends Entity {
     return collides ? { element: this, position } : undefined;
   }
 
-  public addChild(child: UIEntity): void {
+  public addChild(child: UIEntity): UIEntity {
     child.setParent(this);
     this.elements.push(child);
+    return child;
   }
 
   public triggerUpdate(): void {
@@ -297,6 +310,15 @@ export class UIEntity extends Entity {
 
   public getElements(): UIEntity[] {
     return this.elements;
+  }
+
+  public getElementByName(name: string): UIEntity | undefined {
+    const tree: UIEntity[] = [
+      ...this.elements,
+      ...(([] as UIEntity[]).concat(...this.elements.map(el => el.getElements())))
+    ];
+
+    return tree.find((el): boolean => el.name === name);
   }
 
   public getBox(scaled?: UISceneScale): Box {
