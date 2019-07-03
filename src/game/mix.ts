@@ -56,6 +56,7 @@ export interface MIXMapData {
   units: MIXMapEntityData[];
   structures: MIXMapEntityData[];
   overlays: MIXMapEntityData[];
+  smudge: MIXMapEntityData[];
 };
 
 export interface MIXCursor {
@@ -922,7 +923,16 @@ export class MIX extends EventEmitter {
         };
       });
 
-    return { theatre, width, height, offset, terrain, tiles, infantry, units, structures, overlays, waypoints };
+    const smudge = Object.keys(ini.SMUDGE)
+      .map((key: any) => {
+        return {
+          cell: cellFromIndex(parseInt(key, 10), 64, offset),
+          name: ini.SMUDGE[key].split(',')[0],
+          theatre
+        };
+      });
+
+    return { theatre, width, height, offset, terrain, tiles, infantry, units, smudge, structures, overlays, waypoints };
   }
 
   public getType(name: string): string | undefined {

@@ -649,6 +649,32 @@ export class InfantryEntity extends DynamicEntity {
 }
 
 /**
+ * Smudge Entity
+ */
+export class SmudgeEntity extends GameMapEntity {
+  public async init(): Promise<void> {
+    await super.init();
+
+    if (this.sprite) {
+      this.setDimension(this.sprite.size);
+    }
+  }
+
+  public onRender(deltaTime: number): void {
+    const context = this.map.terrain.getContext();
+    this.renderSprite(deltaTime, context);
+  }
+
+  public getSpriteName(): string {
+    return `${this.data.theatre.toUpperCase()}.MIX/${this.data.name.toLowerCase()}.png`;
+  }
+
+  public getColor(): string {
+    return '#002200';
+  }
+}
+
+/**
  * Terrain Entity
  */
 export class TerrainEntity extends GameMapEntity {

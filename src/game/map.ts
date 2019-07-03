@@ -6,7 +6,7 @@
 import { Entity, Sprite, MousePosition, Box, collidePoint, collideAABB } from '../engine';
 import { Grid, AStarFinder, DiagonalMovement } from 'pathfinding';
 import { TheatreScene } from './scenes/theatre';
-import { TerrainEntity, InfantryEntity, EffectEntity, UnitEntity, OverlayEntity, StructureEntity } from './entities';
+import { SmudgeEntity, TerrainEntity, InfantryEntity, EffectEntity, UnitEntity, OverlayEntity, StructureEntity } from './entities';
 import { MIXMapData, MIXMapEntityData, wallNames, parseDimensions } from './mix';
 import { GameMapBaseEntity } from './entity';
 import { GameEngine } from './game';
@@ -106,7 +106,8 @@ export class GameMapEntityFactory {
     effect: EffectEntity,
     infantry: InfantryEntity,
     unit: UnitEntity,
-    structure: StructureEntity
+    structure: StructureEntity,
+    smudge: SmudgeEntity
   };
 
   public constructor(map: GameMap) {
@@ -203,6 +204,7 @@ export class GameMap extends Entity {
     await this.drawBaseMap(data);
 
     await Promise.all([
+      ...createEntityFrom('smudge', data.smudge),
       ...createEntityFrom('terrain', data.terrain),
       ...createEntityFrom('overlay', data.overlays),
       ...createEntityFrom('structure', data.structures),

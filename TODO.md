@@ -39,7 +39,7 @@
 - [x] Render fog of war
 - [x] Rendering order
 - [x] Rendering passes (overlays and structures needs two because of occlusion)
-- [ ] Render smudge
+- [x] Render smudge
 - [ ] Turrets
 - [x] Selection
 - [x] Selection rectangle
