@@ -13,6 +13,9 @@ export interface Core {
   readonly mouse: MouseInput;
   readonly sound: SoundOutput;
   readonly configuration: CoreConfiguration;
+  time: number;
+  ticks: number;
+  frames: number;
   onUpdate(deltaTime: number): void;
   onRender(deltaTime: number): void;
   getDimension(): Vector;

@@ -56,6 +56,7 @@ export abstract class Engine implements Core {
   protected readonly bufferContext: CanvasRenderingContext2D = this.bufferCanvas.getContext('2d') as CanvasRenderingContext2D;
   protected scene: Scene;
   protected debug: boolean = true;
+  public frames: number = 0;
   public time: number = 0;
   public ticks: number = 0;
   public readonly keyboard: KeyboardInput;
@@ -196,6 +197,7 @@ export abstract class Engine implements Core {
       this.onRender(d);
       this.time += this.delta;
       lastFrame = window.requestAnimationFrame(step);
+      this.frames++;
     };
 
     this.running = true;
