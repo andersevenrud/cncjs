@@ -663,6 +663,7 @@ export const spriteMap: any[] = [
   ['UPDATEC.MIX/hpower.png', 19, 7, 1],
   ['CONQUER.MIX/btn-dn.png', 16, 16, 3],
   ['CONQUER.MIX/btn-up.png', 16, 16, 3],
+  ['CONQUER.MIX/select.png', 24, 21, 4],
   ['TRANSIT.MIX/choose.png', 320, 156, 30],
   ['CCLOCAL.MIX/6point.png', 14, 16, 94],
   ['CCLOCAL.MIX/8point.png', 10, 11, 94],

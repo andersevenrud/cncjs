@@ -246,6 +246,8 @@ export class StructureEntity extends GameMapEntity {
   protected bibOffset: number = 0;
   protected bib?: HTMLCanvasElement;
   protected constructing: boolean = true;
+  protected repairSprite?: Sprite;
+  protected repairAnimation?: Animation;
   protected overlaySprite?: Sprite;
   protected overlayAnimation?: Animation;
   protected constructionSprite?: Sprite;
@@ -278,6 +280,10 @@ export class StructureEntity extends GameMapEntity {
       this.overlap = undefined;
       await this.engine.loadArchiveSprite(this.overlaySprite);
     }
+
+    this.repairSprite = spriteFromName('CONQUER.MIX/select.png');
+    await this.engine.loadArchiveSprite(this.repairSprite);
+    this.repairAnimation = new Animation('repair-animation', new Vector(0, 2), 2, 0.05);
 
     await this.initMake();
 
@@ -347,6 +353,12 @@ export class StructureEntity extends GameMapEntity {
     }
   }
 
+  public repair(): void {
+    if (this.isRepairable()) {
+      this.repairing = !this.repairing;
+    }
+  }
+
   public sell(): void {
     this.reportDestroy = undefined;
 
@@ -383,6 +395,18 @@ export class StructureEntity extends GameMapEntity {
       this.frame = this.frameOffset;
     }
 
+    if (this.repairing) {
+      this.repairAnimation!.onUpdate();
+
+      // TODO: Sound
+      // TODO: Check credits
+      // TODO: Report credit drain
+      this.health += 1;
+      if (this.health >= this.hitPoints) {
+        this.repairing = false;
+      }
+    }
+
     this.animation = 'Idle' + DAMAGE_SUFFIX[this.getDamageState()];
   }
 
@@ -400,6 +424,14 @@ export class StructureEntity extends GameMapEntity {
 
     if (this.overlaySprite && !this.constructing) {
       this.renderSprite(deltaTime, this.map.overlay.getContext(), this.overlaySprite, new Vector(0, 0));// FIXME
+    }
+
+    if (this.repairing) {
+      const f = this.repairAnimation!.getFrameIndex();
+      const s = this.repairSprite!;
+      const x = this.position.x + ((this.dimension.x / 2) - (s.size.x / 2));
+      const y = this.position.y + ((this.dimension.y / 2) - (s.size.y / 2));
+      s.render(f, new Vector(x, y), this.map.overlay.getContext());
     }
   }
 
@@ -425,7 +457,7 @@ export class StructureEntity extends GameMapEntity {
   }
 
   public isRepairable(): boolean {
-    return this.isPlayer(); // FIXME Check health
+    return this.isPlayer() && (this.health < this.hitPoints);
   }
 
   public isSelectable(): boolean {

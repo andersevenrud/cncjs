@@ -41,6 +41,7 @@ export abstract class GameMapBaseEntity extends Entity {
   protected engine: GameEngine;
   protected selected: boolean = false;
   protected dying: boolean = false;
+  protected repairing: boolean = false;
   protected direction: number = 0;
   protected directions: number = 32;
   protected animation: string = '';
@@ -234,6 +235,10 @@ export abstract class GameMapBaseEntity extends Entity {
 
   public isRepairable(): boolean {
     return false;
+  }
+
+  public isRepairing(): boolean {
+    return this.repairing;
   }
 
   public isDestroyed(): boolean {
