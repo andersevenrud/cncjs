@@ -117,7 +117,7 @@ export class GameMapEntityFactory {
   public async load(type: string, data: MIXMapEntityData): Promise<void> {
     const Class: any = GameMapEntityFactory.entityMap[this.getRealType(type, data)];
     if (Class) {
-      const entity = new Class(data, this.map.engine, this.map);
+      const entity = new Class(data, this.map);
       return this.map.addEntity(entity);
     } else {
       console.warn('Invalid', type, data);
@@ -151,7 +151,7 @@ export class GameMap extends Entity {
   public grid: Grid = new Grid(64, 64);
   public readonly theatre: string = 'temperat';
   public readonly engine: GameEngine;
-  public readonly fow: FOW = new FOW(this.engine, this);
+  public readonly fow: FOW = new FOW(this);
   public readonly scene: TheatreScene;
   public readonly terrain: Entity = new Entity();
   public readonly structures: Entity = new Entity();

@@ -48,11 +48,11 @@ export abstract class GameMapBaseEntity extends Entity {
   protected health: number = 100;
   protected hitPoints: number = 100;
 
-  public constructor(engine: GameEngine, map: GameMap) {
+  public constructor(map: GameMap) {
     super();
 
-    this.engine = engine;
     this.map = map;
+    this.engine = map.engine;
   }
 
   public destroy(): void {
@@ -265,8 +265,8 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
   protected reportConstruct?: string;
   protected reportDestroy?: string;
 
-  public constructor(data: MIXMapEntityData, engine: GameEngine, map: GameMap) {
-    super(engine, map);
+  public constructor(data: MIXMapEntityData, map: GameMap) {
+    super(map);
     this.data = data;
     this.direction = this.data.direction || 0;
     this.health = parseInt(String(data.health!), 10) || 1; // FIXME

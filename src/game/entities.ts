@@ -500,7 +500,7 @@ export class UnitEntity extends DynamicEntity {
         player: this.data.player,
         cell: this.cell,
         theatre: this.data.theatre
-      },  this.engine, this.map);
+      },  this.map);
 
       this.map.addEntity(building);
     }
@@ -514,7 +514,7 @@ export class UnitEntity extends DynamicEntity {
         name,
         cell: this.cell.clone() as Vector,
         theatre: this.data.theatre
-      }, this.engine, this.map);
+      }, this.map);
 
       effect.setCenterEntity(this);
       this.map.addEntity(effect);

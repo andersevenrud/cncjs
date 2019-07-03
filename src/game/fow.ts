@@ -4,20 +4,17 @@
  * @license MIT
  */
 import { Entity } from '../engine';
-import { GameEngine } from './game';
 import { GameMap } from './map';
 import { CELL_SIZE } from './physics';
 import { Vector } from 'vector2d';
 
 export class FOW extends Entity {
-  private engine: GameEngine;
   private map: GameMap;
   private grid: any[] = [];
   private updated: boolean = false;
 
-  public constructor(engine: GameEngine, map: GameMap)  {
+  public constructor(map: GameMap)  {
     super();
-    this.engine = engine;
     this.map = map;
   }
 

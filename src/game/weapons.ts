@@ -22,7 +22,7 @@ export class ProjectileEntity extends GameMapBaseEntity {
   protected trailTick: number = 0;
 
   public constructor(name: string, target: GameMapEntity, weapon: Weapon) {
-    super(weapon.map.engine, weapon.map);
+    super(weapon.map);
 
     this.target = target;
     this.weapon = weapon;
@@ -47,7 +47,7 @@ export class ProjectileEntity extends GameMapBaseEntity {
         name: this.bullet.Explosion,
         cell: this.target.getCell(),
         theatre: this.weapon.map.theatre
-      }, map.engine, map);
+      }, map);
 
       e.setCenterEntity(this.target);
       map.addEntity(e);
@@ -63,7 +63,7 @@ export class ProjectileEntity extends GameMapBaseEntity {
         player: -1,
         cell: this.cell,
         theatre: this.weapon.map.theatre
-      }, this.weapon.map.engine, this.weapon.map);
+      }, this.weapon.map);
 
       e.setCenterEntity(this);
 
