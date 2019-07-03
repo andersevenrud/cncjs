@@ -35,7 +35,7 @@ export class Minimap extends Entity {
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D) {
-    if (this.engine.ticks % 2 === 0) {
+    if (this.engine.frames % 6 === 0) {
       const { sx, sy, sw, sh, dx, dy, dw, dh, bR } = getScaledDimensions(this.map.dimension, this.dimension);
 
       this.context.fillStyle = '#000000';

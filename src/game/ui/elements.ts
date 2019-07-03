@@ -221,11 +221,13 @@ export class UIButton extends GameUIEntity {
   public onMouseDown(position: Vector): void {
     this.active = true;
     this.emit('mousedown');
+    this.updated = true;
   }
 
   public onMouseUp(position: Vector): void {
     this.active = false;
     this.emit('mouseup');
+    this.updated = true;
   }
 
   public async init(): Promise<void> {
@@ -236,13 +238,17 @@ export class UIButton extends GameUIEntity {
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
-    this.context.textAlign = 'center';
-    this.context.textBaseline = 'middle';
-    this.context.fillStyle = this.backgroundPattern as CanvasPattern;
-    this.context.fillRect(0, 0, this.dimension.x, this.dimension.y);
-    this.drawBorder(this.active ? 'inset' : 'outset');
-    super.onRender(deltaTime, ctx);
+    if (this.updated) {
+      this.context.textAlign = 'center';
+      this.context.textBaseline = 'middle';
+      this.context.fillStyle = this.backgroundPattern as CanvasPattern;
+      this.context.fillRect(0, 0, this.dimension.x, this.dimension.y);
+      this.drawBorder(this.active ? 'inset' : 'outset');
+      super.onRender(deltaTime, ctx);
+    }
+
     ctx.drawImage(this.canvas, this.position.x, this.position.y);
+    this.updated = false;
   }
 
   public isActive(): boolean {
@@ -414,20 +420,25 @@ export class UITab extends GameUIEntity {
 
   public onMouseDown(position: Vector): void {
     this.frame.setY(1);
+    this.updated = true;
   }
 
   public onMouseUp(position: Vector): void {
     this.frame.setY(0);
+    this.updated = true;
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
-    this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
-    const sprite = this.sprites.get('tabs') as Sprite;
-    sprite.render(this.frame, new Vector(0, 0), this.context);
+    if (this.updated) {
+      this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
+      const sprite = this.sprites.get('tabs') as Sprite;
+      sprite.render(this.frame, new Vector(0, 0), this.context);
 
-    super.onRender(deltaTime, this.context);
+      super.onRender(deltaTime, this.context);
+    }
 
     ctx.drawImage(this.canvas, this.position.x, this.position.y);
+    this.updated = false;
   }
 }
 
@@ -465,6 +476,8 @@ export class UIActions extends GameUIEntity {
     if (hitButton !== -1 && this.frames[hitButton].y !== 2) {
       this.frames[hitButton].setY(1);
     }
+
+    this.updated = true;
   }
 
   public onMouseUp(position: Vector): void {
@@ -474,6 +487,8 @@ export class UIActions extends GameUIEntity {
     if (this.frames[2].y !== 2) {
       this.frames[2].setY(0);
     }
+
+    this.updated = true;
   }
 
   public onClick(position: Vector): void {
@@ -484,19 +499,22 @@ export class UIActions extends GameUIEntity {
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
-    const sell = this.sprites.get('buttonSell') as Sprite;
-    const repair = this.sprites.get('buttonRepair') as Sprite;
-    const map = this.sprites.get('buttonMap') as Sprite;
+    if (this.updated) {
+      const sell = this.sprites.get('buttonSell') as Sprite;
+      const repair = this.sprites.get('buttonRepair') as Sprite;
+      const map = this.sprites.get('buttonMap') as Sprite;
 
-    this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
+      this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
 
-    sell.render(this.frames[0], this.indexes[0], this.context);
-    repair.render(this.frames[1], this.indexes[1], this.context);
-    map.render(this.frames[2], this.indexes[2], this.context);
+      sell.render(this.frames[0], this.indexes[0], this.context);
+      repair.render(this.frames[1], this.indexes[1], this.context);
+      map.render(this.frames[2], this.indexes[2], this.context);
+    }
 
     super.onRender(deltaTime, ctx);
 
     ctx.drawImage(this.canvas, this.position.x, this.position.y);
+    this.updated = false;
   }
 
   protected getButtonHit(position: Vector): number {
@@ -527,11 +545,15 @@ export class UIRadar extends GameUIEntity {
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
-    super.onRender(deltaTime, ctx);
+    if (this.updated) {
+      super.onRender(deltaTime, ctx);
 
-    const sprite = this.sprites.get('radarGdi') as Sprite; // FIXME
-    sprite.render(this.frame, new Vector(0, 0), this.context);
-    ctx.drawImage(this.canvas, this.position.x, this.position.y);
+      const sprite = this.sprites.get('radarGdi') as Sprite; // FIXME
+      sprite.render(this.frame, new Vector(0, 0), this.context);
+      ctx.drawImage(this.canvas, this.position.x, this.position.y);
+    }
+
+    this.updated = false;
   }
 }
 
@@ -564,22 +586,27 @@ export class UIPowerBar extends GameUIEntity {
       return;
     }
 
-    this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
-    this.context.fillStyle = '#ffffff';
-    this.context.fillRect(0, 0, this.dimension.x, this.dimension.y);
+    if (this.updated) {
+      this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
+      this.context.fillStyle = '#ffffff';
+      this.context.fillRect(0, 0, this.dimension.x, this.dimension.y);
 
-    const bar = this.sprites.get('bar') as Sprite;
-    const indicator = this.sprites.get('indicator') as Sprite;
-    const indicatorPosition = new Vector(
-      0,
-      POWER_HEIGHT * this.indicatorPosition - (INDICATOR_HEIGHT / 2)
-    );
+      const bar = this.sprites.get('bar') as Sprite;
+      const indicator = this.sprites.get('indicator') as Sprite;
+      const indicatorPosition = new Vector(
+        0,
+        POWER_HEIGHT * this.indicatorPosition - (INDICATOR_HEIGHT / 2)
+      );
 
-    bar.render(new Vector(0, 2), new Vector(0, 0), this.context);
-    bar.render(new Vector(0, 3), new Vector(0, 80), this.context);
-    indicator.render(new Vector(0, 0), indicatorPosition, this.context);
+      bar.render(new Vector(0, 2), new Vector(0, 0), this.context);
+      bar.render(new Vector(0, 3), new Vector(0, 80), this.context);
+      indicator.render(new Vector(0, 0), indicatorPosition, this.context);
+    }
+
     super.onRender(deltaTime, ctx);
     ctx.drawImage(this.canvas, this.position.x, this.position.y);
+
+    this.updated = false;
   }
 }
 
@@ -723,6 +750,8 @@ export abstract class UIConstruction extends GameUIEntity {
         }
       }
     }
+
+    this.updated = true;
   }
 
   public onUpdate(deltaTime: number): void {
@@ -739,68 +768,75 @@ export abstract class UIConstruction extends GameUIEntity {
         this.emit('finished');
         item.state = 'ready';
       }
+    }
 
+
+    if (this.items.size > 0 && this.ui.engine.frames % 2 === 0) {
       this.updated = true;
     }
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
-    const sctx = this.strip.getContext();
-    const frame = new Vector(0, 0);
-    const up = this.sprites.get('buttonUp') as Sprite;
-    const down = this.sprites.get('buttonDown') as Sprite;
-    const clock = this.sprites.get('clock') as Sprite;
-    const pip = this.sprites.get('pips') as Sprite;
+    if (this.updated) {
+      const sctx = this.strip.getContext();
+      const frame = new Vector(0, 0);
+      const up = this.sprites.get('buttonUp') as Sprite;
+      const down = this.sprites.get('buttonDown') as Sprite;
+      const clock = this.sprites.get('clock') as Sprite;
+      const pip = this.sprites.get('pips') as Sprite;
 
-    this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
+      this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
 
-    this.strip.getContext().clearRect(0, 0, this.strip.dimension.x, this.strip.dimension.y);
+      this.strip.getContext().clearRect(0, 0, this.strip.dimension.x, this.strip.dimension.y);
 
-    let index = -this.offset;
-    for (let i = 0; i < this.names.length; i++) {
-      const sprite = this.sprites.get(this.names[i]) as Sprite;
-      const position = new Vector(0, index * THUMB_HEIGHT);
-      this.context.clearRect(position.x, position.y, sprite.size.x, sprite.size.y);
-      sprite.render(frame, position, sctx);
+      let index = -this.offset;
+      for (let i = 0; i < this.names.length; i++) {
+        const sprite = this.sprites.get(this.names[i]) as Sprite;
+        const position = new Vector(0, index * THUMB_HEIGHT);
+        this.context.clearRect(position.x, position.y, sprite.size.x, sprite.size.y);
+        sprite.render(frame, position, sctx);
 
-      const state = this.items.get(this.names[i]);
-      if (state) {
-        let p = state.progress / state.cost;
-        let f = new Vector(0, Math.round(clock.frames * p))
+        const state = this.items.get(this.names[i]);
+        if (state) {
+          let p = state.progress / state.cost;
+          let f = new Vector(0, Math.round(clock.frames * p))
 
-        sctx.globalCompositeOperation = 'destination-out';
-        clock.render(f, new Vector(
-          position.x,
-          position.y
-        ), sctx);
-        sctx.globalCompositeOperation = 'source-over';
-
-        if (state.state === 'ready') {
-          pip.render(new Vector(0, 3), new Vector(
-            position.x + (sprite.size.x / 2) - (pip.size.x / 2),
-            position.y + (sprite.size.y / 2) - (pip.size.y / 2)
+          sctx.globalCompositeOperation = 'destination-out';
+          clock.render(f, new Vector(
+            position.x,
+            position.y
           ), sctx);
-        } else if (state.state === 'hold') {
-          pip.render(new Vector(0, 4), new Vector(
-            position.x + (sprite.size.x / 2) - (pip.size.x / 2),
-            position.y + (sprite.size.y / 2) - (pip.size.y / 2)
-          ), sctx);
+          sctx.globalCompositeOperation = 'source-over';
+
+          if (state.state === 'ready') {
+            pip.render(new Vector(0, 3), new Vector(
+              position.x + (sprite.size.x / 2) - (pip.size.x / 2),
+              position.y + (sprite.size.y / 2) - (pip.size.y / 2)
+            ), sctx);
+          } else if (state.state === 'hold') {
+            pip.render(new Vector(0, 4), new Vector(
+              position.x + (sprite.size.x / 2) - (pip.size.x / 2),
+              position.y + (sprite.size.y / 2) - (pip.size.y / 2)
+            ), sctx);
+          }
         }
+
+        index++;
       }
 
-      index++;
+      if (this.offset > 0) {
+        up.render(new Vector(0, 0), new Vector(0, this.strip.dimension.y + 1), this.context);
+      }
+
+      if (this.offset < this.names.length - THUMB_COUNT) {
+        down.render(new Vector(0, 0), new Vector(BUTTON_WIDTH, this.strip.dimension.y + 1), this.context);
+      }
+
+      this.context.drawImage(this.strip.getCanvas(), 0, 0, this.strip.dimension.x, this.strip.dimension.y);
     }
 
-    if (this.offset > 0) {
-      up.render(new Vector(0, 0), new Vector(0, this.strip.dimension.y + 1), this.context);
-    }
-
-    if (this.offset < this.names.length - THUMB_COUNT) {
-      down.render(new Vector(0, 0), new Vector(BUTTON_WIDTH, this.strip.dimension.y + 1), this.context);
-    }
-
-    this.context.drawImage(this.strip.getCanvas(), 0, 0, this.strip.dimension.x, this.strip.dimension.y);
     ctx.drawImage(this.canvas, 0, 0, this.dimension.x, this.dimension.y, this.position.x, this.position.y, this.dimension.x, this.dimension.y);
+    this.updated = false;
   }
 
   public moveUp(): void {

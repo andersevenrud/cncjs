@@ -68,6 +68,8 @@
 - [ ] Ambient sounds
 - [x] EVA sounds
 - [x] Minimap
+- [ ] Movement weights
+- [ ] Movement soft collisions
 
 ## Misc
 
@@ -79,7 +81,6 @@
 - [ ] Remove 'data' from entity constructor and rely on methods
 - [ ] Don't render unreveiled units (inside FOW)
 - [ ] Cache bib's
-- [ ] Optimize UI Entities rendering
 
 ## Tools
 
