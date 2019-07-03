@@ -475,6 +475,10 @@ export class GameMap extends Entity {
     return this.mapDimension;
   }
 
+  public isFowVisible(): boolean {
+    return this.fowVisible;
+  }
+
   public isCreated(): boolean {
     return this.created;
   }

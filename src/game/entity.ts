@@ -184,6 +184,10 @@ export abstract class GameMapBaseEntity extends Entity {
     return this.getBox();
   }
 
+  public getColor(): string {
+    return '#ffffff';
+  }
+
   public canRotate(): boolean {
     return false;
   }
@@ -555,6 +559,13 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
 
   public getArmor(): number {
     return this.properties!.Armor || 0;
+  }
+
+  public getColor(): string {
+    // FIXME
+    return this.isPlayer()
+      ? '#00ff00'
+      : '#ff0000';
   }
 
   public canReveal(): boolean {

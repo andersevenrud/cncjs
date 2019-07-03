@@ -25,6 +25,7 @@ import {
   UIText,
   UIBox
 } from './elements';
+import { Minimap } from './minimap';
 import { MIXMission } from '../mix';
 import { createGameMenus } from './mainmenu';
 import { GameMapBaseEntity } from '../entity';
@@ -40,10 +41,12 @@ export class TheatreUI extends UIScene {
   private placeConstruction?: string;
   private currentAction?: UIActionsName;
   private menuOpen: boolean = false;
+  private minimap: Minimap;
 
   public constructor(scene: TheatreScene) {
     super(scene.engine);
     this.scene = scene;
+    this.minimap = new Minimap(this, this.scene.map, this.scene.engine);
   }
 
   public async init(): Promise<void> {
@@ -159,6 +162,8 @@ export class TheatreUI extends UIScene {
   public onUpdate(deltaTime: number): void {
     const { mouse } = this.engine;
 
+    this.minimap.onUpdate(deltaTime);
+
     super.onUpdate(deltaTime);
 
     if (!this.menuOpen) {
@@ -200,6 +205,9 @@ export class TheatreUI extends UIScene {
     }
 
     super.onRender(deltaTime, ctx);
+    if (this.getSidebarVisible()) {
+      this.minimap.onRender(deltaTime, ctx);
+    }
     this.updated = false;
   }
 

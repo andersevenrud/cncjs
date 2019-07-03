@@ -671,6 +671,10 @@ export class TerrainEntity extends GameMapEntity {
     const context = this.map.terrain.getContext();
     this.renderSprite(deltaTime, context);
   }
+
+  public getColor(): string {
+    return '#002200';
+  }
 }
 
 /**
@@ -684,6 +688,10 @@ export class OverlayEntity extends GameMapEntity {
   public onRender(deltaTime: number): void {
     const context = this.map.overlay.getContext();
     this.renderSprite(deltaTime, context);
+  }
+
+  public getColor(): string {
+    return this.data.name.substr(0, 2) === 'TI' ? '#004400' : '#ffffff';
   }
 }
 

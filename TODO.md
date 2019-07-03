@@ -48,7 +48,7 @@
 - [x] Pathfinding
 - [x] Weapons and bullets
 - [x] Sight
-- [ ] Building
+- [x] Building
 - [x] Attacking
 - [ ] Patrol
 - [x] Death
@@ -59,7 +59,7 @@
 - [ ] Reinforcements
 - [x] Damage indication
 - [ ] Tech tree
-- [ ] Credits
+- [x] Credits
 - [x] Sew together fences
 - [x] Unit sound reporting
 - [x] Clamp viewport position on movement
@@ -67,7 +67,7 @@
 - [x] Player abstraction
 - [ ] Ambient sounds
 - [x] EVA sounds
-- [ ] Minimap
+- [x] Minimap
 
 ## Misc
 
