@@ -66,7 +66,7 @@
 - [ ] Weapon death chains
 - [x] Player abstraction
 - [ ] Ambient sounds
-- [ ] EVA sounds
+- [x] EVA sounds
 - [ ] Minimap
 
 ## Misc

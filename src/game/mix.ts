@@ -795,7 +795,6 @@ export class MIX extends EventEmitter {
   public readonly warheads: Map<string, MIXWarhead> = new Map();
   public readonly weapons: Map<string, MIXWeapon> = new Map();
   // TODO: Rules
-  // TODO: Grids
   public readonly parsedInfantryAnimations: Map<string, Animation> = new Map();
 
   public constructor(archive: DataArchive) {

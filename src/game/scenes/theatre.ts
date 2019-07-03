@@ -27,7 +27,7 @@ export class TheatreScene extends Scene {
   public readonly player: Player;
   public readonly ui: TheatreUI;
   public readonly viewport: Box = { x1: 0, x2: 800, y1: 0, y2: 600 };
-  private name: string;
+  public readonly name: string;
   private players: Map<MIXPlayerName, Player> = new Map(players);
   private loaded: boolean = false;
 

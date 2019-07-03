@@ -25,6 +25,7 @@ import {
   UIText,
   UIBox
 } from './elements';
+import { MIXMission } from '../mix';
 import { createGameMenus } from './mainmenu';
 import { GameMapBaseEntity } from '../entity';
 import { GameMapMask } from '../map';
@@ -49,6 +50,7 @@ export class TheatreUI extends UIScene {
     const onConstruct = this.handleConstructionCallback.bind(this);
     const emitCredits = () => String(this.scene.player.getCredits());
     const engine = this.scene.engine;
+    const mission = this.scene.engine.mix.mission.get(this.scene.name.toUpperCase()) as MIXMission;
     const tabMenu = new UITab('tab-menu', 'Menu', new Vector(0, 0), engine, this);
     const tabSidebar = new UITab('tab-sidebar', 'Sidebar', new Vector(-0, 0), engine, this);
 
@@ -73,9 +75,20 @@ export class TheatreUI extends UIScene {
     const btnAbort = menu.addChild(new UIButton('abort-mission', 'Abort mission', new Vector(250, 18), new Vector(0.5, 136), this.scene.engine, this));
 
     const btnClose = menu.addChild(new UIButton('resume-mission', 'Resume mission', new Vector(125, 18), new Vector(18, 200), this.scene.engine, this));
-    menu.addChild(new UIButton('restate-mission', 'Restate', new Vector(125, 18), new Vector(282, 200), this.scene.engine, this));
+    const btnRestate = menu.addChild(new UIButton('restate-mission', 'Restate', new Vector(125, 18), new Vector(282, 200), this.scene.engine, this));
 
     const [settings, visuals, sounds] = createGameMenus(this.scene.engine, this, new Vector(0.5, 0.5), menu);
+
+    const restate = new UIBox('restate', new Vector(560, 170), new Vector(0.5, 0.5), this.scene.engine, this);
+    restate.addChild(new UIText('title', 'Mission Statement', '6point', new Vector(0.5, 6), this.scene.engine, this));
+    const btnCloseRestate = restate.addChild(new UIButton('close-restate', 'Game Controls', new Vector(250, 18), new Vector(0.5, 136), this.scene.engine, this));
+
+    if (mission) {
+      for (let i = 0; i < Object.keys(mission).length; i++) {
+        let line: string = (mission as any)[i + 1];
+        restate.addChild(new UIText(`line-${i}`, line, '8point', new Vector(18, 38 + (i * 20)), this.scene.engine, this));
+      }
+    }
 
     elStructures.on('change', onConstruct);
     elFactories.on('change', onConstruct);
@@ -108,7 +121,19 @@ export class TheatreUI extends UIScene {
       this.menuOpen = false;
     });
 
+    btnRestate.on('click', () => {
+      restate.setVisible(true);
+      menu.setVisible(false);
+    });
+
+    btnCloseRestate.on('click', () => {
+      restate.setVisible(false);
+      menu.setVisible(true);
+    });
+
     menu.setDecorations(1);
+    restate.setDecorations(1);
+    restate.setVisible(false);
     settings.setVisible(false);
     visuals.setVisible(false);
     sounds.setVisible(false);
@@ -119,6 +144,7 @@ export class TheatreUI extends UIScene {
     this.elements.push(settings);
     this.elements.push(visuals);
     this.elements.push(sounds);
+    this.elements.push(restate);
 
     await super.init();
   }
