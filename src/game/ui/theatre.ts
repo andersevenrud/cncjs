@@ -25,7 +25,7 @@ import {
   UIText,
   UIBox
 } from './elements';
-import { createSoundControlsMenu, createVisualControlsMenu, createGameControlsMenu } from './mainmenu';
+import { createGameMenus } from './mainmenu';
 import { GameMapBaseEntity } from '../entity';
 import { GameMapMask } from '../map';
 import { cellFromPoint, isRectangleVisible } from '../physics';
@@ -46,81 +46,66 @@ export class TheatreUI extends UIScene {
   }
 
   public async init(): Promise<void> {
-    let menu: UIBox, settings: UIBox, visuals: UIBox, sounds: UIBox;
+    const onConstruct = this.handleConstructionCallback.bind(this);
+    const emitCredits = () => String(this.scene.player.getCredits());
+    const engine = this.scene.engine;
+    const tabMenu = new UITab('tab-menu', 'Menu', new Vector(0, 0), engine, this);
+    const tabSidebar = new UITab('tab-sidebar', 'Sidebar', new Vector(-0, 0), engine, this);
 
-    const onNull = () => {};
+    this.elements.push(tabMenu);
+    this.elements.push(new UITab('tab-credits', emitCredits, new Vector(-TAB_WIDTH, 0), engine, this));
+    this.elements.push(tabSidebar);
 
-    const onMenuClick = () => {
+    const sidebar = new UISidebar(new Vector(-0, TAB_HEIGHT), engine, this);
+    sidebar.addChild(new UIRadar(new Vector(0, 0), engine, this));
+    const btnActions = sidebar.addChild(new UIActions(new Vector(4, RADAR_HEIGHT + 2), engine, this));
+    const elStructures = sidebar.addChild(new UIStructureConstruction('structures', new Vector(20,  RADAR_HEIGHT + ACTION_HEIGHT + 6), engine, this));
+    const elFactories = sidebar.addChild(new UIFactoryConstruction('factories', new Vector(90,  RADAR_HEIGHT + ACTION_HEIGHT + 6), engine, this));
+    sidebar.addChild(new UIPowerBar(new Vector(0,  RADAR_HEIGHT + ACTION_HEIGHT + 2), engine, this));
+    sidebar.setVisible(this.sidebarVisible);
+
+    const menu = new UIBox('menu', new Vector(420, 230), new Vector(0.5, 0.5), this.scene.engine, this);
+    menu.addChild(new UIText('title', 'Menu', '6point', new Vector(0.5, 6), this.scene.engine, this));
+    menu.addChild(new UIButton('load-mission', 'Load mission', new Vector(250, 18), new Vector(0.5, 40), this.scene.engine, this));
+    menu.addChild(new UIButton('save-mission', 'Save mission', new Vector(250, 18), new Vector(0.5, 64), this.scene.engine, this));
+    menu.addChild(new UIButton('delete-mission', 'Delete mission', new Vector(250, 18), new Vector(0.5, 88), this.scene.engine, this));
+    const btnControls = menu.addChild(new UIButton('game-controls', 'Game Controls', new Vector(250, 18), new Vector(0.5, 112), this.scene.engine, this));
+    const btnAbort = menu.addChild(new UIButton('abort-mission', 'Abort mission', new Vector(250, 18), new Vector(0.5, 136), this.scene.engine, this));
+
+    const btnClose = menu.addChild(new UIButton('resume-mission', 'Resume mission', new Vector(125, 18), new Vector(18, 200), this.scene.engine, this));
+    menu.addChild(new UIButton('restate-mission', 'Restate', new Vector(125, 18), new Vector(282, 200), this.scene.engine, this));
+
+    const [settings, visuals, sounds] = createGameMenus(this.scene.engine, this, new Vector(0.5, 0.5), menu);
+
+    elStructures.on('change', onConstruct);
+    elFactories.on('change', onConstruct);
+
+    tabMenu.on('click', () => {
       menu.setVisible(true);
       this.menuOpen = true;
-    };
+    });
 
-    const onClose = () => {
-      menu.setVisible(false);
-      this.menuOpen = false;
-    };
+    tabSidebar.on('click', () => {
+      this.toggleSidebar();
+    });
 
-    const onControlsOpen = () => {
-      menu.setVisible(false);
-      settings.setVisible(true);
-    };
+    btnActions.on('click', (action?: UIActionsName) => (this.currentAction = action));
 
-    const onAbort = () => {
+    btnAbort.on('click', () => {
       this.scene.engine.sound.playlist.pause();
       this.scene.engine.playArchiveSfx('SPEECH.MIX/batlcon1.wav', 'gui', {
         done: () => this.scene.engine.pushMenuScene()
       }, 'eva');
-    };
-
-    const onCreditsClick = () => {};
-    const onSidebarClick = () => this.toggleSidebar();
-    const onAction = (action?: UIActionsName) => (this.currentAction = action);
-    const onConstruct = this.handleConstructionCallback.bind(this);
-    const emitCredits = () => String(this.scene.player.getCredits());
-    const engine = this.scene.engine;
-
-    this.elements.push(new UITab('tab-menu', 'Menu', new Vector(0, 0), onMenuClick, engine, this));
-    this.elements.push(new UITab('tab-credits', emitCredits, new Vector(-TAB_WIDTH, 0), onCreditsClick, engine, this));
-    this.elements.push(new UITab('tab-sidebar', 'Sidebar', new Vector(-0, 0), onSidebarClick, engine, this));
-
-    const sidebar = new UISidebar(new Vector(-0, TAB_HEIGHT), onNull, engine, this);
-    sidebar.addChild(new UIRadar(new Vector(0, 0), onNull, engine, this));
-    sidebar.addChild(new UIActions(new Vector(4, RADAR_HEIGHT + 2), onAction, engine, this));
-    sidebar.addChild(new UIStructureConstruction('structures', new Vector(20,  RADAR_HEIGHT + ACTION_HEIGHT + 6), onConstruct, engine, this));
-    sidebar.addChild(new UIFactoryConstruction('factories', new Vector(90,  RADAR_HEIGHT + ACTION_HEIGHT + 6), onConstruct, engine, this));
-    sidebar.addChild(new UIPowerBar(new Vector(0,  RADAR_HEIGHT + ACTION_HEIGHT + 2), onNull, engine, this));
-    sidebar.setVisible(this.sidebarVisible);
-
-    menu = new UIBox('menu', new Vector(420, 230), new Vector(0.5, 0.5), onNull, this.scene.engine, this);
-    menu.addChild(new UIText('title', 'Menu', '6point', new Vector(0.5, 6), this.scene.engine, this));
-    menu.addChild(new UIButton('load-mission', 'Load mission', new Vector(250, 18), new Vector(0.5, 40), onClose, this.scene.engine, this));
-    menu.addChild(new UIButton('save-mission', 'Save mission', new Vector(250, 18), new Vector(0.5, 64), onClose, this.scene.engine, this));
-    menu.addChild(new UIButton('delete-mission', 'Delete mission', new Vector(250, 18), new Vector(0.5, 88), onClose, this.scene.engine, this));
-    menu.addChild(new UIButton('game-controls', 'Game Controls', new Vector(250, 18), new Vector(0.5, 112), onControlsOpen, this.scene.engine, this));
-    menu.addChild(new UIButton('abort-mission', 'Abort mission', new Vector(250, 18), new Vector(0.5, 136), onAbort, this.scene.engine, this));
-
-    menu.addChild(new UIButton('resume-mission', 'Resume mission', new Vector(125, 18), new Vector(18, 200), onClose, this.scene.engine, this));
-    menu.addChild(new UIButton('restate-mission', 'Restate', new Vector(125, 18), new Vector(282, 200), onClose, this.scene.engine, this));
-
-    settings = createGameControlsMenu(this.scene.engine, this, new Vector(0.5, 0.5), (action: string) => {
-      settings.setVisible(false);
-      if (action === 'close') {
-        menu.setVisible(true);
-      } else if (action === 'visuals') {
-        visuals.setVisible(true);
-      } else if (action === 'sounds') {
-        sounds.setVisible(true);
-      }
     });
 
-    visuals = createVisualControlsMenu(this.scene.engine, this, new Vector(0.5, 0.5), () => {
-      visuals.setVisible(false);
+    btnControls.on('click', () => {
+      menu.setVisible(false);
       settings.setVisible(true);
     });
 
-    sounds = createSoundControlsMenu(this.scene.engine, this, new Vector(0.5, 0.5), () => {
-      sounds.setVisible(false);
-      settings.setVisible(true);
+    btnClose.on('click', () => {
+      menu.setVisible(false);
+      this.menuOpen = false;
     });
 
     menu.setDecorations(1);

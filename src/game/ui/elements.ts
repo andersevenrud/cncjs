@@ -62,8 +62,8 @@ export class GameUIEntity extends UIEntity {
   protected readonly engine: GameEngine;
   public readonly ui: UIScene;
 
-  public constructor(name: string, position: Vector, callback: Function, engine: GameEngine, ui: UIScene) {
-    super(name, position, callback, ui);
+  public constructor(name: string, position: Vector, engine: GameEngine, ui: UIScene) {
+    super(name, position, ui);
     this.engine = engine;
     this.ui = ui;
   }
@@ -121,7 +121,7 @@ export class UIText extends GameUIEntity {
   ]);
 
   public constructor(name: string, label: string | Function, font: string, position: Vector, engine: GameEngine, ui: UIScene) {
-    super(name, position, () => {}, engine, ui);
+    super(name, position, engine, ui);
     this.position = position;
     this.label = label;
     this.font = font;
@@ -209,8 +209,8 @@ export class UIButton extends GameUIEntity {
     ['background', spriteFromName('UPDATEC.MIX/btexture.png')]
   ]);
 
-  public constructor(name: string, label: string, dimension: Vector, position: Vector, callback: Function, engine: GameEngine, ui: UIScene) {
-    super(name, position, callback, engine, ui);
+  public constructor(name: string, label: string, dimension: Vector, position: Vector, engine: GameEngine, ui: UIScene) {
+    super(name, position, engine, ui);
     this.position = position;
     this.label = label;
 
@@ -261,8 +261,8 @@ export class UIBox extends GameUIEntity {
     ['decorations', spriteFromName('CONQUER.MIX/options.png')]
   ]);
 
-  public constructor(name: string, dimension: Vector, position: Vector, callback: Function, engine: GameEngine, ui: UIScene) {
-    super(name, position, callback, engine, ui);
+  public constructor(name: string, dimension: Vector, position: Vector, engine: GameEngine, ui: UIScene) {
+    super(name, position, engine, ui);
 
     if (typeof position === 'string') {
       this.customPosition = position;
@@ -303,8 +303,8 @@ export class UIBox extends GameUIEntity {
  * List VIew
  */
 export class UIListView extends GameUIEntity {
-  public constructor(name: string, dimension: Vector, position: Vector, callback: Function, engine: GameEngine, ui: UIScene) {
-    super(name, position, callback, engine, ui);
+  public constructor(name: string, dimension: Vector, position: Vector, engine: GameEngine, ui: UIScene) {
+    super(name, position, engine, ui);
     this.setDimension(dimension);
   }
 
@@ -332,12 +332,11 @@ export class UISlider extends GameUIEntity {
     ['background', spriteFromName('UPDATEC.MIX/btexture.png')],
   ]);
 
-  public constructor(name: string, dimension: Vector, position: Vector, callback: Function, engine: GameEngine, ui: UIScene) {
-    super(name, position, callback, engine, ui);
+  public constructor(name: string, dimension: Vector, position: Vector, engine: GameEngine, ui: UIScene) {
+    super(name, position, engine, ui);
     this.setDimension(dimension);
 
-    const onNull = () => {};
-    this.button = new UIButton(name + '_button', '', new Vector(32, dimension.y), new Vector(0, 0), onNull, engine, ui);
+    this.button = new UIButton(name + '_button', '', new Vector(32, dimension.y), new Vector(0, 0), engine, ui);
   }
 
   public async init(): Promise<void> {
@@ -351,7 +350,7 @@ export class UISlider extends GameUIEntity {
   public onClick(position: Vector): void {
     const value = position.x / this.dimension.x - 32;
     this.value = value;
-    this.callback(value);
+    this.emit('changed', value);
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
@@ -379,8 +378,8 @@ export class UITab extends GameUIEntity {
     ['tabs', spriteFromName('UPDATEC.MIX/htabs.png')]
   ]);
 
-  public constructor(name: string, label: string | Function, position: Vector, callback: Function, engine: GameEngine, ui: TheatreUI) {
-    super(name, position, callback, engine, ui);
+  public constructor(name: string, label: string | Function, position: Vector, engine: GameEngine, ui: TheatreUI) {
+    super(name, position, engine, ui);
     this.position = position;
 
     const child = new UIText(name + '-label', label, '8point', new Vector(0.5, 0.5), engine, ui);
@@ -431,8 +430,8 @@ export class UIActions extends GameUIEntity {
     new Vector(0, 2)
   ];
 
-  public constructor(position: Vector, callback: Function, engine: GameEngine, ui: TheatreUI) {
-    super('actions', position, callback, engine, ui);
+  public constructor(position: Vector, engine: GameEngine, ui: TheatreUI) {
+    super('actions', position, engine, ui);
   }
 
   public onMouseDown(position: Vector): void {
@@ -454,7 +453,8 @@ export class UIActions extends GameUIEntity {
   public onClick(position: Vector): void {
     const hitButton = this.getButtonHit(position);
     const hitName = this.names[hitButton];
-    this.callback(hitName as UIActionsName);
+    this.emit(hitName as UIActionsName);
+    this.emit('click', hitName as UIActionsName);
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
@@ -496,8 +496,8 @@ export class UIRadar extends GameUIEntity {
     ['radarNod', spriteFromName('UPDATEC.MIX/hradar_nod.png')]
   ]);
 
-  public constructor(position: Vector, callback: Function, engine: GameEngine, ui: TheatreUI) {
-    super('radar', position, callback, engine, ui);
+  public constructor(position: Vector, engine: GameEngine, ui: TheatreUI) {
+    super('radar', position, engine, ui);
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
@@ -520,8 +520,8 @@ export class UIPowerBar extends GameUIEntity {
     ['indicator', spriteFromName('UPDATEC.MIX/hpower.png')]
   ]);
 
-  public constructor(position: Vector, callback: Function, engine: GameEngine, ui: TheatreUI) {
-    super('powerbar', position, callback, engine, ui);
+  public constructor(position: Vector, engine: GameEngine, ui: TheatreUI) {
+    super('powerbar', position, engine, ui);
   }
 
   public async init(): Promise<void> {
@@ -570,8 +570,8 @@ export class UISidebar extends GameUIEntity {
     ['background', spriteFromName('UPDATEC.MIX/btexture.png')],
   ]);
 
-  public constructor(position: Vector, callback: Function, engine: GameEngine, ui: TheatreUI) {
-    super('sidebar', position, callback, engine, ui);
+  public constructor(position: Vector, engine: GameEngine, ui: TheatreUI) {
+    super('sidebar', position, engine, ui);
   }
 
   public async init(): Promise<void> {
@@ -637,6 +637,11 @@ export abstract class UIConstruction extends GameUIEntity {
     await super.init();
   }
 
+  protected emit(name: string, ...args: any[]): void {
+    this.ee.emit(name, ...args);
+    this.ee.emit('change', name, ...args);
+  }
+
   public onClick(position: Vector, button: MouseButton): void {
     const thumbnail = Math.floor(position.y / THUMB_HEIGHT);
     const index = position.x / THUMB_WIDTH;
@@ -655,10 +660,10 @@ export abstract class UIConstruction extends GameUIEntity {
           if (busy) {
             if (busy.state === 'hold' || busy.state === 'ready') {
               this.items.delete(found);
-              this.callback('cancel', busy);
+              this.emit('cancel', busy);
             } else {
               busy.state = 'hold';
-              this.callback('hold');
+              this.emit('hold', busy);
             }
           }
         } else {
@@ -668,15 +673,15 @@ export abstract class UIConstruction extends GameUIEntity {
               : 1;
 
             if (progress >= 1.0) {
-              this.callback('place', busy);
+              this.emit('place', busy);
 
               // FIXME: Do this when it is actually placed
               this.items.delete(found);
             } else if (busy.state === 'hold') {
               busy.state = 'constructing';
-              this.callback('construct', busy);
+              this.emit('construct', busy);
             } else {
-              this.callback('busy');
+              this.emit('busy', busy);
             }
           } else {
             const item = {
@@ -687,7 +692,7 @@ export abstract class UIConstruction extends GameUIEntity {
             };
 
             this.items.set(found, item);
-            this.callback('construct', item);
+            this.emit('construct', item);
           }
         }
       }
@@ -702,10 +707,10 @@ export abstract class UIConstruction extends GameUIEntity {
         if (item.state === 'constructing') {
           // FIXME: Rule
           item.progress = Math.min(item.cost, item.progress + 1.0);
-          this.callback('tick', item);
+          this.emit('tick', item);
         }
       } else if (item.state != 'ready') {
-        this.callback('finished');
+        this.emit('finished');
         item.state = 'ready';
       }
 
