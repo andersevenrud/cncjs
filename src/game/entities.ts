@@ -3,7 +3,7 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import { Animation, Sprite, Entity, randomBetweenInteger }  from '../engine';
+import { Box, Animation, Sprite, Entity, randomBetweenInteger }  from '../engine';
 import { GameMapEntity, GameMapEntityAnimation } from './entity';
 import {
   MIXGrid,
@@ -411,6 +411,15 @@ export class StructureEntity extends GameMapEntity {
     return this.properties.PowerDrain;
   }
 
+  public getBox(): Box {
+    const box = super.getBox();
+    if (this.bib) {
+      box.y2 += CELL_SIZE;
+    }
+
+    return box;
+  }
+
   public isSellable(): boolean {
     return this.isPlayer();
   }
@@ -649,6 +658,14 @@ export class TerrainEntity extends GameMapEntity {
     name: '',
     grid: [['x']]
   };
+
+  public async init(): Promise<void> {
+    await super.init();
+
+    if (this.sprite) {
+      this.setDimension(this.sprite.size);
+    }
+  }
 
   public onRender(deltaTime: number): void {
     const context = this.map.terrain.getContext();
