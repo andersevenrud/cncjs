@@ -464,7 +464,7 @@ export class GameMap extends Entity {
       y2: viewport.y2 / scale + this.position.y
     };
 
-    return this.entities.filter(e => collideAABB(e.getBox(), viewbox));
+    return this.entities.filter(e => collideAABB(e.getRenderBox(), viewbox));
   }
 
   public getEntities(): GameMapBaseEntity[] {

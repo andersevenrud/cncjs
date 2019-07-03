@@ -176,6 +176,14 @@ export abstract class GameMapBaseEntity extends Entity {
     return 0;
   }
 
+  public getRenderBox(): Box {
+    return this.getBox();
+  }
+
+  public getSelectionBox(): Box {
+    return this.getBox();
+  }
+
   public canRotate(): boolean {
     return false;
   }

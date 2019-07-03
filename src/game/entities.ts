@@ -411,8 +411,8 @@ export class StructureEntity extends GameMapEntity {
     return this.properties.PowerDrain;
   }
 
-  public getBox(): Box {
-    const box = super.getBox();
+  public getRenderBox(): Box {
+    const box = this.getBox();
     if (this.bib) {
       box.y2 += CELL_SIZE;
     }

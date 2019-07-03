@@ -260,7 +260,7 @@ export class TheatreUI extends UIScene {
 
     const hit = map.getEntities()
       .filter(e => e.isSelectable())
-      .find(e => collidePoint(point, e.getBox()));
+      .find(e => collidePoint(point, e.getSelectionBox()));
 
     if (hit) {
       const selected = map.getSelectedEntities();
@@ -341,7 +341,7 @@ export class TheatreUI extends UIScene {
     };
 
     const selected = map.getEntities()
-      .filter(entity => collideAABB(rect, entity.getBox()))
+      .filter(entity => collideAABB(rect, entity.getSelectionBox()))
       .filter(entity => entity.isSelectable());
 
     if (selected.length > 0) {
