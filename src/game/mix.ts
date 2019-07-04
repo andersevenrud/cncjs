@@ -935,6 +935,21 @@ export class MIX extends EventEmitter {
     return { theatre, width, height, offset, terrain, tiles, infantry, units, smudge, structures, overlays, waypoints };
   }
 
+  public getProperties(name: string): MIXObject | undefined {
+    const type = this.getType(name);
+    if (type === 'unit') {
+      return this.units.get(name);
+    } else if (type === 'infantry') {
+      return this.infantry.get(name);
+    } else if (type === 'structure') {
+      return this.structures.get(name);
+    } else if (type === 'aircraft') {
+      return this.aircraft.get(name);
+    }
+
+    return undefined;
+  }
+
   public getType(name: string): string | undefined {
     if (this.units.get(name)) {
       return 'unit';
@@ -942,6 +957,8 @@ export class MIX extends EventEmitter {
       return 'infantry';
     } else if (this.structures.get(name)) {
       return 'structure';
+    } else if (this.aircraft.get(name)) {
+      return 'aircraft';
     }
 
     return undefined;

@@ -739,16 +739,20 @@ export abstract class UIConstruction extends GameUIEntity {
               this.emit('busy', busy);
             }
           } else {
-            const item = {
-              name: found,
-              state: 'constructing' as UIConstructionState,
-              cost: 100, // FIXME
-              progress: 0,
-              type: this instanceof UIFactoryConstruction ? 'unit' : 'structure' as UIConstructionType  // FIXME
-            };
+            const properties = (this.ui.engine as GameEngine).mix.getProperties(found.toUpperCase());
 
-            this.items.set(found, item);
-            this.emit('construct', item);
+            if (properties) {
+              const item = {
+                name: found,
+                state: 'constructing' as UIConstructionState,
+                cost: properties.Cost || 1,
+                progress: 0,
+                type: this instanceof UIFactoryConstruction ? 'unit' : 'structure' as UIConstructionType  // FIXME
+              };
+
+              this.items.set(found, item);
+              this.emit('construct', item);
+            }
           }
         }
       }
