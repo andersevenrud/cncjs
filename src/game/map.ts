@@ -402,7 +402,7 @@ export class GameMap extends Entity {
   public async addEntity(entity: GameMapBaseEntity): Promise<void> {
     const cell = entity.getCell();
     if (cell.x < 0 || cell.y < 0 || cell.x > this.mapDimension.x || cell.y > this.mapDimension.y) {
-      console.log('GameMapEntity::addEntity()', 'Not adding entity outside borders', cell.toArray(), entity);
+      console.debug('GameMapEntity::addEntity()', 'Not adding entity outside borders', cell.toArray(), entity);
       return;
     }
 

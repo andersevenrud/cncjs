@@ -371,6 +371,8 @@ export class TheatreUI extends UIScene {
     const selected = map.getSelectedEntities();
     const hovering = map.getEntityFromVector(pos, true);
     const canAttack = selected.some(s => s.canAttack());
+    const cell = cellFromPoint(pos);
+    const revealed = map.isFowVisible() ? map.fow.isRevealedAt(cell) : true;
 
     let cursor = 'default';
     if (!this.menuOpen && !this.isMouseOutsideViewport()) {
@@ -380,7 +382,7 @@ export class TheatreUI extends UIScene {
         cursor = hovering && hovering.isRepairable() ? 'repair' : 'cannotRepair';
       } else {
         if (hovering && selected.length > 0 && hovering.isAttackable(selected[0]) && canAttack) {
-          cursor = 'attack';
+          cursor = revealed ? 'attack' : 'move';
         } else if (hovering && hovering.isSelectable()) {
           if (selected[0] === hovering &&  hovering.isDeployable()) {
             cursor = 'expand';
@@ -390,9 +392,7 @@ export class TheatreUI extends UIScene {
         } else if (selected.length > 0) {
           const movable = selected.some((s: GameMapBaseEntity): boolean => s.isMovable());
           if (movable) {
-            const cell = cellFromPoint(pos);
             const walkable = map.grid.isWalkableAt(cell.x, cell.y);
-            const revealed = map.fow.isRevealedAt(cell);
             cursor = walkable || !revealed ? 'move' : 'unavailable';
           } else {
             cursor = 'default';

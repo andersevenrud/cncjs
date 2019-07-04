@@ -248,7 +248,7 @@ export class SoundOutput extends IODevice {
    * Plays sound effect immediately
    */
   protected playSfxDirect(sound: SoundEffect, node: string): void {
-    console.info('SoundOutput::_playSfx()', sound);
+    console.debug('SoundOutput::_playSfx()', sound);
 
     const connectNode = this.nodes[node] || this.mainGainNode;
     const gainNode = this.context.createGain();
