@@ -672,7 +672,7 @@ const transformValue = (key: string, value: string, filename: string): any => {
 const transformObject = (obj: any, filename: string, name: string): any => {
   const keys = Object.keys(obj);
   return keys.reduce((accumulator, key): any => {
-    return {...accumulator, [capitalize(key)]: transformValue(key, obj[key], filename)};
+    return {...accumulator, [capitalize(key)]: transformValue(capitalize(key), obj[key], filename)};
   }, {});
 };
 
