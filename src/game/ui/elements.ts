@@ -742,10 +742,11 @@ export abstract class UIConstruction extends GameUIEntity {
             const properties = (this.ui.engine as GameEngine).mix.getProperties(found.toUpperCase());
 
             if (properties) {
+              const cost = properties.Cost || 1;
               const item = {
                 name: found,
                 state: 'constructing' as UIConstructionState,
-                cost: properties.Cost || 1,
+                cost: cost,
                 progress: 0,
                 type: this instanceof UIFactoryConstruction ? 'unit' : 'structure' as UIConstructionType  // FIXME
               };

@@ -147,6 +147,10 @@ export abstract class GameMapBaseEntity extends Entity {
     return this.cell.clone() as Vector;
   }
 
+  public getDirection(): number {
+    return this.direction;
+  }
+
   public getCellBox(): Box {
     return {
       x1: this.cell.x,

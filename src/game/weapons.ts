@@ -12,6 +12,8 @@ import { spriteFromName } from './sprites';
 import { EffectEntity } from './entities';
 import { Vector } from 'vector2d';
 
+const directions = ['N', 'NW', 'W', 'SW', 'S', 'SE', 'E', 'NE'];
+
 export class ProjectileEntity extends GameMapBaseEntity {
   protected readonly bulletName: string;
   protected readonly bullet: MIXBullet;
@@ -138,7 +140,6 @@ export class Weapon {
 
     const bullet = map.engine.mix.bullets.get(this.weapon.Projectile) as MIXBullet;
 
-
     if (irrelevantBulletImages.indexOf(bullet.Image) === -1) {
       const spriteName = bullet.Image.toLowerCase();
       this.sprite = spriteFromName(`CONQUER.MIX/${spriteName}.png`);
@@ -160,21 +161,34 @@ export class Weapon {
   }
 
   public fire(target: GameMapEntity): void {
-    if (this.tick !== 0) {
-      return;
-    }
+    if (this.tick === 0) {
+      const p = new ProjectileEntity(this.weapon.Projectile, target, this);
+      this.map.addEntity(p);
+      if (this.weapon.Report) {
+        this.entity.playSfx(this.weapon.Report.toLowerCase());
+      }
 
-    const p = new ProjectileEntity(this.weapon.Projectile, target, this);
-    this.map.addEntity(p);
-    if (this.weapon.Report) {
-      this.entity.playSfx(this.weapon.Report.toLowerCase());
+      this.createMuzzleFlash();
+    }
+  }
+
+  protected createMuzzleFlash(): void {
+    if (this.weapon.MuzzleFlash) {
+      const dir = directions[this.entity.getDirection()];
+      const name = this.weapon.MuzzleFlash.replace('-N', `-${dir}`);
+
+      const e = new EffectEntity({
+        name,
+        cell: this.entity.getCell(),
+        theatre: this.map.theatre
+      }, this.map);
+
+      e.setCenterEntity(this.entity);
+      this.map.addEntity(e);
     }
   }
 
   public onUpdate(deltaTime: number) {
     this.tick = (this.tick + 1) % this.weapon.ROF;
-  }
-
-  public onRender(deltaTime: number) {
   }
 }
