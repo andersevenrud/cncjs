@@ -50,6 +50,10 @@ You can also pass `scene=<string>` to the URL to select a scene:
 
 Set `debug=false` to disable debug overlay and `zoom=<number>` for a initial zoom level.
 
+## Shoutout
+
+Without http://nyerguds.arsaneus-design.com/cnc95upd/inirules/ this would not be possible.
+
 ## License
 
 This codebase is [MIT Licenses](LICENSE).
