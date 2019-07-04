@@ -67,6 +67,7 @@ export class ProjectileEntity extends GameMapBaseEntity {
         theatre: this.weapon.map.theatre
       }, this.weapon.map);
 
+      e.setPosition(this.getPosition());
       e.setCenterEntity(this);
 
       this.weapon.map.addEntity(e);
@@ -92,7 +93,7 @@ export class ProjectileEntity extends GameMapBaseEntity {
       } else {
         if (this.trailTick <= 0) {
           this.createTrail();
-          this.trailTick = randomBetweenInteger(2, 10);
+          this.trailTick = randomBetweenInteger(4, 12);
         }
 
         this.position.subtract(vel);
