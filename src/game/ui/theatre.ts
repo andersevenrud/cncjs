@@ -369,7 +369,7 @@ export class TheatreUI extends UIScene {
     const map = this.scene.map;
     const pos = map.getRealMousePosition(mouse.getPosition());
     const selected = map.getSelectedEntities();
-    const hovering = map.getEntityFromVector(pos);
+    const hovering = map.getEntityFromVector(pos, true);
     const canAttack = selected.some(s => s.canAttack());
 
     let cursor = 'default';
