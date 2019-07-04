@@ -24,10 +24,6 @@ import { Vector } from 'vector2d';
 
 const DAMAGE_SUFFIX = ['', '-Damaged', '-Destroyed'];
 
-interface ConstructClassMap {
-  [Key: string]: any;
-}
-
 /**
  * Dynamic entity
  */
@@ -42,6 +38,18 @@ export class DynamicEntity extends GameMapEntity {
   protected reportSelect?: string = 'AWAIT1';
   protected reportMove?: string = 'ACKNO';
   protected reportAttack?: string = 'ACKNO';
+
+  public die(destroy: boolean = true): boolean {
+    if (super.die(destroy)) {
+      if (this.isPlayer()) {
+        this.engine.playArchiveSfx('SPEECH.MIX/unitlost.wav', 'gui', { block: true });
+      }
+
+      return true;
+    }
+
+    return false;
+  }
 
   protected clearMovement(clearTarget: boolean = true): void {
     this.targetDirection = -1;

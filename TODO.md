@@ -73,6 +73,7 @@
 
 ## Misc
 
+- [ ] Animate shorelines
 - [x] Optimize rendering pipeline
 - [ ] Figure out timing fractions for roation and speeds
 - [ ] Look into using 'createImageBitmap'

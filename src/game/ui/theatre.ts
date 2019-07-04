@@ -214,7 +214,11 @@ export class TheatreUI extends UIScene {
     if (state === 'construct') {
       this.scene.engine.playArchiveSfx('SPEECH.MIX/bldging1.wav', 'gui', {}, 'eva');
     } else if (state === 'finished') {
-      this.scene.engine.playArchiveSfx('SPEECH.MIX/constru1.wav', 'gui', {}, 'eva');
+      if (item!.type === 'unit') {
+        this.scene.engine.playArchiveSfx('SPEECH.MIX/unitredy.wav', 'gui', {}, 'eva');
+      } else {
+        this.scene.engine.playArchiveSfx('SPEECH.MIX/constru1.wav', 'gui', {}, 'eva');
+      }
     } else if (state === 'cancel') {
       this.scene.engine.playArchiveSfx('SPEECH.MIX/cancel1.wav', 'gui', {}, 'eva');
       this.scene.player.addCredits(item!.progress);

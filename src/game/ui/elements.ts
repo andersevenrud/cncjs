@@ -11,6 +11,7 @@ import { spriteFromName } from '../sprites';
 import { MIXFont, fontMap } from '../mix';
 import { Vector } from 'vector2d';
 
+export type UIConstructionType = 'structure' | 'unit' | 'aircraft';
 export type UIActionsName = 'sell' | 'repair';
 export type UIConstructionState = 'constructing' | 'hold' | 'ready';
 export type UIConstructionResponse = 'construct' | 'hold' | 'cancel' | 'busy' | 'place' | 'finished' | 'tick';
@@ -21,6 +22,7 @@ export interface UIConstructionItem {
   state: UIConstructionState;
   cost: number;
   progress: number;
+  type: UIConstructionType;
 }
 
 export interface UITextCalculationOffset {
@@ -740,8 +742,9 @@ export abstract class UIConstruction extends GameUIEntity {
             const item = {
               name: found,
               state: 'constructing' as UIConstructionState,
-              cost: 100,
-              progress: 0
+              cost: 100, // FIXME
+              progress: 0,
+              type: this instanceof UIFactoryConstruction ? 'unit' : 'structure' as UIConstructionType  // FIXME
             };
 
             this.items.set(found, item);
@@ -765,7 +768,7 @@ export abstract class UIConstruction extends GameUIEntity {
           this.emit('tick', item);
         }
       } else if (item.state != 'ready') {
-        this.emit('finished');
+        this.emit('finished', item);
         item.state = 'ready';
       }
     }
