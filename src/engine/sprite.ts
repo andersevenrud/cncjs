@@ -42,6 +42,8 @@ export class Sprite {
   private readonly frameCache: Map<string, CanvasRenderingContext2D> = new Map();
   private static images: Map<string, SpriteImage> = new Map();
   private static patterns: Map<string, CanvasPattern> = new Map();
+  protected static cacheCount: number = 0;
+  protected static readonly cache: Map<string, Sprite> = new Map();
 
   public constructor(source: string, size: Vector, frames: number, clip: number[] = []) {
     if (!Sprite.images.has(source)) {
@@ -59,8 +61,29 @@ export class Sprite {
    * Clears cache
    */
   public static clearCache(): void {
+    console.info('Sprite::clearCache()');
+    this.cache.clear();
     this.images.clear();
     this.patterns.clear();
+    this.cacheCount = 0;
+  }
+
+  /**
+   * Factory sprite from cache
+   */
+  public static createOrCache(name: string, cb: Function) {
+    if (Sprite.cache.has(name)) {
+      return Sprite.cache.get(name);
+    }
+
+    const instance = cb(name);
+    Sprite.cache.set(name, instance);
+
+    return instance;
+  }
+
+  public static toString(): string {
+    return `${this.cache.size} (${this.images.size}i ${this.patterns.size}p ${this.cacheCount}f)`;
   }
 
   /**
@@ -82,6 +105,7 @@ export class Sprite {
       cached = canvas.getContext('2d') as CanvasRenderingContext2D;
       cached.drawImage(this.image.canvas, sx, sy, sw, sh, 0, 0, dw, dh);
       this.frameCache.set(frame.toString(), cached);
+      Sprite.cacheCount++;
     }
 
     context.drawImage(canvas, dx, dy);

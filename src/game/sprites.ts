@@ -808,8 +808,6 @@ export const spriteMap: any[] = [
   ...filterTemperateMap(2, 'WINTER.MIX')
 ];
 
-const spriteCache: Map<string, Sprite> = new Map();
-
 const createSprite = (n: string): Sprite => {
   const found = spriteMap.find((item): boolean => item[0] === n);
   if (found) {
@@ -823,11 +821,5 @@ const createSprite = (n: string): Sprite => {
 }
 
 export const spriteFromName = (n: string): Sprite => {
-  if (spriteCache.has(n)) {
-    return spriteCache.get(n) as Sprite;
-  }
-
-  const s = createSprite(n);
-  spriteCache.set(n, s);
-  return s;
+  return Sprite.createOrCache(n, createSprite);
 };

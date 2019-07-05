@@ -271,6 +271,8 @@ export abstract class Engine implements Core {
       scene = new NullScene(this);
     }
 
+    Sprite.clearCache();
+
     this.scene.destroy();
     this.keyboard.clear();
     this.mouse.clear();
@@ -340,6 +342,7 @@ export abstract class Engine implements Core {
       const debugLines = [
         `Screen: ${screen} ${this.canvasFilter ? 'filtered' : 'unfiltered'}`,
         'Render: ' + this.toString(),
+        'Sprites: ' + Sprite.toString(),
         'Keyboard: ' + this.keyboard.toString(),
         'Mouse: ' + this.mouse.toString(),
         'Sound: ' + this.sound.toString(),
