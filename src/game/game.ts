@@ -22,8 +22,6 @@ import { LoadingScene } from './scenes/loading';
 import { Cursor } from './cursor';
 import { MIX, MIXPlayerName } from './mix';
 
-declare var window: any;
-
 /**
  * Game Engine
  */
@@ -84,8 +82,6 @@ export class GameEngine extends Engine {
     await this.cursor.init();
 
     if (this.debugMode) {
-      window.game = this;
-
       const debugState: boolean = q.get('debug') !== 'false';
       this.debug = debugState;
 
