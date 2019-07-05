@@ -20,3 +20,4 @@ export * from './sound';
 export * from './sprite';
 export * from './ui';
 export * from './utils';
+export { Vector } from 'vector2d';
