@@ -39,9 +39,7 @@ export class Sprite {
   public readonly size: Vector;
   public readonly frames: number;
   public readonly image: SpriteImage;
-  private lastFrame?: Vector;
-  private lastFrameBuffer: HTMLCanvasElement = document.createElement('canvas');
-  private lastFrameBufferContext: CanvasRenderingContext2D = this.lastFrameBuffer.getContext('2d') as CanvasRenderingContext2D;
+  private readonly frameCache: Map<string, CanvasRenderingContext2D> = new Map();
   private static images: Map<string, SpriteImage> = new Map();
   private static patterns: Map<string, CanvasPattern> = new Map();
 
@@ -55,8 +53,6 @@ export class Sprite {
     this.frames = frames;
     this.clip = clip;
     this.image = Sprite.images.get(source) as SpriteImage;
-    this.lastFrameBuffer.width = size.x;
-    this.lastFrameBuffer.height = size.y;
   }
 
   /**
@@ -77,20 +73,20 @@ export class Sprite {
     sx = xoff;
     sy = yoff;
 
-    // We store the last cropped frame into a buffer to save (a lot) of computation
-    // time when we advance to the next frame. Imagine that you have a 10x1000 sprite
-    // image, and only need 10x10 of that. Instead of getting 10x1000 every time, we only
-    // take the 10x10 from last frame.
-    if (!this.lastFrame || !this.lastFrame.equals(frame)) {
-      this.lastFrameBufferContext.clearRect(0, 0, dw, dh);
-      this.lastFrameBufferContext.drawImage(this.image.canvas, sx, sy, sw, sh, 0, 0, dw, dh);
-      this.lastFrame = frame.clone() as Vector;
+    let cached = this.frameCache.get(frame.toString());
+    let canvas = cached ? cached.canvas : document.createElement('canvas');
+
+    if (!cached) {
+      canvas.width = dw;
+      canvas.height = dh;
+      cached = canvas.getContext('2d') as CanvasRenderingContext2D;
+      cached.drawImage(this.image.canvas, sx, sy, sw, sh, 0, 0, dw, dh);
+      this.frameCache.set(frame.toString(), cached);
     }
 
-    //context.clearRect(dx, dy, dw, dh);
-    context.drawImage(this.lastFrameBuffer, dx, dy);
+    context.drawImage(canvas, dx, dy);
 
-    return this.lastFrameBuffer;
+    return canvas;
   }
 
   /**
@@ -131,13 +127,6 @@ export class Sprite {
   }
 
   /**
-   * Resets last frame reference
-   */
-  public resetLastFrame(): void {
-    this.lastFrame = undefined;
-  }
-
-  /**
    * Gets the rectangle required for rendering on a target
    */
   public getRect(position: Vector): number[] {
@@ -167,12 +156,5 @@ export class Sprite {
       cx - (cw / 2),
       cy - (ch / 2)
     );
-  }
-
-  /**
-   * Gets the last frame buffer
-   */
-  public getLastFrameBuffer(): HTMLCanvasElement {
-    return this.lastFrameBuffer;
   }
 }
