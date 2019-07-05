@@ -8,7 +8,7 @@ import { GameEngine } from '../game';
 import { GameMap } from '../map';
 import { TheatreUI } from '../ui/theatre';
 import { getScaledDimensions } from '../physics';
-import { TAB_HEIGHT } from './elements'
+import { TAB_HEIGHT } from './elements';
 import { Vector } from 'vector2d';
 
 export const MINIMAP_WIDTH = 156;

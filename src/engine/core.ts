@@ -40,8 +40,8 @@ export interface CoreSoundConfiguration {
 }
 
 export interface CoreConfiguration {
-  maxScale: number,
-  minScale: number,
+  maxScale: number;
+  minScale: number;
   scale: number;
   updateRate: number;
   sound: CoreSoundConfiguration;

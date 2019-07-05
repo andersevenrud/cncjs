@@ -15,7 +15,7 @@ export type UIConstructionType = 'structure' | 'unit' | 'aircraft';
 export type UIActionsName = 'sell' | 'repair';
 export type UIConstructionState = 'constructing' | 'hold' | 'ready';
 export type UIConstructionResponse = 'construct' | 'hold' | 'cancel' | 'busy' | 'place' | 'finished' | 'tick';
-export type UIBorderType = 'inset' | 'outset'
+export type UIBorderType = 'inset' | 'outset';
 
 export interface UIConstructionItem {
   name: string;
@@ -525,7 +525,7 @@ export class UIActions extends GameUIEntity {
       y1: v.y,
       x2: v.x + ACTION_WIDTH,
       y2: ACTION_HEIGHT
-    }))
+    }));
 
     return boxes.findIndex(box => collidePoint(position, box));
   }
@@ -807,7 +807,7 @@ export abstract class UIConstruction extends GameUIEntity {
         const state = this.items.get(this.names[i]);
         if (state) {
           let p = state.progress / state.cost;
-          let f = new Vector(0, Math.round(clock.frames * p))
+          let f = new Vector(0, Math.round(clock.frames * p));
 
           sctx.globalCompositeOperation = 'destination-out';
           clock.render(f, new Vector(

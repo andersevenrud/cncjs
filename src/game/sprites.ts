@@ -818,7 +818,7 @@ const createSprite = (n: string): Sprite => {
 
   console.warn('spriteFromName()', n, 'not found');
   return new Sprite(n, new Vector(24, 24), 0);
-}
+};
 
 export const spriteFromName = (n: string): Sprite => {
   return Sprite.createOrCache(n, createSprite);

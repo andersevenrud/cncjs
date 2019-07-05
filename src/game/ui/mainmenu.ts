@@ -23,7 +23,7 @@ export const createSoundControlsMenu = (ui: UIScene, position: Vector): UIBox =>
   settings.addChild(new UIText('label_sound-volume', 'Sound volume', '8point', new Vector(18, 80), ui));
   const sliderSoundVolume = settings.addChild(new UISlider('game-controls_sound-volume', soundVolume, new Vector(272, 10), new Vector(140, 80), ui));
 
-  settings.addChild(new UIListView('game-controls_themes', new Vector(428, 120), new Vector(18, 100), ui))
+  settings.addChild(new UIListView('game-controls_themes', new Vector(428, 120), new Vector(18, 100), ui));
 
   settings.addChild(new UIButton('game-controls_sound-stop', 'ST', new Vector(32, 18), new Vector(18, 250), ui));
   settings.addChild(new UIButton('game-controls_sound-play', 'PL', new Vector(32, 18), new Vector(56, 250), ui));
@@ -76,10 +76,10 @@ export const createGameControlsMenu = (ui: UIScene, position: Vector): UIBox => 
 
   settings.setDecorations(1);
   return settings;
-}
+};
 
 export const createGameMenus = (ui: UIScene, position: Vector, menu: UIBox): UIBox[] => {
-  const settings = createGameControlsMenu(ui, position)
+  const settings = createGameControlsMenu(ui, position);
   const visuals = createVisualControlsMenu(ui, position);
   const sounds = createSoundControlsMenu(ui, position);
 

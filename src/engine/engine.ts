@@ -13,6 +13,7 @@ import { Vector } from 'vector2d';
 import { merge } from 'lodash';
 
 type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;
+export type EngineSceneFn = () => Scene;
 
 /**
  * Null Scene
@@ -47,7 +48,7 @@ export abstract class Engine implements Core {
   private fps: number = 0;
   private delta: number = 0;
   private dimension: Vector = new Vector(800, 600);
-  private sceneQueue: Scene[] = [];
+  private sceneQueue: EngineSceneFn[] = [];
   private canvasFilter: boolean = true;
   protected readonly canvas: HTMLCanvasElement;
   protected readonly context: CanvasRenderingContext2D;
@@ -74,7 +75,7 @@ export abstract class Engine implements Core {
       musicVolume: 1.0,
       guiVolume: 1.0
     }
-  }
+  };
 
   public constructor(canvas: HTMLCanvasElement, configuration?: DeepPartial<CoreConfiguration>) {
     this.configuration = merge({}, this.configuration, configuration || {});
@@ -243,7 +244,7 @@ export abstract class Engine implements Core {
   /**
    * Queues a new scene to render
    */
-  public async pushScene(scene: Scene, skip: boolean = true): Promise<void> {
+  public async pushScene(scene: EngineSceneFn, skip: boolean = true): Promise<void> {
     console.debug('Engine::pushScene()', scene, skip);
 
     if (skip) {
@@ -266,9 +267,9 @@ export abstract class Engine implements Core {
    * Go to next scene
    */
   private async nextScene(): Promise<void> {
-    let scene: Scene = this.sceneQueue.shift() as Scene;
-    if (!scene) {
-      scene = new NullScene(this);
+    let found = this.sceneQueue.shift();
+    if (!found) {
+      found = () => new NullScene(this);
     }
 
     Sprite.clearCache();
@@ -281,19 +282,17 @@ export abstract class Engine implements Core {
     this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
     this.scene = new NullScene(this);
 
-    console.group('Engine::nextScene()', scene);
-
     try {
+      const scene = found();
+      console.group('Engine::nextScene()', scene);
       await scene.init();
+      console.groupEnd();
+      this.scene = scene;
     } catch (error) {
       console.error(error);
     }
 
-    this.scene = scene;
-
     this.resize();
-
-    console.groupEnd();
   }
 
   /**

@@ -128,7 +128,7 @@ export class UIScene extends Entity {
     const position = this.engine.mouse.getVector();
     if (this.scaled) {
       position.subtract(this.scaled.offset);
-      position.divS(this.scaled.scale)
+      position.divS(this.scaled.scale);
     }
 
     return position;

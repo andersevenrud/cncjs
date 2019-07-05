@@ -10,7 +10,8 @@ import {
   SoundEffect,
   DataArchive,
   DataArchiveImageLoader,
-  DataArchiveSoundLoader
+  DataArchiveSoundLoader,
+  EngineSceneFn
 } from '../engine';
 import { MenuScene } from './scenes/menu';
 import { TeamScene } from './scenes/team';
@@ -125,30 +126,30 @@ export class GameEngine extends Engine {
     this.loaded = true;
   }
 
-  public async pushScene(scene: Scene, skip: boolean = true): Promise<void> {
+  public async pushScene(scene: EngineSceneFn, skip: boolean = true): Promise<void> {
     this.cursor.setCursor();
 
     return super.pushScene(scene, skip);
   }
 
   public async pushMenuScene(skip: boolean = true): Promise<void> {
-    this.pushScene(new MenuScene(this), skip);
+    this.pushScene(() => new MenuScene(this), skip);
   }
 
   public async pushTeamScene(skip: boolean = true): Promise<void> {
-    this.pushScene(new TeamScene(this), skip);
+    this.pushScene(() => new TeamScene(this), skip);
   }
 
   public async pushMovieScene(name: string,skip: boolean = true ): Promise<void> {
-    this.pushScene(new MovieScene(this, name), skip);
+    this.pushScene(() => new MovieScene(this, name), skip);
   }
 
   public async pushTheatreScene(name: string, player: MIXPlayerName, skip: boolean = true): Promise<void> {
-    this.pushScene(new TheatreScene(name, player, this), skip);
+    this.pushScene(() => new TheatreScene(name, player, this), skip);
   }
 
   public async pushScoreScene(skip: boolean = true): Promise<void> {
-    this.pushScene(new ScoreScene(this), skip);
+    this.pushScene(() => new ScoreScene(this), skip);
   }
 
   public onRender(deltaTime: number): void {
