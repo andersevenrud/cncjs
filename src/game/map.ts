@@ -469,7 +469,24 @@ export class GameMap extends Entity {
       y2: viewport.y2 / scale + this.position.y
     };
 
-    return this.entities.filter(e => collideAABB(e.getRenderBox(), viewbox));
+    const visible = this.entities.filter(e => collideAABB(e.getRenderBox(), viewbox));
+
+    if (this.fowVisible) {
+      return visible.filter(e => {
+        const box = e.getCellBox();
+        for (let y = box.y1 - 1; y <= box.y2; y++) {
+          for (let x = box.x1 - 1; x <= box.x2; x++) {
+            if (this.fow.isRevealedAt(new Vector(x, y))) {
+              return true;
+            }
+          }
+        }
+
+        return false;
+      });
+    }
+
+    return visible;
   }
 
   public getEntities(): GameMapBaseEntity[] {

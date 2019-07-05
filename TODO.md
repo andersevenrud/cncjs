@@ -80,7 +80,6 @@
 - [ ] Look into using 'OffscreenCanvas'
 - [ ] Look into using 'WebWorker' for AI etc
 - [ ] Remove 'data' from entity constructor and rely on methods
-- [ ] Don't render unreveiled units (inside FOW)
 - [ ] Cache bib's
 
 ## Tools
