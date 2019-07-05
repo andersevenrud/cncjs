@@ -154,7 +154,9 @@ export class GameEngine extends Engine {
   public onRender(deltaTime: number): void {
     super.onRender(deltaTime);
 
-    this.cursor.onRender(deltaTime, this.context);
+    if (this.loaded) {
+      this.cursor.onRender(deltaTime, this.context);
+    }
   }
 
   public onUpdate(deltaTime: number): void {

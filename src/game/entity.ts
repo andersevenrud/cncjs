@@ -340,7 +340,6 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
         if (y != lastFrameIndex) {
           this.direction = y;
           this.frameOffset.setY(y);
-          this.sprite.resetLastFrame();
         }
       }
     }
@@ -444,10 +443,6 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
   }
 
   public onRender(deltaTime: number): void {
-    if (this.isMoving() && this.sprite) {
-      this.sprite.resetLastFrame();
-    }
-
     const context = this.map.overlay.getContext();
     if (this.engine.getDebug()) {
       this.renderDebug(deltaTime, context);

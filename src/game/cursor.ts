@@ -33,8 +33,6 @@ export class Cursor extends Entity {
   public async init(): Promise<void> {
     try {
       await this.engine.loadArchiveSprite(this.cursorSprite);
-
-      this.cursorSprite.resetLastFrame();
       this.engine.setCursor(false);
     } catch (e) {
       console.error('Cursor::init()', e);
