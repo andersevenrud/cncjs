@@ -316,8 +316,6 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
   public onUpdate(deltaTime: number): void {
     const animation = this.animations.get(this.animation);
 
-    this.updateWall();
-
     if (animation) {
       animation.onUpdate();
       this.frame = animation.getFrameIndex(this.frameOffset);

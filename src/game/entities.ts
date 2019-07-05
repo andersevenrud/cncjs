@@ -393,7 +393,9 @@ export class StructureEntity extends GameMapEntity {
     const animation = this.animations.get(this.animation);
     const instance = this.constructing ? this.constructionAnimation : animation;
 
-    this.updateWall();
+    if (this.map.engine.ticks % 6 === 0) {
+      this.updateWall();
+    }
 
     if (instance) {
       instance.onUpdate();
