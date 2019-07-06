@@ -33,7 +33,7 @@ import { GameMapMask } from '../map';
 import { cellFromPoint, isRectangleVisible } from '../physics';
 import { Vector } from 'vector2d';
 
-export const SCROLL_BORDER = 10;
+export const SCROLL_BORDER = 2;
 
 export class TheatreUI extends UIScene {
   public readonly scene: TheatreScene;

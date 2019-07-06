@@ -29,10 +29,6 @@ export class MouseInput extends IODevice {
   private pressStart?: Vector;
   private locked: boolean = false;
 
-  public onUpdate(): void {
-    this.activePresses.clear();
-  }
-
   /**
    * Initializes mouse input
    */
@@ -71,7 +67,8 @@ export class MouseInput extends IODevice {
   public toString(): string {
     return [
       `[${Array.from(this.activeButtons).join(',')}]`,
-      [this.position.x, this.position.y, this.position.z].join(',')
+      [this.position.x, this.position.y, this.position.z].join(','),
+      this.locked ? 'locked' : 'unlocked'
     ].join(' ');
   }
 
@@ -112,6 +109,13 @@ export class MouseInput extends IODevice {
     if (this.engine.configuration.cursorLock) {
       this.engine.getCanvas().requestPointerLock();
     }
+  }
+
+  /**
+   * On every game tick
+   */
+  public onUpdate(): void {
+    this.activePresses.clear();
   }
 
   /**
