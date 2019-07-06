@@ -48,10 +48,6 @@ export class MouseInput extends IODevice {
     const onTouchEnd = this.onTouchEnd.bind(this);
     const onTouchMove = this.onTouchMove.bind(this);
 
-    const dim = this.engine.getScaledDimension();
-    this.position.x = Math.round(dim.x / 2);
-    this.position.y = Math.round(dim.y / 2);
-
     document.addEventListener('touchstart', onTouchStart);
     document.addEventListener('touchend', onTouchEnd);
     document.addEventListener('touchmove', onTouchMove);
@@ -61,6 +57,8 @@ export class MouseInput extends IODevice {
     document.addEventListener('click', onMouseClick);
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('wheel', onMouseWheel);
+
+    this.reset();
   }
 
   /**
@@ -80,6 +78,20 @@ export class MouseInput extends IODevice {
     this.clear();
   }
 
+  /**
+   * Rests all states
+   */
+  public reset(): void {
+    this.clear();
+
+    const dim = this.engine.getScaledDimension();
+    this.position.x = Math.round(dim.x / 2);
+    this.position.y = Math.round(dim.y / 2);
+  }
+
+  /**
+   * Clears button states
+   */
   public clear(): void {
     this.activeButtons.clear();
     this.activePresses.clear();

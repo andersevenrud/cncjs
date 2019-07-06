@@ -276,7 +276,7 @@ export abstract class Engine implements Core {
 
     this.scene.destroy();
     this.keyboard.clear();
-    this.mouse.clear();
+    this.mouse.reset();
     this.sound.clear();
 
     this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
