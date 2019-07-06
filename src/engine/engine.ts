@@ -231,11 +231,7 @@ export abstract class Engine implements Core {
    * Unpauses the engine
    */
   public resume(): void {
-    if (this.sound.context.state === 'suspended') {
-      // https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#webaudio
-      this.sound.context.resume()
-        .catch((e): void => console.warn(e));
-    }
+    this.sound.restoreSound();
 
     this.pause(false);
   }

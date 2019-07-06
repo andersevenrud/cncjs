@@ -179,6 +179,17 @@ export class SoundOutput extends IODevice {
   }
 
   /**
+   * Try to restore sound context
+   */
+  public restoreSound(): void {
+    if (this.context.state === 'suspended') {
+      // https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#webaudio
+      this.context.resume()
+        .catch((e): void => console.warn(e));
+    }
+  }
+
+  /**
    * Creates new media gain node
    */
   public createMediaGainNode(media: any, volume: number = 1.0): GainNode {

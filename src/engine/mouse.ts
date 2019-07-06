@@ -152,6 +152,7 @@ export class MouseInput extends IODevice {
     ev.preventDefault();
 
     this.lockCursor();
+    this.engine.sound.restoreSound();
 
     const btn: MouseButton = mouseButtonMap[ev.button];
     this.onPointerDown(btn, new Vector(ev.clientX, ev.clientY));
