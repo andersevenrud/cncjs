@@ -763,6 +763,10 @@ export abstract class UIConstruction extends GameUIEntity {
   }
 
   public onUpdate(deltaTime: number): void {
+    if (this.disabled) {
+      return;
+    }
+
     super.onUpdate(deltaTime);
 
     for (let item of this.items.values()) {

@@ -101,6 +101,11 @@ export class TheatreUI extends UIScene {
     tabMenu.on('click', () => {
       menu.setVisible(true);
       this.menuOpen = true;
+
+      tabSidebar.setDisabled(true);
+      sidebar.setDisabled(true);
+      elStructures.setDisabled(true);
+      elFactories.setDisabled(true);
     });
 
     tabSidebar.on('click', () => {
@@ -124,6 +129,11 @@ export class TheatreUI extends UIScene {
     btnClose.on('click', () => {
       menu.setVisible(false);
       this.menuOpen = false;
+
+      tabSidebar.setDisabled(false);
+      sidebar.setDisabled(false);
+      elStructures.setDisabled(false);
+      elFactories.setDisabled(false);
     });
 
     btnRestate.on('click', () => {
@@ -164,7 +174,9 @@ export class TheatreUI extends UIScene {
   public onUpdate(deltaTime: number): void {
     const { mouse } = this.engine;
 
-    this.minimap.onUpdate(deltaTime);
+    if (!this.menuOpen) {
+      this.minimap.onUpdate(deltaTime);
+    }
 
     super.onUpdate(deltaTime);
 
