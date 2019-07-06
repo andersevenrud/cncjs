@@ -68,6 +68,7 @@ export abstract class Engine implements Core {
     maxScale: 4.0,
     scale: 2.0,
     updateRate: 1000 / 30, // 33hz
+    cursorLock: true,
     sound: {
       muted: false,
       mainVolume: 1.0,
@@ -119,8 +120,6 @@ export abstract class Engine implements Core {
     await this.keyboard.init();
     await this.mouse.init();
     await this.sound.init();
-
-    //this.canvas!.requestPointerLock();
 
     console.groupEnd();
   }
@@ -435,6 +434,13 @@ export abstract class Engine implements Core {
    */
   public getDimension(): Vector {
     return this.dimension;
+  }
+
+  /**
+   * Gets canvas
+   */
+  public getCanvas(): HTMLCanvasElement {
+    return this.canvas;
   }
 
   /**

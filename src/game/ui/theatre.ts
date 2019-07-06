@@ -391,6 +391,7 @@ export class TheatreUI extends UIScene {
 
       scrollV.mulS(4); // TODO: Scroll speed
 
+      // TODO: Only check when actual move
       const scrolled = this.scene.map.moveRelative(scrollV);
       if (scrollC.length > 0) {
         cursor = ('pan' + scrollC) as MIXCursorType;

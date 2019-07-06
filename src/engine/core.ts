@@ -29,6 +29,7 @@ export interface Core {
   getScaledDimension(): Vector;
   getPause(): boolean;
   getRoot(): HTMLElement;
+  getCanvas(): HTMLCanvasElement;
 }
 
 export interface CoreSoundConfiguration {
@@ -45,4 +46,5 @@ export interface CoreConfiguration {
   scale: number;
   updateRate: number;
   sound: CoreSoundConfiguration;
+  cursorLock: boolean;
 }

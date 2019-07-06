@@ -27,6 +27,7 @@ export class MouseInput extends IODevice {
   private position: MousePosition = { x: 0, y: 0, z: 0 };
   private wheelTimeout?: any;
   private pressStart?: Vector;
+  private locked: boolean = false;
 
   public onUpdate(): void {
     this.activePresses.clear();
@@ -40,7 +41,6 @@ export class MouseInput extends IODevice {
 
     const onMouseDown = this.onMouseDown.bind(this);
     const onMouseUp = this.onMouseUp.bind(this);
-    const onMouseClick = this.onMouseClick.bind(this);
     const onMouseMove = this.onMouseMove.bind(this);
     const onMouseWheel = this.onMouseWheel.bind(this);
 
@@ -48,17 +48,21 @@ export class MouseInput extends IODevice {
     const onTouchEnd = this.onTouchEnd.bind(this);
     const onTouchMove = this.onTouchMove.bind(this);
 
+    const onPointerLockChange = this.onPointerLockChange.bind(this);
+
     document.addEventListener('touchstart', onTouchStart);
     document.addEventListener('touchend', onTouchEnd);
     document.addEventListener('touchmove', onTouchMove);
 
     document.addEventListener('mousedown', onMouseDown);
     document.addEventListener('mouseup', onMouseUp);
-    document.addEventListener('click', onMouseClick);
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('wheel', onMouseWheel);
 
+    document.addEventListener('pointerlockchange', onPointerLockChange);
+
     this.reset();
+    this.lockCursor();
   }
 
   /**
@@ -98,10 +102,34 @@ export class MouseInput extends IODevice {
   }
 
   /**
+   * Try to lock the cursor
+   */
+  private lockCursor(): void {
+    if (this.locked) {
+      return;
+    }
+
+    if (this.engine.configuration.cursorLock) {
+      this.engine.getCanvas().requestPointerLock();
+    }
+  }
+
+  /**
+   * Pointer lock changes
+   */
+  private onPointerLockChange(ev: Event): void {
+    this.locked = document.pointerLockElement === this.engine.getCanvas();
+  }
+
+  /**
    * Touch start
    */
   private onTouchStart(ev: TouchEvent): void {
-    this.pressStart = new Vector(ev.touches[0].clientX, ev.touches[0].clientY);
+    const scale = this.engine.getScale();
+    this.pressStart = new Vector(
+      Math.trunc(ev.touches[0].clientX / scale),
+      Math.trunc(ev.touches[0].clientY / scale)
+    );
     this.activeButtons.add('left');
   }
 
@@ -117,8 +145,9 @@ export class MouseInput extends IODevice {
    * Touch move
    */
   private onTouchMove(ev: TouchEvent): void {
-    this.position.x = ev.touches[0].clientX;
-    this.position.y = ev.touches[0].clientY;
+    const scale = this.engine.getScale();
+    this.position.x = Math.trunc(ev.touches[0].clientX / scale);
+    this.position.y = Math.trunc(ev.touches[0].clientY / scale);
   }
 
   /**
@@ -126,6 +155,9 @@ export class MouseInput extends IODevice {
    */
   private onMouseDown(ev: MouseEvent): void {
     ev.preventDefault();
+
+    this.lockCursor();
+
     this.pressStart = new Vector(ev.clientX, ev.clientY);
 
     const btn: MouseButton = mouseButtonMap[ev.button];
@@ -156,13 +188,6 @@ export class MouseInput extends IODevice {
   }
 
   /**
-   * Mouse click
-   */
-  private onMouseClick(ev: MouseEvent): void {
-    ev.preventDefault();
-  }
-
-  /**
    * Mouse wheel
    */
   private onMouseWheel(ev: MouseWheelEvent): void {
@@ -181,8 +206,14 @@ export class MouseInput extends IODevice {
    */
   private onMouseMove(ev: MouseEvent): void {
     const scale = this.engine.getScale();
-    this.position.x = (ev.clientX / scale) << 0;
-    this.position.y = (ev.clientY / scale) << 0;
+
+    if (this.locked) {
+      this.position.x += Math.trunc(ev.movementX / scale);
+      this.position.y += Math.trunc(ev.movementY / scale);
+    } else {
+      this.position.x = Math.trunc(ev.clientX / scale);
+      this.position.y = Math.trunc(ev.clientY / scale);
+    }
   }
 
   /**

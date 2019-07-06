@@ -8,6 +8,7 @@
 - [x] Buffered renderer
 - [x] Buffered Keyboard
 - [x] Buffered Mouse
+- [x] Pointer lock
 - [x] Contextual Audio
 - [x] Data Archive support
 - [x] Image loaders
@@ -18,7 +19,6 @@
 - [x] Basic physics
 - [x] Debugging support
 - [x] User Interfaces
-- [ ] Add pointer lock
 - [ ] Support getting sprites from UIScene from UIEntity
 
 ## Game
