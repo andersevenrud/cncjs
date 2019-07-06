@@ -28,6 +28,7 @@ import {
 import { Minimap } from './minimap';
 import { MIXMission, MIXCursorType } from '../mix';
 import { createGameMenus } from './mainmenu';
+import { GameEngine } from '../game';
 import { GameMapBaseEntity } from '../entity';
 import { GameMapMask } from '../map';
 import { cellFromPoint, isRectangleVisible } from '../physics';
@@ -401,14 +402,15 @@ export class TheatreUI extends UIScene {
         scrollC += 'e';
       }
 
-      scrollV.mulS(4); // TODO: Scroll speed
+      scrollV.mulS((this.engine as GameEngine).getScrollSpeed());
 
-      // TODO: Only check when actual move
-      const scrolled = this.scene.map.moveRelative(scrollV);
-      if (scrollC.length > 0) {
-        cursor = ('pan' + scrollC) as MIXCursorType;
-        if (!scrolled) {
-          cursor = ('cannot' + capitalize(cursor)) as MIXCursorType;
+      if (scrollV.x !== 0 || scrollV.y !== 0) {
+        const scrolled = this.scene.map.moveRelative(scrollV);
+        if (scrollC.length > 0) {
+          cursor = ('pan' + scrollC) as MIXCursorType;
+          if (!scrolled) {
+            cursor = ('cannot' + capitalize(cursor)) as MIXCursorType;
+          }
         }
       }
     }

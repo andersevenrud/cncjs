@@ -22,6 +22,10 @@ import { LoadingScene } from './scenes/loading';
 import { Cursor } from './cursor';
 import { MIX, MIXPlayerName } from './mix';
 
+export interface GameEngineConfig {
+  scrollSpeed: number;
+}
+
 /**
  * Game Engine
  */
@@ -34,6 +38,9 @@ export class GameEngine extends Engine {
   public readonly debugMode = process.env.NODE_ENV === 'development';
   protected debug: boolean = this.debugMode;
   protected loaded: boolean = false;
+  public readonly gameConfig: GameEngineConfig = {
+    scrollSpeed: 4
+  };
 
   public destroy(): void {
     this.imageLoader.clearCache();
@@ -146,6 +153,14 @@ export class GameEngine extends Engine {
 
   public async pushScoreScene(skip: boolean = true): Promise<void> {
     this.pushScene(() => new ScoreScene(this), skip);
+  }
+
+  public setScrollSpeed(speed: number): void {
+    this.gameConfig.scrollSpeed = speed;
+  }
+
+  public getScrollSpeed(): number {
+    return this.gameConfig.scrollSpeed;
   }
 
   public onRender(deltaTime: number): void {

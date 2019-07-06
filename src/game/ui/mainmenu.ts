@@ -5,6 +5,7 @@
  */
 import { UIScene } from '../../engine';
 import { MenuScene } from '../scenes/menu';
+import { GameEngine } from '../game';
 import { UIBox, UIButton, UIText, UISlider, UIListView } from './elements';
 import { Vector } from 'vector2d';
 import packageJson from '../../../package.json';
@@ -59,9 +60,10 @@ export const createVisualControlsMenu = (ui: UIScene, position: Vector): UIBox =
 };
 
 export const createGameControlsMenu = (ui: UIScene, position: Vector): UIBox => {
+  const engine = ui.engine as GameEngine;
   const settings = new UIBox('game-controls', new Vector(464, 282), position, ui);
-  const gameSpeed = 1.0;
-  const scrollSpeed = 0.5;
+  const gameSpeed = 0.5;
+  const scrollSpeed = engine.getScrollSpeed() / 10;
 
   settings.addChild(new UIText('title', 'Game Controls', '6point', new Vector(0.5, 6), ui));
   settings.addChild(new UIButton('game-controls_visuals', 'Visual Controls', new Vector(250, 18), new Vector(0.5, 180), ui));
@@ -72,7 +74,12 @@ export const createGameControlsMenu = (ui: UIScene, position: Vector): UIBox => 
   settings.addChild(new UISlider('game-controls_slider_speed', gameSpeed, new Vector(400, 18), new Vector(0.5, 80), ui));
 
   settings.addChild(new UIText('label_scroll-speed', 'Scroll Speed'.toUpperCase(), '6point', new Vector(18, 110), ui));
-  settings.addChild(new UISlider('game-controls_scroll_speed', scrollSpeed, new Vector(400, 18), new Vector(0.5, 130), ui));
+  const sliderScrollSpeed = settings.addChild(new UISlider('game-controls_scroll_speed', scrollSpeed, new Vector(400, 18), new Vector(0.5, 130), ui));
+
+
+  sliderScrollSpeed.on('change', (speed: number) => {
+    engine.setScrollSpeed(10 * speed);
+  });
 
   settings.setDecorations(1);
   return settings;
