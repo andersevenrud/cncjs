@@ -29,3 +29,8 @@ export const isFloat = (i: number): boolean => !isInt(i);
  * Check if negative number
  */
 export const isNegative = (i: number): boolean => Object.is(-0, i) || i < 0;
+
+/**
+ * Capitalizes word
+ */
+export const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
