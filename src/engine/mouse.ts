@@ -115,39 +115,34 @@ export class MouseInput extends IODevice {
   }
 
   /**
-   * Pointer lock changes
-   */
-  private onPointerLockChange(ev: Event): void {
-    this.locked = document.pointerLockElement === this.engine.getCanvas();
-  }
-
-  /**
    * Touch start
    */
   private onTouchStart(ev: TouchEvent): void {
-    const scale = this.engine.getScale();
-    this.pressStart = new Vector(
-      Math.trunc(ev.touches[0].clientX / scale),
-      Math.trunc(ev.touches[0].clientY / scale)
-    );
-    this.activeButtons.add('left');
+    ev.preventDefault();
+
+    this.onPointerDown('left', new Vector(
+      ev.touches[0].clientX,
+      ev.touches[0].clientY
+    ));
   }
 
   /**
    * Touch end
    */
   private onTouchEnd(ev: TouchEvent): void {
-    this.activeButtons.delete('left');
-    this.pressStart = undefined;
+    ev.preventDefault();
+
+    this.onPointerUp('left', new Vector(-1, -1));
   }
 
   /**
    * Touch move
    */
   private onTouchMove(ev: TouchEvent): void {
-    const scale = this.engine.getScale();
-    this.position.x = Math.trunc(ev.touches[0].clientX / scale);
-    this.position.y = Math.trunc(ev.touches[0].clientY / scale);
+    this.onPointerMove(new Vector(
+      ev.touches[0].clientX,
+      ev.touches[0].clientY
+    ));
   }
 
   /**
@@ -158,10 +153,8 @@ export class MouseInput extends IODevice {
 
     this.lockCursor();
 
-    this.pressStart = new Vector(ev.clientX, ev.clientY);
-
     const btn: MouseButton = mouseButtonMap[ev.button];
-    this.activeButtons.add(btn);
+    this.onPointerDown(btn, new Vector(ev.clientX, ev.clientY));
   }
 
   /**
@@ -171,10 +164,61 @@ export class MouseInput extends IODevice {
     ev.preventDefault();
 
     const btn: MouseButton = mouseButtonMap[ev.button];
+    this.onPointerUp(btn, new Vector(ev.clientX, ev.clientY));
+  }
+
+  /**
+   * Mouse move
+   */
+  private onMouseMove(ev: MouseEvent): void {
+    if (this.locked) {
+      this.onPointerMove(new Vector(ev.movementX, ev.movementY), true);
+    } else {
+      this.onPointerMove(new Vector(ev.clientX, ev.clientY));
+    }
+  }
+
+  /**
+   * Pointer lock changes
+   */
+  private onPointerLockChange(ev: Event): void {
+    this.locked = document.pointerLockElement === this.engine.getCanvas();
+  }
+
+  /**
+   * Handle pointer move
+   */
+  private onPointerMove(current: Vector, relative: boolean = false): void {
+    const scale = this.engine.getScale();
+
+    if (relative) {
+      this.position.x += current.x / scale;
+      this.position.y += current.y / scale;
+    } else {
+      this.position.x = Math.trunc(current.x / scale);
+      this.position.y = Math.trunc(current.y / scale);
+    }
+  }
+
+  /**
+   * Handle pointer down
+   */
+  private onPointerDown(btn: MouseButton, current: Vector): void {
+    const scale = this.engine.getScale();
+    const relCurrent = current.clone().divS(scale) as Vector;
+    this.pressStart = relCurrent;
+    this.activeButtons.add(btn);
+  }
+
+  /**
+   * Handle pointer up
+   */
+  private onPointerUp(btn: MouseButton, current: Vector): void {
     if (this.activeButtons.has(btn)) {
       if (this.pressStart) {
-        const current = new Vector(ev.clientX, ev.clientY);
-        const distance = this.pressStart.distance(current);
+        const scale = this.engine.getScale();
+        const relCurrent = current.clone().divS(scale) as Vector;
+        const distance = this.pressStart.distance(relCurrent);
         if (distance < CLICK_MOVEMENT_GRACE) {
           this.activePresses.add(btn);
         }
@@ -199,21 +243,6 @@ export class MouseInput extends IODevice {
     this.wheelTimeout = setTimeout((): void => {
       this.position.z = 0;
     }, 100);
-  }
-
-  /**
-   * Mouse move
-   */
-  private onMouseMove(ev: MouseEvent): void {
-    const scale = this.engine.getScale();
-
-    if (this.locked) {
-      this.position.x += Math.trunc(ev.movementX / scale);
-      this.position.y += Math.trunc(ev.movementY / scale);
-    } else {
-      this.position.x = Math.trunc(ev.clientX / scale);
-      this.position.y = Math.trunc(ev.clientY / scale);
-    }
   }
 
   /**
