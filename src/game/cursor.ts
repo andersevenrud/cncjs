@@ -6,12 +6,12 @@
 import { Sprite, Entity, Animation } from '../engine';
 import { spriteFromName } from './sprites';
 import { GameEngine } from './game';
-import { cursorMap, MIXCursor } from './mix';
+import { cursorMap, MIXCursor, MIXCursorType } from './mix';
 import { Vector } from 'vector2d';
 
 const animations: any = Object.keys(cursorMap)
   .map((name): any => {
-    const cursor = cursorMap[name];
+    const cursor = cursorMap[name as MIXCursorType];
     return [
       name,
       new Animation(name, new Vector(0, cursor.index), cursor.count, 0.25)
@@ -22,7 +22,7 @@ export class Cursor extends Entity {
   protected readonly engine: GameEngine;
   protected animations: Map<string, Animation> = new Map(animations);
   protected animation: string = 'default';
-  protected cursor: MIXCursor = cursorMap[this.animation];
+  protected cursor: MIXCursor = cursorMap[this.animation as MIXCursorType];
   public readonly cursorSprite: Sprite = spriteFromName('CCLOCAL.MIX/mouse.png') as Sprite;
 
   public constructor(engine: GameEngine) {
@@ -67,7 +67,7 @@ export class Cursor extends Entity {
       animation.reset();
 
       this.animation = name;
-      this.cursor = cursorMap[this.animation];
+      this.cursor = cursorMap[this.animation as MIXCursorType];
     }
   }
 }

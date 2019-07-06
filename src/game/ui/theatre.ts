@@ -26,7 +26,7 @@ import {
   UIBox
 } from './elements';
 import { Minimap } from './minimap';
-import { MIXMission } from '../mix';
+import { MIXMission, MIXCursorType } from '../mix';
 import { createGameMenus } from './mainmenu';
 import { GameMapBaseEntity } from '../entity';
 import { GameMapMask } from '../map';
@@ -42,6 +42,7 @@ export class TheatreUI extends UIScene {
   private currentAction?: UIActionsName;
   private menuOpen: boolean = false;
   private minimap: Minimap;
+  private cursor: MIXCursorType = 'default';
 
   public constructor(scene: TheatreScene) {
     super(scene.engine);
@@ -275,31 +276,28 @@ export class TheatreUI extends UIScene {
 
     if (hit) {
       const selected = map.getSelectedEntities();
-      const canAttack = selected.some(s => s.canAttack());
-      const attack = canAttack && hit.isAttackable(selected[0]);
+      console.log('Hit', point, cell, hit);
 
-      if (attack) {
+      if (this.cursor === 'select') {
+        map.unselectEntities();
+        hit.setSelected(true);
+      } else if (this.cursor === 'attack') {
         selected.forEach((s, i) => s.attack(hit, i === 0));
-      } else {
-        if (this.currentAction === 'sell') {
-          hit.sell();
-        } else if (this.currentAction === 'repair') {
-          hit.repair();
-        } else {
-          const deployable = selected.filter(s => s.isDeployable());
-          if (deployable.length > 0) {
-            deployable[0].deploy();
-            this.toggleSidebar(true); // FIXME
-          } else {
-            map.unselectEntities();
-            hit.setSelected(true);
-          }
+      } else if (this.cursor === 'sell') {
+        hit.sell();
+      } else if (this.cursor === 'repair') {
+        hit.repair();
+      } else if (this.cursor === 'expand') {
+        const deployable = selected.filter(s => s.isDeployable());
+        if (deployable.length > 0) {
+          deployable[0].deploy();
+          this.toggleSidebar(true); // FIXME
         }
-
-        console.log('Hit', point, cell, hit);
       }
     } else {
-      map.moveSelectedEntities(cell);
+      if (this.cursor === 'move') {
+        map.moveSelectedEntities(cell);
+      }
     }
   }
 
@@ -374,7 +372,7 @@ export class TheatreUI extends UIScene {
     const cell = cellFromPoint(pos);
     const revealed = map.isFowVisible() ? map.fow.isRevealedAt(cell) : true;
 
-    let cursor = 'default';
+    let cursor: MIXCursorType = 'default';
     if (!this.menuOpen && !this.isMouseOutsideViewport()) {
       if (this.currentAction === 'sell') {
         cursor = hovering && hovering.isSellable() ? 'sell' : 'cannotSell';
@@ -401,6 +399,7 @@ export class TheatreUI extends UIScene {
       }
     }
 
+    this.cursor = cursor;
     this.scene.engine.cursor.setCursor(cursor);
   }
 
