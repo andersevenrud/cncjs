@@ -193,8 +193,8 @@ export class MouseInput extends IODevice {
     const scale = this.engine.getScale();
 
     if (relative) {
-      this.position.x += current.x / scale;
-      this.position.y += current.y / scale;
+      this.position.x += Math.trunc(current.x / scale);
+      this.position.y += Math.trunc(current.y / scale);
     } else {
       this.position.x = Math.trunc(current.x / scale);
       this.position.y = Math.trunc(current.y / scale);
