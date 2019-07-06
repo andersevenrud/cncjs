@@ -165,6 +165,7 @@ export class UIEntity extends Entity {
   public readonly ui: UIScene;
   protected readonly elements: UIEntity[] = [];
   public readonly name: string;
+  protected disabled: boolean = false;
   protected visible: boolean = true;
   protected clickable: boolean = true;
   protected updated: boolean = true;
@@ -225,7 +226,9 @@ export class UIEntity extends Entity {
   }
 
   public onClick(position: Vector, button: MouseButton): void {
-    this.emit('click', position, button);
+    if (!this.isDisabled()) {
+      this.emit('click', position, button);
+    }
   }
 
   public calculatePosition(): void {
@@ -248,7 +251,7 @@ export class UIEntity extends Entity {
   }
 
   public collides(position: Vector, scaled?: UISceneScale): UIEntityHit | undefined {
-    if (!this.isVisible()) {
+    if (!this.isVisible() || this.isDisabled()) {
       return undefined;
     }
 
@@ -296,6 +299,14 @@ export class UIEntity extends Entity {
     this.triggerUpdate();
   }
 
+  public setClickable(c: boolean): void {
+    this.clickable = c;
+  }
+
+  public setDisabled(d: boolean): void {
+    this.disabled = d;
+  }
+
   public isVisible(): boolean {
     return this.visible;
   }
@@ -306,6 +317,10 @@ export class UIEntity extends Entity {
 
   public isUpdated(): boolean {
     return this.updated;
+  }
+
+  public isDisabled(): boolean {
+    return this.disabled;
   }
 
   public getElements(): UIEntity[] {
