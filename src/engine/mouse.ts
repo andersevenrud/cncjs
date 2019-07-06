@@ -48,6 +48,10 @@ export class MouseInput extends IODevice {
     const onTouchEnd = this.onTouchEnd.bind(this);
     const onTouchMove = this.onTouchMove.bind(this);
 
+    const dim = this.engine.getScaledDimension();
+    this.position.x = Math.round(dim.x / 2);
+    this.position.y = Math.round(dim.y / 2);
+
     document.addEventListener('touchstart', onTouchStart);
     document.addEventListener('touchend', onTouchEnd);
     document.addEventListener('touchmove', onTouchMove);
