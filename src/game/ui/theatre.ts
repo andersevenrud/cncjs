@@ -30,10 +30,10 @@ import { MIXMission, MIXCursorType } from '../mix';
 import { createGameMenus } from './mainmenu';
 import { GameMapBaseEntity } from '../entity';
 import { GameMapMask } from '../map';
-import { cellFromPoint, isRectangleVisible, CELL_SIZE } from '../physics';
+import { cellFromPoint, isRectangleVisible } from '../physics';
 import { Vector } from 'vector2d';
 
-export const SCROLL_BORDER = CELL_SIZE * 1.5;
+export const SCROLL_BORDER = 10;
 
 export class TheatreUI extends UIScene {
   public readonly scene: TheatreScene;
