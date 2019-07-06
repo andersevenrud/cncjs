@@ -3,7 +3,7 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import { Box, UIEntity, UIScene, collideAABB, collidePoint } from '../../engine';
+import { Box, UIEntity, UIScene, MousePosition, collideAABB, collidePoint, capitalize } from '../../engine';
 import { TheatreScene } from '../scenes/theatre';
 import {
   TAB_WIDTH,
@@ -30,8 +30,10 @@ import { MIXMission, MIXCursorType } from '../mix';
 import { createGameMenus } from './mainmenu';
 import { GameMapBaseEntity } from '../entity';
 import { GameMapMask } from '../map';
-import { cellFromPoint, isRectangleVisible } from '../physics';
+import { cellFromPoint, isRectangleVisible, CELL_SIZE } from '../physics';
 import { Vector } from 'vector2d';
+
+export const SCROLL_BORDER = CELL_SIZE * 1.5;
 
 export class TheatreUI extends UIScene {
   public readonly scene: TheatreScene;
@@ -363,44 +365,77 @@ export class TheatreUI extends UIScene {
   }
 
   private updateCursor(): void {
-    const { mouse } = this.engine;
-    const map = this.scene.map;
-    const pos = map.getRealMousePosition(mouse.getPosition());
-    const selected = map.getSelectedEntities();
-    const hovering = map.getEntityFromVector(pos, true);
-    const canAttack = selected.some(s => s.canAttack());
-    const cell = cellFromPoint(pos);
-    const revealed = map.isFowVisible() ? map.fow.isRevealedAt(cell) : true;
+    const mpos = this.engine.mouse.getPosition();
 
     let cursor: MIXCursorType = 'default';
-    if (!this.menuOpen && !this.isMouseOutsideViewport()) {
-      if (this.currentAction === 'sell') {
-        cursor = hovering && hovering.isSellable() ? 'sell' : 'cannotSell';
-      } else if (this.currentAction === 'repair') {
-        cursor = hovering && hovering.isRepairable() ? 'repair' : 'cannotRepair';
-      } else {
-        if (hovering && selected.length > 0 && hovering.isAttackable(selected[0]) && canAttack) {
-          cursor = revealed ? 'attack' : 'move';
-        } else if (hovering && hovering.isSelectable()) {
-          if (selected[0] === hovering &&  hovering.isDeployable()) {
-            cursor = 'expand';
-          } else {
-            cursor = 'select';
-          }
-        } else if (selected.length > 0) {
-          const movable = selected.some((s: GameMapBaseEntity): boolean => s.isMovable());
-          if (movable) {
-            const walkable = map.grid.isWalkableAt(cell.x, cell.y);
-            cursor = walkable || !revealed ? 'move' : 'unavailable';
-          } else {
-            cursor = 'default';
-          }
+    if (!this.menuOpen) {
+      cursor = this.getViewportCursor(mpos);
+
+      let scrollV = new Vector(0, 0);
+      let scrollC = '';
+      if (mpos.y <= SCROLL_BORDER) {
+        scrollV.setY(-1);
+        scrollC += 'n';
+      } else if (mpos.y >= (this.dimension.y - SCROLL_BORDER)) {
+        scrollV.setY(1);
+        scrollC += 's';
+      }
+
+      if (mpos.x <= SCROLL_BORDER) {
+        scrollV.setX(-1);
+        scrollC += 'w';
+      } else if (mpos.x >= (this.dimension.x - SCROLL_BORDER)) {
+        scrollV.setX(1);
+        scrollC += 'e';
+      }
+
+      scrollV.mulS(4); // TODO: Scroll speed
+
+      const scrolled = this.scene.map.moveRelative(scrollV);
+      if (scrollC.length > 0) {
+        cursor = ('pan' + scrollC) as MIXCursorType;
+        if (!scrolled) {
+          cursor = ('cannot' + capitalize(cursor)) as MIXCursorType;
         }
       }
     }
 
     this.cursor = cursor;
     this.scene.engine.cursor.setCursor(cursor);
+  }
+
+  private getViewportCursor(mpos: MousePosition): MIXCursorType {
+    const map = this.scene.map;
+    const pos = map.getRealMousePosition(mpos);
+    const selected = map.getSelectedEntities();
+    const hovering = map.getEntityFromVector(pos, true);
+    const canAttack = selected.some(s => s.canAttack());
+    const cell = cellFromPoint(pos);
+    const revealed = map.isFowVisible() ? map.fow.isRevealedAt(cell) : true;
+
+    if (!this.isMouseOutsideViewport()) {
+      if (this.currentAction === 'sell') {
+        return hovering && hovering.isSellable() ? 'sell' : 'cannotSell';
+      } else if (this.currentAction === 'repair') {
+        return hovering && hovering.isRepairable() ? 'repair' : 'cannotRepair';
+      } else {
+        if (hovering && selected.length > 0 && hovering.isAttackable(selected[0]) && canAttack) {
+          return revealed ? 'attack' : 'move';
+        } else if (hovering && hovering.isSelectable()) {
+          return selected[0] === hovering &&  hovering.isDeployable()
+            ? 'expand'
+            : 'select';
+        } else if (selected.length > 0) {
+          const movable = selected.some((s: GameMapBaseEntity): boolean => s.isMovable());
+          if (movable) {
+            const walkable = map.grid.isWalkableAt(cell.x, cell.y);
+            return walkable || !revealed ? 'move' : 'unavailable';
+          }
+        }
+      }
+    }
+
+    return 'default';
   }
 
   private isMouseOutsideViewport(): boolean {

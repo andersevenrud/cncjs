@@ -377,7 +377,7 @@ export class GameMap extends Entity {
     this.visibleEntities = visible.length;
   }
 
-  public moveRelative(offset: Vector): void {
+  public moveRelative(offset: Vector): boolean {
     const viewport = this.scene.viewport;
     const scale = this.engine.getScale();
     const npos = this.position.clone().add(offset) as Vector;
@@ -397,6 +397,11 @@ export class GameMap extends Entity {
     const y = Math.min(Math.max(minY, npos.y), maxY);
 
     this.position = new Vector(Math.trunc(x), Math.trunc(y));
+
+    const reachedX = npos.x >= minX && npos.x <= maxX ? 0 : 1;
+    const reachedY = npos.y >= minY && npos.y <= maxY ? 0 : 1;
+    const num = offset.clone().abs().toArray().reduce((acc, val) => acc + (val ? 1 : 0), 0);
+    return num !== (reachedY + reachedX);
   }
 
   public async addEntity(entity: GameMapBaseEntity): Promise<void> {

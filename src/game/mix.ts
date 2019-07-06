@@ -4,7 +4,7 @@
  * @license MIT
  */
 import EventEmitter from 'eventemitter3';
-import { Animation, DataArchive } from '../engine';
+import { Animation, DataArchive, capitalize } from '../engine';
 import { Vector } from 'vector2d';
 import * as INI from 'ini';
 
@@ -633,8 +633,6 @@ export const fontMap: MIXFontMap = {
     ]
   }
 };
-
-const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 const parseInteger = (val: any): number =>
   String(val).match(/h$/)
