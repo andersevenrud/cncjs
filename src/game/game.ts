@@ -34,8 +34,6 @@ export class GameEngine extends Engine {
   public readonly imageLoader: DataArchiveImageLoader = new DataArchiveImageLoader(this.data);
   public readonly sfxLoader: DataArchiveSoundLoader = new DataArchiveSoundLoader(this, this.data);
   public readonly cursor: Cursor = new Cursor(this);
-  public readonly debugMode = process.env.NODE_ENV === 'development';
-  protected debug: boolean = this.debugMode;
   protected loaded: boolean = false;
   public readonly gameConfig: GameEngineConfig = {
     scrollSpeed: 4
@@ -87,7 +85,7 @@ export class GameEngine extends Engine {
     this.setLoading(1.9, 2);
     await this.cursor.init();
 
-    if (this.debugMode) {
+    if (this.configuration.debugMode) {
       const debugState: boolean = q.get('debug') !== 'false';
       this.debug = debugState;
 
@@ -95,7 +93,7 @@ export class GameEngine extends Engine {
         const debugMap: string | null = q.get('map');
         const debugMovie: string = q.get('movie') as string;
         const debugPlayer: string = q.get('player') || 'GoodGuy';
-        const debugSound: string | null = q.get('sound');
+        const debugMuted: string | null = q.get('muted');
         const debugZoom: string | null = q.get('zoom');
 
         if (debugZoom) {
@@ -114,8 +112,8 @@ export class GameEngine extends Engine {
           await this.pushMenuScene();
         }
 
-        if (debugSound) {
-          this.sound.setMuted(debugSound !== 'true');
+        if (debugMuted) {
+          this.sound.setMuted(debugMuted === 'true');
         }
       } else {
         await this.pushMenuScene();
@@ -175,7 +173,7 @@ export class GameEngine extends Engine {
       return;
     }
 
-    if (this.debugMode) {
+    if (this.configuration.debugMode) {
       if (this.keyboard.wasClicked('F1')) {
         this.pushMenuScene(true);
       } else if (this.keyboard.wasClicked('F2')) {

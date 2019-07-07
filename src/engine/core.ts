@@ -41,6 +41,7 @@ export interface CoreSoundConfiguration {
 }
 
 export interface CoreConfiguration {
+  debugMode: boolean;
   maxScale: number;
   minScale: number;
   scale: number;

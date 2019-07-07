@@ -13,6 +13,7 @@ const oninit = async (): Promise<void> => {
   body.appendChild(canvas);
 
   const game: GameEngine = new GameEngine(canvas, {
+    debugMode: process.env.DEBUG_MODE === 'true',
     updateRate: typeof process.env.TICK_RATE === 'undefined'
       ? undefined
       : parseFloat(process.env.TICK_RATE),

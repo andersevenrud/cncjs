@@ -64,6 +64,7 @@ export abstract class Engine implements Core {
   public readonly mouse: MouseInput;
   public readonly sound: SoundOutput;
   public readonly configuration: CoreConfiguration = {
+    debugMode: false,
     minScale: 1.0,
     maxScale: 4.0,
     scale: 2.0,

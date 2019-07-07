@@ -109,7 +109,7 @@ export class TheatreScene extends Scene {
         this.map.moveRelative(new Vector(-10, 0));
       }
 
-      if (this.engine.debugMode) {
+      if (this.engine.configuration.debugMode) {
         if (keyboard.wasClicked('F10')) {
           this.map.toggleFow();
         }
