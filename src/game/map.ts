@@ -15,6 +15,12 @@ import { cellFromPoint, pointFromCell, CELL_SIZE } from './physics';
 import { FOW } from './fow';
 import { Vector } from 'vector2d';
 
+export const sortByZindex = (a: GameMapBaseEntity, b: GameMapBaseEntity) => {
+  const x = a.getZindex();
+  const y = b.getZindex();
+  return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+};
+
 // FIXME: Don't remove this when building stops ? Hide ?
 export class GameMapMask extends Entity {
   public readonly name: string;
@@ -414,6 +420,8 @@ export class GameMap extends Entity {
     try {
       await entity.init();
       this.entities.push(entity);
+
+      this.entities.sort(sortByZindex);
     } catch (e) {
       console.error(e);
     }

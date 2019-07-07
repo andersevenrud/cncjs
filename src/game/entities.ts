@@ -247,6 +247,7 @@ export class DynamicEntity extends GameMapEntity {
  * Structure Entity
  */
 export class StructureEntity extends GameMapEntity {
+  protected zIndex: number = 2;
   protected directions: number = 8;
   public dimension: Vector = new Vector(24, 24);
   protected properties: MIXStructure = this.engine.mix.structures.get(this.data.name) as MIXStructure;
@@ -483,6 +484,7 @@ export class UnitEntity extends DynamicEntity {
   protected wakeSprite?: Sprite;
   protected wakeAnimation?: Animation;
   protected properties: MIXUnit = this.engine.mix.units.get(this.data.name) as MIXUnit;
+  protected zIndex: number = 1;
 
   public async init(): Promise<void> {
     await super.init();
@@ -598,6 +600,7 @@ export class InfantryEntity extends DynamicEntity {
   protected idleTimer: number = 100;
   protected idleAnimation: string = 'Ready';
   protected reportDestroy?: string = 'nuyell1'; // FIXME: Should be handled by projectile
+  protected zIndex: number = 0;
 
   public async init(): Promise<void> {
     const dx = (CELL_SIZE - this.dimension.x) / 2;
@@ -694,6 +697,8 @@ export class InfantryEntity extends DynamicEntity {
  * Smudge Entity
  */
 export class SmudgeEntity extends GameMapEntity {
+  protected zIndex: number = -1;
+
   public async init(): Promise<void> {
     await super.init();
 
@@ -720,6 +725,7 @@ export class SmudgeEntity extends GameMapEntity {
  * Terrain Entity
  */
 export class TerrainEntity extends GameMapEntity {
+  protected zIndex: number = 3;
   public dimension: Vector = new Vector(16, 16);
   protected properties: MIXTerrain = this.engine.mix.terrain.get(this.data.name) as MIXTerrain;
   protected occupy?: MIXGrid = {
@@ -749,6 +755,7 @@ export class TerrainEntity extends GameMapEntity {
  * Overlay Entity
  */
 export class OverlayEntity extends GameMapEntity {
+  protected zIndex: number = 4;
   protected occupy: MIXGrid = this.data.name.substr(0, 2) !== 'TI'
     ? { name: '', grid: [['x']] }
     : { name: '', grid: [] };
@@ -764,6 +771,7 @@ export class OverlayEntity extends GameMapEntity {
 }
 
 export class EffectEntity extends GameMapEntity {
+  protected zIndex: number = 5;
   protected centerEntity?: Entity;
 
   public async init(): Promise<void> {

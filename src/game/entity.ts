@@ -47,6 +47,7 @@ export abstract class GameMapBaseEntity extends Entity {
   protected animation: string = '';
   protected health: number = 100;
   protected hitPoints: number = 100;
+  protected zIndex: number = 0;
 
   public constructor(map: GameMap) {
     super();
@@ -193,6 +194,10 @@ export abstract class GameMapBaseEntity extends Entity {
     return '#ffffff';
   }
 
+  public getZindex(): number {
+    return this.zIndex;
+  }
+
   public canRotate(): boolean {
     return false;
   }
@@ -285,7 +290,7 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
 
   public toString(): string {
     const s = this.getDamageState();
-    return `${this.data.player}:${this.data.name} ${this.health}/${this.hitPoints}H@${s} ${this.getTruncatedPosition().toString()}@${this.cell.toString()}x${this.direction.toFixed(1)} | ${this.animation || '<null>'}@${this.frame.toString()}`;
+    return `${this.data.player}:${this.data.name} ${this.health}/${this.hitPoints}H@${s} ${this.getTruncatedPosition().toString()}@${this.cell.toString()}x${this.direction.toFixed(1)} | ${this.animation || '<null>'}@${this.frame.toString()} ${this.zIndex}z`;
   }
 
   public async init(): Promise<void> {
