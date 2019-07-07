@@ -247,7 +247,7 @@ export class DynamicEntity extends GameMapEntity {
  * Structure Entity
  */
 export class StructureEntity extends GameMapEntity {
-  protected zIndex: number = 2;
+  protected zIndex: number = 1;
   protected directions: number = 8;
   public dimension: Vector = new Vector(24, 24);
   protected properties: MIXStructure = this.engine.mix.structures.get(this.data.name) as MIXStructure;
@@ -423,7 +423,7 @@ export class StructureEntity extends GameMapEntity {
 
   public onRender(deltaTime: number): void {
     const sprite = this.constructing ? this.constructionSprite : this.sprite;
-    const context = this.map.structures.getContext();
+    const context = this.map.objects.getContext();
 
     this.renderSprite(deltaTime, context, sprite);
 
@@ -484,7 +484,7 @@ export class UnitEntity extends DynamicEntity {
   protected wakeSprite?: Sprite;
   protected wakeAnimation?: Animation;
   protected properties: MIXUnit = this.engine.mix.units.get(this.data.name) as MIXUnit;
-  protected zIndex: number = 1;
+  protected zIndex: number = 3;
 
   public async init(): Promise<void> {
     await super.init();
@@ -548,7 +548,7 @@ export class UnitEntity extends DynamicEntity {
   }
 
   public onRender(deltaTime: number): void {
-    const context = this.map.units.getContext();
+    const context = this.map.objects.getContext();
     super.onRender(deltaTime);
 
     if (!this.sprite) {
@@ -600,7 +600,7 @@ export class InfantryEntity extends DynamicEntity {
   protected idleTimer: number = 100;
   protected idleAnimation: string = 'Ready';
   protected reportDestroy?: string = 'nuyell1'; // FIXME: Should be handled by projectile
-  protected zIndex: number = 0;
+  protected zIndex: number = 2;
 
   public async init(): Promise<void> {
     const dx = (CELL_SIZE - this.dimension.x) / 2;
@@ -672,7 +672,7 @@ export class InfantryEntity extends DynamicEntity {
   }
 
   public onRender(deltaTime: number): void {
-    const context = this.map.infantry.getContext();
+    const context = this.map.objects.getContext();
     super.onRender(deltaTime);
 
     if (!this.sprite) {
@@ -725,7 +725,7 @@ export class SmudgeEntity extends GameMapEntity {
  * Terrain Entity
  */
 export class TerrainEntity extends GameMapEntity {
-  protected zIndex: number = 3;
+  protected zIndex: number = 2;
   public dimension: Vector = new Vector(16, 16);
   protected properties: MIXTerrain = this.engine.mix.terrain.get(this.data.name) as MIXTerrain;
   protected occupy?: MIXGrid = {
@@ -742,7 +742,7 @@ export class TerrainEntity extends GameMapEntity {
   }
 
   public onRender(deltaTime: number): void {
-    const context = this.map.terrain.getContext();
+    const context = this.map.objects.getContext();
     this.renderSprite(deltaTime, context);
   }
 

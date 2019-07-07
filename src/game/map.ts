@@ -160,9 +160,7 @@ export class GameMap extends Entity {
   public readonly fow: FOW = new FOW(this);
   public readonly scene: TheatreScene;
   public readonly terrain: Entity = new Entity();
-  public readonly structures: Entity = new Entity();
-  public readonly infantry: Entity = new Entity();
-  public readonly units: Entity = new Entity();
+  public readonly objects: Entity = new Entity();
   public readonly overlay: Entity = new Entity();
   public readonly factory: GameMapEntityFactory = new GameMapEntityFactory(this);
 
@@ -196,10 +194,13 @@ export class GameMap extends Entity {
     const d = new Vector(wx, wy);
 
     this.setDimension(d);
+    this.objects.setDimension(d);
     this.terrain.setDimension(d);
+    /*
     this.structures.setDimension(d);
     this.infantry.setDimension(d);
     this.units.setDimension(d);
+    */
     this.overlay.setDimension(d);
     this.fow.setDimension(d);
 
@@ -325,10 +326,8 @@ export class GameMap extends Entity {
   public onRender(deltaTime: number, context: CanvasRenderingContext2D): void {
     const visible = this.getVisibleEntities();
     const overlay = this.overlay.getContext();
+    const objects = this.objects.getContext();
     const terrain = this.terrain.getContext();
-    const structures = this.structures.getContext();
-    const infantry = this.infantry.getContext();
-    const units = this.units.getContext();
 
     const viewport = this.scene.viewport;
     const vw = viewport.x2 - viewport.x1;
@@ -344,9 +343,7 @@ export class GameMap extends Entity {
 
     context.clearRect(dx, dy, dw, dh);
     terrain.clearRect(0, 0, this.overlay.dimension.x, this.overlay.dimension.y);
-    structures.clearRect(0, 0, this.overlay.dimension.x, this.overlay.dimension.y);
-    infantry.clearRect(0, 0, this.overlay.dimension.x, this.overlay.dimension.y);
-    units.clearRect(0, 0, this.overlay.dimension.x, this.overlay.dimension.y);
+    objects.clearRect(0, 0, this.objects.dimension.x, this.objects.dimension.y);
     overlay.clearRect(0, 0, this.overlay.dimension.x, this.overlay.dimension.y);
 
     visible.forEach(e => e.onRender(deltaTime));
@@ -357,9 +354,7 @@ export class GameMap extends Entity {
 
     context.drawImage(this.canvas, sx, sy, sw, sh, dx, dy, dw, dh);
     context.drawImage(this.terrain.getCanvas(), sx, sy, sw, sh, dx, dy, dw, dh);
-    context.drawImage(this.structures.getCanvas(), sx, sy, sw, sh, dx, dy, dw, dh);
-    context.drawImage(this.infantry.getCanvas(), sx, sy, sw, sh, dx, dy, dw, dh);
-    context.drawImage(this.units.getCanvas(), sx, sy, sw, sh, dx, dy, dw, dh);
+    context.drawImage(this.objects.getCanvas(), sx, sy, sw, sh, dx, dy, dw, dh);
     context.drawImage(this.overlay.getCanvas(), sx, sy, sw, sh, dx, dy, dw, dh);
 
     if (this.fowVisible) {
