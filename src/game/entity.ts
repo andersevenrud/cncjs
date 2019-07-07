@@ -413,7 +413,6 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
         const w = h > 0 ? this.overlap.grid[0].length : 0;
 
         const ocontext = this.map.overlay.getContext();
-        ocontext.fillStyle = '#ffffff';
 
         // FIXME: Maybe instead only re-render top half ?
         // FIXME: The -1 is a temporary workaround because of some confusion

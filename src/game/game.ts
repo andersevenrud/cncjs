@@ -6,7 +6,6 @@
 import {
   Engine,
   Sprite,
-  Scene,
   SoundEffect,
   DataArchive,
   DataArchiveImageLoader,
@@ -77,15 +76,15 @@ export class GameEngine extends Engine {
 
     this.scene = new LoadingScene(this);
     await this.scene.init();
-    this.setLoading(0, 4);
+    this.setLoading(0, 2);
     this.data.on('progress', progress);
     await this.data.fetch();
     this.data.off('progress', progress);
-    this.setLoading(1, 4);
+    this.setLoading(1, 2);
     await this.mix.parse();
-    this.setLoading(2, 4);
+    this.setLoading(1.5, 2);
     await super.init();
-    this.setLoading(3, 4);
+    this.setLoading(1.9, 2);
     await this.cursor.init();
 
     if (this.debugMode) {
@@ -125,7 +124,7 @@ export class GameEngine extends Engine {
       await this.pushMenuScene();
     }
 
-    this.setLoading(4, 4);
+    this.setLoading(2, 2);
     this.loaded = true;
   }
 
