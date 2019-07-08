@@ -666,7 +666,7 @@ const transformValue = (key: string, value: string, filename: string): any => {
     } catch (e) {
       console.error(e, key, value);
     }
-  } else if (value.match(/^[+-]?\d+(\.\d+)?$/)) {
+  } else if (value.match(/^[+-]?\d+(\.\d+)?$/) || value.match(/^\.(\d+)/)) {
     return parseFloat(value);
   } else if (value.match(/^\d+$/)) {
     return parseInt(value, 10);
