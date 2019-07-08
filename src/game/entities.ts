@@ -20,9 +20,73 @@ import { cellFromPoint, getDirection, CELL_SIZE, getNewDirection } from './physi
 import { spriteFromName } from './sprites';
 import { parseDimensions } from './mix';
 import { Weapon } from './weapons';
+import { GameEngine } from './game';
 import { Vector } from 'vector2d';
 
 const DAMAGE_SUFFIX = ['', '-Damaged', '-Destroyed'];
+
+/**
+ * Bib underlay entity
+ */
+export class BibEntity extends Entity {
+  protected static cache: Map<string, BibEntity> = new Map();
+  private size: Vector;
+  private offset: number;
+  private sprite: Sprite;
+  private engine: GameEngine;
+
+  public constructor(size: Vector, theatre: string, engine: GameEngine) {
+    super();
+
+    const id = size.x > 3 ? 1 : (size.x > 2 ? 2 : 3);
+    const name = `${theatre.toUpperCase()}.MIX/bib${id}.png`;
+    const sprite = spriteFromName(name);
+    const sizeX = sprite.frames / 2;
+    const sizeY = 2;
+
+    this.engine = engine;
+    this.sprite = sprite;
+    this.offset = (size.y - 1) * CELL_SIZE;
+    this.size = new Vector(sizeX, sizeY);
+    this.setDimension(new Vector(
+      sizeX * CELL_SIZE,
+      sizeY * CELL_SIZE
+    ));
+  }
+
+  public async init(): Promise<void> {
+    try {
+      await this.engine.loadArchiveSprite(this.sprite);
+
+      let i = 0;
+      for ( let y = 0; y < this.size.y; y++ ) {
+        for ( let x = 0; x < this.size.x; x++ ) {
+          this.sprite.render(new Vector(0, i), new Vector(x * CELL_SIZE, y * CELL_SIZE), this.context);
+          i++;
+        }
+      }
+
+    } catch (e) {
+      console.error('BibEntity::init()', e);
+    }
+  }
+
+  public static async createOrCache(engine: GameEngine, size: Vector, theatre: string): Promise<BibEntity> {
+    const key = size.toString() + theatre;
+    if (!this.cache.has(key)) {
+      const bib = new BibEntity(size, theatre, engine);
+      await bib.init();
+
+      this.cache.set(key, bib);
+    }
+
+    return this.cache.get(key) as BibEntity;
+  }
+
+  public getOffset(): number {
+    return this.offset;
+  }
+}
 
 /**
  * Dynamic entity
@@ -253,7 +317,7 @@ export class StructureEntity extends GameMapEntity {
   protected properties: MIXStructure = this.engine.mix.structures.get(this.data.name) as MIXStructure;
   protected animation: string = 'Idle';
   protected bibOffset: number = 0;
-  protected bib?: HTMLCanvasElement;
+  protected bib?: BibEntity;
   protected constructing: boolean = true;
   protected repairSprite?: Sprite;
   protected repairAnimation?: Animation;
@@ -303,7 +367,8 @@ export class StructureEntity extends GameMapEntity {
     }
 
     if (this.properties!.HasBib) {
-      await this.initBib();
+      const size = parseDimensions(this.properties!.Dimensions);
+      this.bib = await BibEntity.createOrCache(this.engine, size, this.data.theatre);
     }
 
     this.hitPoints = this.properties!.HitPoints;
@@ -328,37 +393,6 @@ export class StructureEntity extends GameMapEntity {
       } catch (e) {
         console.error('StructureEntity::initConstruct()', e);
       }
-    }
-  }
-
-  protected async initBib(): Promise<void> {
-    const size = parseDimensions(this.properties!.Dimensions);
-    const id = size.x > 3 ? 1 : (size.x > 2 ? 2 : 3);
-    const name = `${this.data.theatre.toUpperCase()}.MIX/bib${id}.png`;
-
-    try {
-      const bib = spriteFromName(name);
-      await this.engine.loadArchiveSprite(bib);
-
-      const sizeX = bib.frames / 2;
-      const sizeY = 2;
-
-      this.bib = document.createElement('canvas');
-      this.bib.width = sizeX * CELL_SIZE;
-      this.bib.height = sizeY * CELL_SIZE;
-      this.bibOffset = (size.y - 1) * CELL_SIZE;
-
-      let i = 0;
-      const ctx = this.bib.getContext('2d') as CanvasRenderingContext2D;
-      for ( let y = 0; y < sizeY; y++ ) {
-        for ( let x = 0; x < sizeX; x++ ) {
-          bib.render(new Vector(0, i), new Vector(x * CELL_SIZE, y * CELL_SIZE), ctx);
-          i++;
-        }
-      }
-
-    } catch (e) {
-      console.error('StructureEntity::initBib()', e);
     }
   }
 
@@ -428,7 +462,7 @@ export class StructureEntity extends GameMapEntity {
     this.renderSprite(deltaTime, context, sprite);
 
     if (this.bib) {
-      this.map.terrain.getContext().drawImage(this.bib, this.position.x, this.position.y + this.bibOffset);
+      this.map.terrain.getContext().drawImage(this.bib.getCanvas(), this.position.x, this.position.y + this.bib.getOffset());
     }
 
     super.onRender(deltaTime);
