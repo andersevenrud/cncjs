@@ -668,6 +668,8 @@ const transformValue = (key: string, value: string, filename: string): any => {
     }
   } else if (value.match(/^[+-]?\d+(\.\d+)?$/) || value.match(/^\.(\d+)/)) {
     return parseFloat(value);
+  } else if (value.match(/^(\d+)%$/)) {
+    return parseInt(value) / 100;
   } else if (value.match(/^\d+$/)) {
     return parseInt(value, 10);
   } else if (value.match(/^(no|yes)$/i)) {
