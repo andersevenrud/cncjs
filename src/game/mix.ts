@@ -345,6 +345,17 @@ export interface MIXFontMap {
   [Key: string]: MIXFont;
 }
 
+// FIXME
+export interface MIXRulesGroup {
+  [Key: string]: any;
+}
+
+export interface MIXRules {
+  General: MIXRulesGroup;
+  Recharge: MIXRulesGroup;
+  Powerups: MIXRulesGroup;
+}
+
 export const healthBarColors = ['#00ff00', '#ffff00', '#ff0000'];
 
 export const arrayMap: string[] = [
@@ -792,7 +803,7 @@ export class MIX extends EventEmitter {
   public readonly units: Map<string, MIXUnit> = new Map();
   public readonly warheads: Map<string, MIXWarhead> = new Map();
   public readonly weapons: Map<string, MIXWeapon> = new Map();
-  // TODO: Rules
+  public readonly rules: Map<string, MIXRules> = new Map();
   public readonly parsedInfantryAnimations: Map<string, Animation> = new Map();
 
   public constructor(archive: DataArchive) {
@@ -839,6 +850,7 @@ export class MIX extends EventEmitter {
       this.loadFromIni<MIXUnit>('GAME.DAT/units.ini', this.units, 'Units'),
       this.loadFromIni<MIXWarhead>('GAME.DAT/warheads.ini', this.warheads, 'Warheads'),
       this.loadFromIni<MIXWeapon>('GAME.DAT/weapons.ini', this.weapons, 'Weapons'),
+      this.loadFromIni<MIXRules>('GAME.DAT/rules.ini', this.rules),
       this.loadTileSets(),
       this.loadGrids()
     ];
