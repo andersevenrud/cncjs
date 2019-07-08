@@ -6,55 +6,27 @@
 import { Vector } from 'vector2d';
 
 /**
- * Sprite Image
- */
-export class SpriteImage {
-  public readonly source: string;
-  public readonly canvas: HTMLCanvasElement = document.createElement('canvas');
-  public readonly context: CanvasRenderingContext2D = this.canvas.getContext('2d') as CanvasRenderingContext2D;
-  private loaded: boolean = false;
-
-  public constructor(source: string) {
-    this.source = source;
-  }
-
-  public load(image: HTMLImageElement): void {
-    if (this.loaded) {
-      return;
-    }
-
-    this.loaded = true;
-    this.canvas.width = image.width;
-    this.canvas.height = image.height;
-    this.context.drawImage(image, 0, 0);
-  }
-}
-
-/**
  * Sprite
+ * TODO: Should really have been an Entity
  */
 export class Sprite {
+  public readonly canvas: HTMLCanvasElement = document.createElement('canvas');
+  public readonly context: CanvasRenderingContext2D = this.canvas.getContext('2d') as CanvasRenderingContext2D;
   public readonly source: string;
   public readonly clip: number[];
   public readonly size: Vector;
   public readonly frames: number;
-  public readonly image: SpriteImage;
   private readonly frameCache: Map<string, CanvasRenderingContext2D> = new Map();
-  private static images: Map<string, SpriteImage> = new Map();
   private static patterns: Map<string, CanvasPattern> = new Map();
   protected static cacheCount: number = 0;
   protected static readonly cache: Map<string, Sprite> = new Map();
+  protected loaded: boolean = false;
 
   public constructor(source: string, size: Vector, frames: number, clip: number[] = []) {
-    if (!Sprite.images.has(source)) {
-      Sprite.images.set(source, new SpriteImage(source));
-    }
-
     this.source = source;
     this.size = size;
     this.frames = frames;
     this.clip = clip;
-    this.image = Sprite.images.get(source) as SpriteImage;
   }
 
   /**
@@ -63,7 +35,6 @@ export class Sprite {
   public static clearCache(): void {
     console.info('Sprite::clearCache()');
     this.cache.clear();
-    this.images.clear();
     this.patterns.clear();
     this.cacheCount = 0;
   }
@@ -82,8 +53,11 @@ export class Sprite {
     return instance;
   }
 
+  /**
+   * Convert to string (for debugging)
+   */
   public static toString(): string {
-    return `${this.cache.size} (${this.images.size}i ${this.patterns.size}p ${this.cacheCount}f)`;
+    return `${this.cache.size} (${this.patterns.size}p ${this.cacheCount}f)`;
   }
 
   /**
@@ -103,7 +77,7 @@ export class Sprite {
       canvas.width = dw;
       canvas.height = dh;
       cached = canvas.getContext('2d') as CanvasRenderingContext2D;
-      cached.drawImage(this.image.canvas, sx, sy, sw, sh, 0, 0, dw, dh);
+      cached.drawImage(this.canvas, sx, sy, sw, sh, 0, 0, dw, dh);
       this.frameCache.set(frame.toString(), cached);
       Sprite.cacheCount++;
     }
@@ -132,7 +106,7 @@ export class Sprite {
     tempCanvas.height = sh;
 
     const context = tempCanvas.getContext('2d') as CanvasRenderingContext2D;
-    context.drawImage(this.image.canvas, xoff, yoff, sw, sh, 0, 0, sw, sh);
+    context.drawImage(this.canvas, xoff, yoff, sw, sh, 0, 0, sw, sh);
 
     const pattern = context.createPattern(tempCanvas, repetition);
 
@@ -147,7 +121,12 @@ export class Sprite {
    * Initializes sprite image
    */
   public init(image: HTMLImageElement): void {
-    this.image.load(image);
+    if (!this.loaded) {
+      this.loaded = true;
+      this.canvas.width = image.width;
+      this.canvas.height = image.height;
+      this.context.drawImage(image, 0, 0);
+    }
   }
 
   /**

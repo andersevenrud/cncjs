@@ -87,6 +87,6 @@ export class TeamScene extends Scene {
       dimension
     );
 
-    context.drawImage(this.background.image.canvas, frame.x * sw, frame.y * sh, sw, sh, dx, dy, dw, dh);
+    context.drawImage(this.background.canvas, frame.x * sw, frame.y * sh, sw, sh, dx, dy, dw, dh);
   }
 }
