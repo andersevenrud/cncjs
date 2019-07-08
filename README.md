@@ -4,6 +4,10 @@ A javascript (typescript) remake of the classic Real-time strategy game "Command
 
 Written on a custom engine using canvas 2d renderer.
 
+## Demo
+
+*Coming soon*. Meanwhile you can look at an older [video preview](https://www.youtube.com/watch?v=6Es4uBTH8yg&feature=youtu.be).
+
 ## Requirements
 
 You need a copy of the orignal game (Gold edition) v1.06c or a later.
@@ -11,6 +15,8 @@ You need a copy of the orignal game (Gold edition) v1.06c or a later.
 Should run on any modern browser or device that supports ES6.
 
 ## Installation
+
+**The required utilities for converting game assets is currently not included. You can ask me for a zip file of everything you need**
 
 Place all original game files in `original/`.
 
