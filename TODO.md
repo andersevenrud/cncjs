@@ -23,6 +23,7 @@
 - [x] Debugging support
 - [x] User Interfaces
 - [x] Caching support
+- [ ] Add support for embedding in templates (non-fullscreen)
 
 ## Game
 

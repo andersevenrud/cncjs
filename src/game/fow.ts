@@ -37,7 +37,7 @@ export class FOW extends Entity {
 
       for (let y: number = box.y1 - sight; y <= box.y2 + sight; y++) {
         for (let x: number = box.x1 - sight; x <= box.x2 + sight; x++) {
-          if (x < 0 || y < 0 || x > dimension.x || y > dimension.y) {
+          if (x < 0 || y < 0 || x >= dimension.x || y >= dimension.y) {
             continue;
           }
 
