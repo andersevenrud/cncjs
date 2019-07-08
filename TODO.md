@@ -19,67 +19,84 @@
 - [x] Basic physics
 - [x] Debugging support
 - [x] User Interfaces
-- [ ] Support getting sprites from UIScene from UIEntity
 
 ## Game
 
-- [x] Main menu
-- [x] Team selection
-- [x] Music playlist
-- [x] Movie player
-- [x] Map with movement
-- [x] Parse original data
-- [x] Render original maps
-- [x] Render units
-- [x] Render infantry
-- [x] Render structures
-- [x] Render effects
-- [x] Render projectiles
-- [x] Render health bar
-- [x] Render fog of war
-- [x] Rendering order
-- [x] Rendering passes (overlays and structures needs two because of occlusion)
-- [x] Render smudge
-- [ ] Turrets
-- [x] Selection
-- [x] Selection rectangle
-- [x] Movement
-- [x] Rotation
+- [x] Scenes
+    - [x] Main menu
+    - [x] Team selection
+    - [x] Movies
+    - [ ] Scores (in progress)
+    - [ ] Level Selection
+    - [x] Theatre
+- [x] Data
+    - [x] Parse original data
+    - [x] Render original maps
+    - [x] Music playlist
+- [x] User interface
+    - [x] Selection
+    - [x] Selection rectangle
+    - [x] Elements
+    - [x] Menus
+    - [x] Construction
+    - [x] Construction mask on map
+- [x] Rendering
+    - [x] Map
+    - [x] Entities
+    - [x] Effects
+    - [x] Projectiles
+    - [x] Health bar
+    - [x] Fog of war
+    - [x] Smudge
+    - [x] Rendering order
+- [x] Map
+    - [ ] Win conditions
+    - [ ] Triggers
+    - [ ] Reinforcements
+    - [x] Clamp viewport position on movement
+    - [x] Minimap
+    - [x] Rendering passes
+    - [x] Layers
+    - [ ] Animate shorelines
+- [x] Structures, Units & Infantry
+    - [x] Movement
+    - [x] Rotation
+    - [x] Sight
+    - [x] Building
+    - [x] Attacking
+    - [ ] Patrol
+    - [x] Death
+    - [ ] Harvesting
+    - [ ] Boarding and unboarding vehicles
+    - [x] Damage indication
+    - [ ] Turrets
+    - [x] Infantry random idle animations
+    - [ ] Aircraft
+- [x] Weapons
+    - [x] Warheads and Effects
+    - [x] Tails and muzzle flashes
+- [x] Mechanics
+    - [x] Credits
+    - [x] Sew together fences
+    - [x] Player abstraction
+    - [ ] Tech tree
+    - [ ] Apply correct timings to animations and actions
+- [x] Sounds
+    - [x] Unit reporting
+    - [x] Effects
+    - [x] Projectiles
+    - [x] EVA
 - [x] Pathfinding
-- [x] Weapons and bullets
-- [x] Sight
-- [x] Building
-- [x] Attacking
-- [ ] Patrol
-- [x] Death
-- [ ] Harvesting
-- [ ] Boarding and unboarding vehicles
-- [ ] Win conditions
-- [ ] Triggers
-- [ ] Reinforcements
-- [x] Damage indication
-- [ ] Tech tree
-- [x] Credits
-- [x] Sew together fences
-- [x] Unit sound reporting
-- [x] Clamp viewport position on movement
-- [ ] Weapon death chains
-- [x] Player abstraction
-- [ ] Ambient sounds
-- [x] EVA sounds
-- [x] Minimap
-- [ ] Movement weights
-- [ ] Movement soft collisions
+    - [ ] Movement weights
+    - [ ] Movement soft collisions
+- [ ] AI
+    - [ ] Use triggers
+    - [ ] Attack nearest
+    - [ ] SAM launchers
 
 ## Misc
 
-- [ ] Animate shorelines
-- [x] Optimize rendering pipeline
-- [ ] Figure out timing fractions for roation and speeds
-- [ ] Look into using 'createImageBitmap'
-- [ ] Look into using 'OffscreenCanvas'
-- [ ] Look into using 'WebWorker' for AI etc
-- [ ] Remove 'data' from entity constructor and rely on methods
+- [ ] Remove theatre from the data in constructors
 
 ## Tools
 
@@ -90,3 +107,6 @@
 
 - [ ] Savegames
 - [ ] Multiplayer
+- [ ] Look into using 'createImageBitmap'
+- [ ] Look into using 'OffscreenCanvas'
+- [ ] Look into using 'WebWorker' for AI etc
