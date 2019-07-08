@@ -44,7 +44,7 @@ export class Animation extends EventEmitter {
     }
 
     if (!this.stopped) {
-      this.current = value % this.count; //Math.min(value, this.count);
+      this.current = value % this.count;
     }
   }
 

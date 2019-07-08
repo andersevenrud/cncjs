@@ -188,10 +188,7 @@ export abstract class Engine implements Core {
       this.delta = (t - lastTick) / 1000;
       this.fps = 1 / this.delta;
 
-      /**
-       * NOTE: This is for our variable update rate. This makes sure that
-       * it runs at a steady frequency (always "catches up").
-       */
+      // This makes sure the loop runs at a constant frequenzy
       let skipTicks = 1000 / this.configuration.updateRate;
       while ( t > this.nextTick ) {
         this.fpsAverage += (this.fps - this.fpsAverage) / 10;

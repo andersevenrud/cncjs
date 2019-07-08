@@ -11,6 +11,8 @@ import * as INI from 'ini';
 export type MIXTeamName = 'gdi' | 'nod' | 'neutral';
 export type MIXPlayerName = 'GoodGuy' | 'BadGuy' | 'Neutral' | 'Special' | 'Multi1' | 'Multi2' | 'Multi3' | 'Multi4' | 'Multi5' | 'Multi6';
 export type MIXCursorType = 'default' | 'select' | 'move' | 'attack' | 'expand' | 'unavailable' | 'sell' | 'cannotSell' | 'cannotRepair' | 'repair' | 'cannotRepair' | 'pann' | 'panne' | 'pane' | 'panse' | 'pans' | 'pansw' | 'panw' | 'pannw' | 'invalid' | 'nuke' | 'ion' | 'enter' | 'c4' | 'cannotPann' | 'cannotPanne' | 'cannotPane' | 'cannotPanse' | 'cannotPans' | 'cannotPansw' | 'cannotPanw' | 'cannotPannw';
+export type MIXGridValue = 'x' | 'X' | '-' | '+' | '*' | '.';
+export type MIXFontGlyphs = number[][];
 
 export interface MIXMapEntityData {
   name: string;
@@ -123,8 +125,6 @@ export interface MIXBullet {
   High: boolean;
   Image: string;
 }
-
-export type MIXGridValue = 'x' | 'X' | '-' | '+' | '*' | '.';
 
 export interface MIXGrid {
   name: string;
@@ -334,8 +334,6 @@ export interface MIXWeapon {
   Report: string;
   MuzzleFlash: string;
 }
-
-export type MIXFontGlyphs = number[][];
 
 export interface MIXFont {
   width: number;
