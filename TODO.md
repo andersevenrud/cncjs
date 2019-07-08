@@ -9,16 +9,20 @@
 - [x] Buffered Keyboard
 - [x] Buffered Mouse
 - [x] Pointer lock
+- [x] Touch support
+- [ ] Gamepad support
 - [x] Contextual Audio
 - [x] Data Archive support
 - [x] Image loaders
 - [x] Sound loaders
-- [x] Sprites
+- [x] Sprites from fixed grid
+- [ ] Sprites from dynamic grid
 - [x] Animations
 - [x] General loaders
 - [x] Basic physics
 - [x] Debugging support
 - [x] User Interfaces
+- [x] Caching support
 
 ## Game
 
@@ -30,9 +34,11 @@
     - [ ] Level Selection
     - [x] Theatre
 - [x] Data
-    - [x] Parse original data
-    - [x] Render original maps
+    - [x] MIX Data interfaces
+    - [x] Parse original data (ini)
+    - [x] Render original maps (binary)
     - [x] Music playlist
+    - [ ] Add custom coordinates for reinforcement locations
 - [x] User interface
     - [x] Selection
     - [x] Selection rectangle
@@ -72,15 +78,29 @@
     - [ ] Turrets
     - [x] Infantry random idle animations
     - [ ] Aircraft
+    - [x] Boats
+    - [ ] Spawn units and infantry in the correct structures
 - [x] Weapons
     - [x] Warheads and Effects
     - [x] Tails and muzzle flashes
+    - [ ] Nukes
+    - [ ] ION Cannon
+    - [ ] Special effects (like for obelisk)
 - [x] Mechanics
     - [x] Credits
     - [x] Sew together fences
     - [x] Player abstraction
     - [ ] Tech tree
     - [ ] Apply correct timings to animations and actions
+    - [x] Selling
+    - [x] Repairing
+    - [ ] Capturing
+    - [ ] C4-ing
+    - [ ] Primary structure selection
+    - [ ] Subcell infantry group damage division
+    - [ ] Minimap availability
+    - [ ] Destruction of certain entities spawns infantry or civilians
+    - [ ] Squashing of infantry when units drive over
 - [x] Sounds
     - [x] Unit reporting
     - [x] Effects
@@ -93,15 +113,16 @@
     - [ ] Use triggers
     - [ ] Attack nearest
     - [ ] SAM launchers
+    - [ ] Boats
 
 ## Misc
 
 - [ ] Remove theatre from the data in constructors
+- [ ] Further optimizations
 
 ## Tools
 
-- [x] Parsers
-- [x] Image stitching
+- [ ] Asset conversion script (in progress)
 
 ## Future
 
@@ -110,3 +131,4 @@
 - [ ] Look into using 'createImageBitmap'
 - [ ] Look into using 'OffscreenCanvas'
 - [ ] Look into using 'WebWorker' for AI etc
+- [ ] Custom build for legacy or older browsers
