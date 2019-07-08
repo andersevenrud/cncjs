@@ -1,0 +1,11 @@
+Game Speed 6 <= 59 FPS
+
+Game speed 5 <= 49 FPS
+
+Game Speed 4 <= 39 FPS
+
+Game Speed 3 <= 29 FPS
+
+Game Speed 2 <= 19 FPS
+
+Game Speed 1 <=  9 FPS

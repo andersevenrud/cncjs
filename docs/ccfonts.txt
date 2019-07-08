@@ -1,0 +1,144 @@
+
+                       C&C and Red Alert *.FNT Files
+                       Revision 2
+
+                       by Gordan Ugarkovic (ugordan@yahoo.com)
+                       http://members.xoom.com/ugordan
+
+
+Command & Conquer is a trademark of Westwood Studios, Inc.
+Command & Conquer is Copyright (C)1995 Westwood Studios, Inc.
+Command & Conquer: Red Alert is a trademark of Westwood Studios, Inc.
+Command & Conquer: Red Alert is Copyright (C)1995-1999 Westwood Studios, Inc.
+
+In this document, I'll try to explain the file format which Command & Conquer 
+and Red Alert use for storing various fonts.
+
+I can't guarantee the information given here is correct. There may be things 
+which are wrong - if you know something is incorrect, contact me so that
+I can update this document. Also, sorry if all this sounds too complicated,
+but I'm not very good at explaining things.
+
+
+IMPORTANT:
+ There is a major difference (concerning the previous version of this doc)
+ in how the fonts are displayed. The procedure I described in the first
+ version of this document is WRONG. Here, I will explain the correct
+ procedure. Therefore, you should consider the first release of the document
+ to be obsolete now. Sorry for the inconvenience...
+
+
+The fonts used in C&C and Red Alert are proportional fonts, which means every
+character can have a different width (in pixels).
+
+The format of the FNT file header is as follows:
+
+struct FNTHeader
+{
+ word fsize;    /* Size of the file              */
+ word unknown1; /* Unknown entry (always 0x0500) */
+ word unknown2; /* Unknown entry (always 0x000e) */
+ word unknown3; /* Unknown entry (always 0x0014) */
+ word wpos;     /* Offset of char. widths array  (abs. from beg. of file) */
+ word cdata;    /* Offset of char. graphics data (abs. from beg. of file) */
+ word hpos;     /* Offset of char. heights array (abs. from beg. of file) */
+ word unknown4; /* Unknown entry (always 0x1012) */
+ word nchars;   /* Number of characters in font minus 1                   */
+ byte height;   /* Font height                   */
+ byte maxw;     /* Max. character width          */
+}
+
+The entries unknown1, unknown2, unknown3 can be used to identify the file
+as a FNT, as well as to help locate the fonts in Red Alert 
+(hex signature: 00 05 0e 00 14 00).
+
+Following the header comes an array of words that point to each character's
+graphics (absolute from start of file). There are nchars+1 of these entries.
+
+Next, there is an array of bytes that contain widths (in pixels) of each
+character. There are nchars+1 entries in the array. The wpos entry in the
+header points to the beginning of this array.
+I'll refer to this array as wchar[].
+
+The packed 4-bit character graphics follow after these arrays.
+
+At the end of the file, after the graphics, another word array is located. 
+Its offset is stored in hpos entry of the header. The array has nchars+1
+entries. I'll refer to this array as hchar[].
+
+Each word entry in hchar[] contains 2 values - the height of the character
+graphic located in the hi-byte and the Y position of the graphic in the 
+character cell located in the lo-byte. 
+
+The character cell for character cn is a bitmap with width=wchar[cn]
+and height=hchar[cn]/256 + (hchar[cn] & 256). 
+
+The character graphic for every character is of the same width
+as that character's cell, but can be of different height, depending on the 
+hi-byte of the corresponding hchar[] entry.
+
+For example, a character (its cell) can be 16x8
+[wchar[cn] x (hchar[cn]/256 + (hchar[cn] & 256))] pixels in size, but
+its character graphic could be 16x3 [wchar[cn] x (hchar[cn]/256)]
+pixels. Clearly, we don't know at what place (height) in the cell the 
+character graphic should be located. That's what the Y position is used for.
+I'll give an example later.
+
+About the 4-bit packed graphics. Previously, I used to think that each
+pixel of the graphic is 8-bit (e.g. can have 256 colors). This is not
+the case. The pixels are in fact 4-bit (max. 16 colors), so 2 of them are
+packed into one byte.
+Let's consider a graphic that's 4 pixels wide. 
+I'll denote each pixel of the line with it's number: 1 2 3 4
+The pixels would then be packed into 2 bytes, like this: 
+21 43
+||
+|+-- LO nibble (val=byte & 15)
++--- HI nibble (val=byte / 16)
+
+If we had to pack an odd number of pixels (i.e. 7), it would be done similarly:
+21 43 65 x7
+         ||
+         |+-- Last pixel value (val=byte & 15)
+         +--- Empty / Unused
+
+Therefore, with the width of a given graphic (wchar[cn]), the total number
+of bytes used to store each line is (width+1)/2
+
+Example on how to display a character: 
+Let's say we have a right arrow sign and it's a 6x6 pixels character.
+Its cell would look like: 
+. . . . . .
+. . . . . .
+. . . . . .
+. . . . . .
+. . . . . .
+. . . . . .
+
+The corresponding character graphic (after unpacking) is 6x3 pixels:
+. . . * . . 
+* * * * * . 
+. . . * . . 
+
+We would need to place this graphic in the center of the cell to get the
+entire character:
+. . . . . . Y=0
+. . . . . .   
+. . . * . .  \  
+* * * * * .   | Inserted graphic -> In this case Y=2
+. . . * . .  /  
+. . . . . . Y=5
+
+That's how every character is displayed. You'll notice that some characters 
+(mainly the first and the last few) don't have any graphics of their own so
+they use another character's graphics.
+Also, the characters are stored in normal ASCII order, so if you wanted to 
+display the character 'A', for example, you would draw the character no. 65 
+(ASCII code for 'A')
+
+
+       ----------------------------------------------------------------
+
+Gordan Ugarkovic (ugordan@yahoo.com)
+18 August, 1999
+[END-OF-FILE]

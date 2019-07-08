@@ -1,0 +1,1194 @@
+        How to Create Your Own Command & Conquer Mission  v1.6
+                 Jonathan Chen (MastrMind3@aol.com)
+
+   Note: Before I get sued, a LOT of the information within this manual
+and the basic format of this manual has been taken from an original manual
+written by Han Brunger (j.brunger@a1.nl) who deserves a lot of credit for
+making the original. This manual should be all you need short of some
+experience to make some good C&C missions. What separates this from Han
+Brunger's original is that this document contains an enormous amount of more
+information (50k) that has been discovered since his original writing (20k).
+   You may freely, and I encourage, you to distribute this document as you
+please, so long as credit is given to me.
+
+Version List
+v1.0 Original Release
+v1.1 Mainly just grammatical corrections.
+v1.5 More grammatical corrections. Addition of 'Attack Units" to actions
+     list. Discovery and addition of "FPLS" overlay tile. Update to the
+     Making Multiplayer Maps section. Discovery of placing buildings in
+     the [Overlay] section. Chart listing buildings in DESERT theater.
+     Orcas and Apaches in [TeamTypes]. More examples of more confusing
+     actions. Minor additions to Terrain and Celltriggers section. 
+     Addition of a "Where to send mission for posting" section. More
+     "Thanks to..."
+v1.6 Additions and corrections to Movie List. Correction to an example.
+
+*****************
+Table of Contents
+*****************
+
+1. Getting Started
+2. Text Editing the INI file
+   2.1   [Basic]
+      2.1.1   Movie Titles and descriptions
+      2.1.2   Theme names
+   2.2   [Map]
+   2.3   [GoodGuy], [BadGuy], [Neutral], [Special], [Multi1-6]
+   2.4   [Terrain]
+   2.5   [Overlay]
+      2.5.1 Crates
+   2.6   [Smudge]
+   2.7   [Waypoints]
+   2.8   [Structures]
+      2.8.1 Structure Type chart
+      2.8.2 Civilian Structures that CCMAP v2.1 Doesn't Handle
+   2.9   [Units]
+      2.9.1 Unit Type chart
+   2.10  [Infantry]
+   2.11  [CellTriggers]
+   2.12  [Triggers]
+   2.13  [TeamTypes]
+   2.14  [Base]
+   2.15  [Briefing]
+3. Examples
+4. Making Multiplayer Maps
+5. Making your mission playable
+   5.1 GENERAL.MIX on Hard Drive technique
+   5.2 NEW MISSIONS technique
+6. Where to Send Your Completed Mission
+7. Closing Comments
+8. Thanks to...
+
+******************
+1. Getting Started
+******************
+
+   Before anything else, I will assume that you have MIXMAN and CCMAP which
+you will need. Once you have these programs, read the MIXMAN documentation
+to learn how to extract an INI file and a MAP file from a GENERAL.MIX file
+from either Command & Conquer CD. The next step is to edit the INI file
+with any standard ASCII text editor such as DOS EDIT or WINDOWS NOTEPAD
+to decide how large and what type of map you will use (refer to section
+2.2 MAP for more information). Once you have done this, you may use CCMAP
+to create your map anyway you like.
+   Finally comes the real hard part, the ever daunting task of editing the
+INI file which you will need this manual for desperately.
+
+****************************
+2. Text Editing the INI File
+****************************
+
+   The INI file is a standard ASCII text file which contains several sections
+headers within [ and ]. All of these sections describe what can be found on
+the map, and what will occur during the mission when it is played. Within
+the INI file, you may also note that you may include comments by preceding
+them with a semi-colon, ";".
+   I will now go through the several sections and attempt to explain them
+fully for you to understand.
+
+***********
+2.1 [Basic]
+***********
+
+   As you might guess, this describes the basics of the mission. Usually
+you won't have to change much here. This is what it'll probably look like.
+Note: Numbers in brackets, { }, are not a part of the section.
+
+[Basic]
+CarryOverMoney=10     {1}
+CarryOverCap=-1       {2}
+Percent=100           {3}
+Intro=X               {4}
+Brief=X               {5}
+Action=X              {6}
+Lose=X                {7}
+Win=X                 {8}
+BuildLevel=13         {9}
+Theme=No theme       {10}
+Player=GoodGuy       {11}
+Name=Beta Mission    {12}
+
+1: Amount of credits that the player will carry over from the previous
+   mission divided by 100. For example, 10 means 1000 credits.
+2: Most likely is a cap over how much money you can carry over. That is,
+   a limit as to how much money you get from your last mission to prevent
+   you from starting with too much money.
+3: Wish I knew. Possibly also related to CarryOverMoney, by specifying what
+   percentage of the money you get?
+
+(If you make a mission that isn't part of a continuing campaign, then the
+ above three values will have no effect and you probably should delete them.)
+
+4: Introduction video played first.
+5: Briefing Video, played after Introduction Video.
+6: Action Video, played after Briefing Video.
+7: Lose Video, played if you lose the mission.
+8: Win Video, played if you win the mission.
+
+(The known videos that you can use are listed below in section 2.1.1. If you
+   put an "X" then no movie clip will be played.)
+
+9: Similar to Tech Level. Specifies how much you can build. Note, if you
+   play your mission by replacing one in the GENERAL.MIX file (described
+   in section 5.1), this will have no effect.
+10: Music that will be played when the mission opens. Will begin at the
+    same time that the ACTION video begins. A list of know themes can be
+    found below in section 2.1.2. To not play any particular music, then
+    put "No theme" in the entry.
+11: Who the player will represent. GoodGuy (GDI), BadGuy (Nod), Neutral,
+    Special, Multi1, Multi2, ... , Multi6.
+12: This is the name of the mission which will show up on the NEW MISSIONS
+    menu (described in section 5.2). Note: You will not find this entry in
+    any mission you extract with MIXMAN, so you will have to add it yourself.
+
+*********************************
+2.1.1 Movie Titles and Description
+*********************************
+
+   On the lines, Intro, Brief, Action, Lose, and Win, you may put the name
+of a video clip which will play at a specified time. Note: If you use the
+NEW MISSIONS technique (described in section 5.2) the Intro video will
+not be played.
+   Most videos are actually usually only on either the GDI or Nod
+CD. Below, is a list discovered by someone else, of all the cutscenes
+with some additions and corrections that I discovered.
+
+ CD     Name         Description
+****************************************************************************
+   N    AIRSTRK      Soldiers watching airstrike in hills.
+   N    AKIRA        Nod base attacked by GDI and destroyed by ion blast.
+ G N    BANNER       GDI troops hanging banner on greek temple.
+ G N    BCANYON      Orca chopper flying through canyon.
+ G      BKGROUND     Information about GDI and Nod presence on world map.
+ G N    BOMBAWAY     A10 planes bombing a base in a valley.
+ G N    BOMBFLEE     Command center being bombed by A10 planes.
+ G      BURDET1      Burdette reporting about destruction of village.
+ G      BURDET2      Short Burdette report.
+ G N    CC2TEASE     C&C2 demo video.
+ G N    CONSYARD     MCV changing into a construction yard.
+   N    DESFLEES     GDI soldiers running away from Nod tanks in desert.
+   N    DESKILL      GDI soldier kills Nod soldier in desert.
+ G      DESOLAT      Desolated village overgrown with tiberium.
+   N    DESSWEEP     Nod vehicles moving through desert.
+ G N    DINO         Hovercraft moving through a swamp area with dino's.
+ G N    FLAG         APC enters Nod base through fence. GDI flag raised.
+ G      FLYY         APC being killed by attack chopper.
+ G N    FORESTKL     GDI soldier kills Nod soldier in forest.
+ G N    GAMEOVER     GDI troops leaving a base by transport plane.
+ G N    GDI1         GDI briefing 1
+ G      GDI2         GDI briefing 2
+ G      GDI3         GDI briefing 3
+ G      GDI4A        GDI briefing 4A
+ G      GDI4B        GDI briefing 4B
+ G      GDI5         GDI briefing 5
+ G      GDI6         GDI briefing 6
+ G      GDI7         GDI briefing 7
+ G      GDI8A        GDI briefing 8A
+ G      GDI8B        GDI briefing 8B
+ G      GDI9         GDI briefing 9
+ G      GDI10        GDI briefing 10
+ G      GDI11        GDI briefing 11
+ G      GDI12        GDI briefing 12
+ G      GDI13        GDI briefing 13
+ G      GDI14        GDI briefing 14
+ G      GDI15        GDI briefing 15
+ G      GDI3LOSE     Tank being killed by attack chopper.
+ G      GDIEND1      TV news about final battle (won by superior tactics).
+ G      GDIEND2      TV news about final battle (won by ion cannon).
+ G      GDIFINA      Destruction of temple (By normal weapons).
+ G      GDIFINB      Destruction of temple (By ion blast).
+ G      GDILOSE      Scorpion breaking through wall.
+ G      HELLVALY     Chopper flys over desolated valley with visceroids.
+   N    INSITES      Plane shot down from view point of SAM site.
+ G N    LANDING      Hovercrafts heading for beach.
+ G N    LOGO         The Westwood logo.
+ G      NAPALM       Mobile HQ destroyed by A10 planes.
+ G      NITEJUMP     Soldiers sneaking into base by chopper.
+ G N    NOD1         Nod briefing 1
+   N    NOD2         Nod briefing 2
+   N    NOD3         Nod briefing 3
+   N    NOD4A        Nod briefing 4A
+   N    NOD4B        Nod briefing 4B
+   N    NOD5         Nod briefing 5
+   N    NOD6         Nod briefing 6   
+   N    NOD7A        Nod briefing 7A
+   N    NOD7B        Nod briefing 7B  
+   N    NOD8         Nod briefing 8   
+   N    NOD9         Nod briefing 8   
+   N    NOD10A       Nod briefing 10A 
+   N    NOD10B       Nod briefing 10B 
+   N    NOD11        Nod briefing 11  
+   N    NOD12        Nod briefing 12  
+   N    NOD13        Nod briefing 13  
+ G N    NOD1PRE      Nod logo on snowy TV screen.
+   N    NODEND1      Paris hit by ion blast.
+   N    NODEND2      Washington hit by ion blast.
+   N    NODEND3      London hit by ion blast.
+   N    NODEND4      Berlin hit by ion blast.
+   N    NODFINAL     Netrunners dancing through the web of cyberspace...
+ G      NODFLEES     Nod soldiers running away from GDI tanks in forest.
+ G N    NODLOSE      Eagle catching a scorpion.
+ G      NODSWEEP     Nod vehicles moving through forrest.
+   N    NUKE         Nuclear missile launched from temple.
+   N    OBEL         Humm-Vee being destroyed by obelisk of light.
+ G      PARATROP     Paratroopers jumping from plane.
+ G      PINTLE       Chopper being shot by bazooka.
+ G      PLANECRA     Antonov transport plane crashing on airstrip.
+ G      PODIUM       Gen. Sheppard questioned by journalists.
+   N    REFINT       Inside tiberium refinery.
+ G N    RETRO        Prisoner interrogated and killed in warehouse.
+ G      SABOTAGE     Time-bomb placed in building.
+ G      SAMDIE       SAM site destroyed by grenades.
+ G N    SAMSITE      SAM site firing missiles at plane.
+   N    SETHPRE      Background info about Nod and tiberium
+ G N    SEIGE        A base under siege with enemy aproaching from all sides.
+   N    SPYCRASH     Plane crashing on mosque.
+   N    STEALTH      Stealth tank attacking a base.
+   N    SUNDIAL      Large sundial destroyed in battle.
+   N    TANKGO       Medium Tanks moving through the desert.
+   N    TANKKILL     Medium Tank being destroyed by bazooka.
+ G      TBRINFO1     News items about current world situation.
+ G      TBRINFO2     More info about tiberium.
+ G      TBRINFO3     More info about the dangers of tiberium.
+   N    TIBERFX      More info about the dangers of tiberium.
+   N    TRTKIL_D     Destruction of a gun turret in desert.
+ G      TURTKILL     Destruction of a gun turret in forest.
+ G N    VISOR        A10 planes heading for new target.
+
+*****************
+2.1.2 Theme Names
+*****************
+
+   After the line, "Theme=" you may put the name of a particular track that
+you would like to play when the mission starts. Note: The music will start
+right when the ACTION video would start which can cause some performance
+problems. Further Note: Spelling and capitilization do matter, and many
+of the following songs are not on the normal play list. Some are not even
+used in the normal game.
+
+Theme Name                 Description
+****************************************************************************
+Demolition                 Song on Play List. You've probably heard it.
+Take 'em Out               "
+Radio                      "
+Rain In The Night          "
+Canyon Chase               "
+Act On Instinct            "
+Looks Like Trouble         "
+Industrial                 "
+On The Prowl               "
+Prepare For Battle         "
+Just Do It!                "
+In The Line Of Fire        "
+March To Doom              "
+Deception                  "
+C&C Thang                  "
+Warfare                    "
+Fight, Win, Prevail        "
+No Mercy                   "
+Mechanical Man             "
+Untamed Land               Song played during Dino Missions.
+I Am                       Nod ending theme.
+Air Strike                 GDI ending theme.
+Enemies To Be Feared       Unused song.
+Die!!                      Another unused song.
+Ride of the Valkyries      Unused song, but I'm sure you've heard it before.
+Great Shot!                Song played when you finish a mission.
+MAP1                       Title screen theme.
+
+*********
+2.2 [Map]
+*********
+  
+   This section will describe the basic map layout. This is one section you
+should definitely edit before you use CCMAP to create your map otherwise
+you can have some serious problems later. Here's is an example...
+
+[Map]
+Height=60                  {1}
+Width=60                   {2}
+X=2                        {3}
+Y=2                        {4}
+Theater=TEMPERATE          {5}
+
+1: Height of the map (max 62)
+2: Width of the map (max 62)
+
+(Note: Making your map 62x62 can cause problems when you use A-10s or
+   transport planes because they don't actually leave the map, but stay at
+   the map edge. To deal with this, you should use a maximum of 61x61.
+   Actually, just to be safe, I never go over 60x60.)
+
+3: Where the Left border starts in X coordinates.
+4: Where the Top border starts in Y coordinates.
+5: The type of landscape. Either WINTER, DESERT, or TEMPERATE.
+   Note: If you try using TEMPERAT, it may cause your mission to crash.
+
+*********************************************************
+2.3 [GoodGuy], [BadGuy], [Neutral], [Special], [Multi1-6]
+*********************************************************
+
+   These sections describe the the different sides in a mission.
+Here is an example of what they will look like.
+
+[GoodGuy]
+FlagHome=0              {1}
+FlagLocation=0          {2}
+MaxBuilding=150         {3}
+MaxUnit=250             {4}
+Allies=GoodGuy          {5}
+Edge=South              {6}
+Credits=50              {7}
+
+1: Unknown. Possibly related to Capture The Flag setting in Multiplayer.
+2: Unknown. Possibly related to Capture The Flag setting in Multiplayer.
+
+(Note: The two above values will have no effect on your mission typically
+   so you may as well delete them.)
+
+3: Most likely a limit to the number of buildings that can be built.
+4: Most likely a limit to the number of units that can be built.
+5: Your units will not fire on any units under this section unless you
+   tell them to "Force" attack. More than one entry may be placed here
+   such as "Allies=GoodGuy, Neutral" though note that this is not a
+   reciprocal Alliance. Other units will fire on you even if you consider
+   them allies if they are not also set to consider you as allies.
+6: This signifies from which direction reinforcements will arrive for this
+   house.
+7: Number of credits this house will start with divided by 100. For example,
+   50 stands for 5000 credits.
+
+   Note: Besides GoodGuy and BadGuy, you may also play as Neutral, Special,
+Multi1, Multi2, ... , or Multi6 or have a computer play one of them. If
+you choose Neutral or Special, all units of that house will be the same color
+as GDI units, but appear gray on the radar. If you play as Neutral, you
+cannot build anything, if you play as Special, you can build anything from
+either GDI or Nod. If you play as any of the Multi# then your units will
+be different colors but still appear gray on the radar. You will also be
+able to build anything. The color chart follows...
+
+Multi1:   Blue
+Multi2:   Orange
+Multi3:   Green
+Multi4:   Steel (Gray)
+Multi5:   Khaki (GDI color)
+Multi6:   Red
+GoodGuy:  Khaki
+BadGuy:   Red Structures, Gray Units
+
+   Further Note: If you play as Special, or any of the Multi's, even though
+you can build anything, if you build a helipad, it will come with an Apache,
+not an Orca. Also, if you build a Temple of Nod, you'll get a Nuke, but if
+you build an Adv. Com. Center, you won't get an Ion Cannon.
+
+*************
+2.4 [Terrain]
+*************
+
+   This is where all of the trees, blossom trees, and rocks are layed out.
+CCMAP pretty much has this completely worked out so you don't really
+have to worry about it, however, here's the basic format...
+
+2080=SPLIT2,None
+  |    |     |
+  1    2     3
+
+1: Cell position of the Terrain object.
+2: The type of object. T## is a various type of tree, TC## is a batch of
+   trees, ROCK# is a rock, SPLIT2 and SPLIT3 are blossom trees.
+3: A trigger that the terrain piece is associated with. (See section 2.12)
+
+*************
+2.5 [Overlay]
+*************
+
+   This section describes where things such as Tiberium, walls, and crates
+will appear. Again, CCMAP pretty much has this covered, but it doesn't have
+crates so I'll describe the format here.
+
+2080=BRIK
+  |    |
+  1    2
+
+1: Cell position of Overlay tile.
+2: What type of tile is there. TI1 ... TI12 are Tiberium. WOOD; wooden fence,
+   BARB; barbed wire, SBAG; Sandbag, CYCL; Chain-Link fence, BRIK; concrete
+   wall. Recently, I discovered from a mission, by Sunny T. Lee, that FPLS
+   is a tile that looks just like the "bullseye" in the Capture the Flag
+   setting in multiplayer games. Unfortunately, I haven't seen any
+   indication of what the name for the FLAG is, so we can't quite use this
+   yet. However, the "bullseye" would probably make a nifty looking Chinook
+   drop zone.
+
+   Note: TI1 seems to have just as much Tiberium as TI12, so I'm not sure
+what the number means. Density of Tiberium is determined by how many tiles
+you have next to each other. To save space, you should usually just use
+TI1 which will also make it simpler.
+   I discovered that you may also place some civilian buildings on your map
+through this section. Refer to section 2.8 for more information.
+
+************
+2.5.1 Crates
+************
+
+   CCMAP doesn't allow for the placing of crates, however you can still put
+them into your missions. In place of TI1 or BRIK or whatever, you can put
+either WCRATE or SCRATE standing for wooden crate and steel crate. If you
+pick up the WCRATE, you'll get $2000. If you pick up the SCRATE, no effect
+will really happen, however you can use it in conjunction with Celltriggers
+for a pretty good effect (See section 2.11).
+   Note: Very important, if you put crates in your INI file, then use CCMAP
+to change your map, and you save it, CCMAP will erase all crate entries you
+put in your mission because it doesn't recognize them.
+
+************
+2.6 [Smudge]
+************
+
+   CCMAP doesn't handle this, but then again, it's not that useful. All it
+does is place various scorch marks and craters on the map. Here's the
+format anyway...
+
+2080=SC1
+  |   |
+  1   2
+
+1: Cell position
+2: Type of Smudge. SC1 ... SC6 are scorch marks. CR1 ... CR6 are craters.
+
+***************
+2.7 [Waypoints]
+***************
+
+   These are numbers used in the [TeamType] section which act as shortcuts
+to denote postitions on the map. You can have a maximum of 32 waypoints,
+(0-31) however, there are 3 waypoints which serve a special purpose.
+
+   Waypoint 25: Yellow Flare will be lit here if specified to do so.
+   Waypoint 26: This will be the top-left corner of the screen when you
+                start the level. Otherwise, the screen will start at the
+                top-left corner of the map.
+   Waypoint 27: Default drop site for Chinooks if no "unload" command is
+                used in the TeamType section (See section 2.13).
+
+   For waypoints, as well as most values, a -1 means that it is not used.
+
+****************
+2.8 [Structures]
+****************
+
+   This describes all of the buildings on the map. CCMAP does most of this
+for you. All you'll usually need to do here is change the building health,
+and trigger association. Here is an example...
+
+000=GoodGuy,FACT,256,2080,0,None
+ |     |      |   |    |  |  |
+ 1     2      3   4    5  6  7
+
+1: Building Index. Not really important.
+2: Building Owner.
+3: Building Type. (See section 2.8.1 for the chart)
+4: Health. Note: this is a proportional health, so 256 is the maximum for
+   every structure. If you want to change a structure's health, you should
+   definitely do it here rather than CCMAP where you will have to change
+   the health by one unit per one click.
+5: Cell postion of building. Usually the upper left corner of the building.
+6: Direction which building faces. Only useful for Gun Turrets. can be any
+   value from 0-255. 0=North, 64=East, 128=South, 192=West.
+7: Name of a trigger building is associated with. (See section 2.12)
+
+   Note: It is possible to also place some civilian buildings through the
+[Overlay] section instead. You would do this by making an entry such as...
+
+2080=V12
+
+This will cause the building to be seen at that cell position, however, you
+will not be able to select or attack this building. The usefulness of this
+option is mainly for decoration. I believe that this will only work for
+TEMPERATE and WINTER theaters for the civilian buildings which are actually
+various crop fields etc.
+
+**************************
+2.8.1 Structure Type Chart
+**************************
+
+Built It
+ Index     Structure                Abbreviation used
+*****************************************************************************
+   0       Weapons Factory          WEAP
+   1       Guard Tower              GTWR
+   2       Adv. Guard Tower         ATWR
+   3       Obelisk of Light         OBLI
+   4       Communications Center    HQ
+   5       Gun Turret               GUN
+   7       Tiberium Refinery        PROC
+   8       Tiberium Silo            SILO
+   9       Helipad                  HPAD
+  10       SAM Site                 SAM
+  11       Airstrip                 AFLD
+  12       Power Plant              NUKE
+  13       Adv. Power Plant         NUK2
+  15       Barracks                 PYLE
+  17       Repair Bay               FIX
+  19       Hand of Nod              HAND
+  20       Temple of Nod            TMPL
+  21       Adv. Com. Center         EYE
+  -1       Civilian Buildings       V##
+  ??       Technology Center        MISS
+  ??       Bio-Tech Center          BIO
+  ??       Hospital                 HOSP
+
+********************************************************
+2.8.2 Civilian Structures that CCMAP v2.1 Doesn't Handle
+********************************************************
+
+   You may have already noticed that if you attempt to place civilian
+structures on your map with CCMAP while using DESERT environment, they
+will all not be shown on your map. This is because apparently different
+graphics are used for structures between TEMPERATE and WINTER, and DESERT.
+   Below is a list of the Civilian Structures that will work in the
+DESERT environment (but not TEMPERATE and WINTER) as well as a brief
+description of each. With this chart, you can first use CCMAP to place
+several buildings so you'll know the cell positions of where you want your
+buildings to be, then just use this chart to swap the "V##" in your INI
+file after making your map, with one from the chart.
+
+    Building
+  Abbreviation        Building Description
+*****************************************************************************
+      V19             Oil Pump (Same as TEMPERATE and WINTER)
+      V20             Two wooden structures and a clothesline
+      V21             Wooden structure and clothesline
+      V22             Wooden structure and clothesline
+      V23             Village Well and clothesline
+      V24             Concrete structure with wooden attachment
+      V25             Church
+      V26             Two wooden structures
+      V27             Concrete structure
+      V28             Wooden structure
+      V29             Wooden structure
+      V30             Village Well and Stable
+      V31             Hut with skulls on pikes. Witch Doctor's Hut?
+      V32             Two huts
+      V33             Two huts
+      V34             A hut
+      V35             A hut
+      V36             A hut
+      V37             Large building. Looks like... Library? College?
+
+   Furthermore, strcutures in TEMPERATE and WINTER scenarios usually look
+identical except for some snow. However, V12 and V13 appear as circular
+haystacks in the TEMPERATE theater (in CCMAP as well), but appear as igloos
+in the WINTER theater.
+
+***********
+2.9 [Units]
+***********
+
+   Very similar to [Structures]. CCMAP does most of it again, but you
+may want to change a few values. Here's the format...
+
+000=GoodGuy,JEEP,256,2080,0,Guard,None
+ |     |      |   |    |  |   |    |
+ 1     2      3   4    5  6   7    8
+
+1: Unit Index, not very important.
+2: Unit Owner.
+3: Type of unit. (See below for chart)
+4: Proportional health of Unit.
+5: Cell Position.
+6: Direction Unit is facing. (0-255)
+          224  0  32
+             \ | /
+         192-- * --64
+             / | \
+          160 128 96
+7: Action Unit will take.
+   Area Guard:     Guard area around cell.
+   Attack Units:   Attacke enemy units.
+   Attack Base:    Attack enemy base.
+   Attack Civil.:  Attack Civilians.
+   Hunt:           Search for and attack enemy units and/or base.
+   Attack Tarcom:  Unknown
+   Defend Base:    Defend own base
+   Guard:          Simlar to Area Guard, but less aggressive.
+   Harvest:        Only for harvesters, harvest Tiberium.
+   None:           Do nothing
+   Rampage:        Unknown
+   Retreat:        Unknown
+   Return:         Unknown
+   Sticky:         Stay at the cell, whatever happens. Won't return fire
+                   unless attacked.
+
+8: Trigger Unit is associated with.
+
+*********************
+2.9.1 Unit Type Chart
+*********************
+
+       VICE  Visceroid                  MCV   Mobile Constr. Vehicle
+       FTNK  Flame Tank                 JEEP  Humm-Vee
+       STNK  Stealth Tank               BGGY  Nod Buggy
+       LTNK  Light Tank                 BIKE  Recon Bike
+       MTNK  Medium Tank                MSAM  Rocket Truck
+       HTNK  Mammoth (Heavy) Tank       APC   Armored Personnel Carrier
+       MHQ   Mobile HQ                  BOAT  Gunboat
+       LST   Hovercraft                 TRAN  Chinook  (for TeamTypes ONLY!)
+       MLRS  SSM                        ORCA  Orca     (for TeamTypes ONLY!)
+       ARTY  Mobile Artillery           HELI  Apache   (for TeamTypes ONLY!)
+       HARV  Harvester
+
+       TRIC  Triceratops                TREX  Tyranosaurus Rex
+       RAPT  Velociraptor               STEG  Stegasaurus
+
+   Indeed, there are Dinos in the game. Use CCEDIT from Andrew Griffin to
+      be able to see them.
+   Without using CCEDIT or some simliar program, the usefulness of the
+      C17 transport plane is questionable. Since it's Cannot Land flag is on,
+      when I tried to get it to move somewhere, it caused my game to crash.
+
+***************
+2.10 [Infantry]
+***************
+
+   This describes all of the personnel on the map. Similar again to Units.
+   Here's the format...
+
+000=GoodGuy,E1,256,2080,0,Guard,0,None
+ |     |    |   |    |  |   |   |  |
+ 1     2    3   4    5  6   7   8  9
+
+1: Infantry Index. Not very important.
+2: Infantry Owner.
+3: Infantry Type.
+   E1: Minigunner           RMBO:      Commando
+   E2: Grenadier            C1..C10:   Various Civilians
+   E3: Rocketeer            MOEBIUS:   Dr. Moebius
+   E4: Flame Thrower        DELPHI:    Agent Delphi
+   E5: Chemical Warrior     CHAN:      Civilian in lab coat
+   E6: Engineer
+4: Proportional Health.
+5: Cell position
+6: Sub-Cellnumber. Each Cell is divided into 5 sub-cells which you can place
+   the infantry into. Note: If you put more than one infantry in one cell,
+   and then use CCMAP to change the map and save it, CCMAP will erase all
+   of the infantry except one for each cell. Sub-Cell division...
+                        1   2
+                          0
+                        3   4
+7: Action Infantry takes. Same as Units.
+8: Direction facing. Same as Units.
+9: Trigger Infantry is associated with.
+
+*******************
+2.11 [Celltriggers]
+*******************
+
+   You will need to add these yourself. You will use them when you want
+something to happen in your mission when a cell is entered by a unit.
+Each one needs a corresponding normal "Trigger" with a "Player Enters"
+activator. Here's the format...
+
+2080=ALRT
+  |   |
+  1   2
+
+1: Cell Position of Celltrigger.
+2: Trigger that Celltrigger is associated with.
+
+   For example, if a unit moves onto the 2080 cell position, then the
+trigger named ALRT will be activated.
+
+***************
+2.12 [Triggers]
+***************
+
+   This and TeamTypes are probably the two most complicated parts of the
+INI file. In this section, you will describe just about everything that
+will happen in your mission. Here's the format...
+
+Zap=Time,Ion Cannon,180,GoodGuy,None,1
+ |   |       |       |     |      |  |
+ 1   2       3       4     5      6  7
+
+1: Trigger name. Can be just about anything. Try to keep it short.
+2: Trigger activator. What must happen for the trigger to start...
+   # Bldgs Dstr.           : if specified number of struc. are destroyed.
+   # Units Dstr.           : if     "        "   "  units   "     "
+   All Destr.              : if EVERYTHING of one side is destroyed
+   Any                     : used with Cap=Win/Des=Lose effect (see below)
+   Attacked                : if unit/structure/terrain/infantry gets attacked
+   Bldgs Destr.            : if all buildings of one side have been destroyed
+   Built it                : if a specific structure was built
+   Civ. Evac.              : if civilians have been evacuated (by Chinook?)
+   Credits                 : certain amount of credits is reached
+   Destroyed               : if unit/structure/terrain/infantry is destroyed
+   Discovered              : if unit/structure/terrain/infantry is discovered
+   House Discov.           : if a certain side (House) has been discovered
+   No Factories            : if all Constr. Yard are destroyed
+   Player Enters           : if this cell is entered. Used when associated
+                             with celltriggers. Can also be used to activate
+                             when a building is captured by an Engineer.
+   Time                    : if a certain amount of time has passed
+   Units Destr.            : if all vehicles and soldiers are destroyed
+3: Effect of trigger. What will happen once the activator has been satisfied.
+   Airstrike               : Airstrike available. Note: Don't use this to
+                             give the computer air strikes. Use the method
+                             described in the TeamTypes section.
+   All to Hunt             : Everybody searches for and attacks the enemy
+   Allow Win               : Used when there is more than one goal
+                             to win the mission. You will have one of
+                             the goals as Allow Win, and the other
+                             would simply be Win.
+   Autocreate              : Random create a team specified in TEAMTYPES
+   Cap=Win/Des=Lose        : For buildings: captured=win/destroyed=lose
+   Create Team             : Create a specific team with name at '6'
+                             Note: If all of the units neccesesary for
+                             the team being created are already on the
+                             map and are doing nothing else, they will
+                             become the team. Otherwise, the team will
+                             be built back at the computer's base.
+   Dstry Teams             : Unknown
+   Dstry Trig 'XXXX'       : Destroy trigger with name XXXX. For example:
+                             you can attach XXXX to a timed Ion 
+                             Cannon attack. If for example the 
+                             Com. Center is destroyed which has that
+                             trigger XXXX, no more Ion Cannons will
+                             be fired anymore.
+   Dstry Trig 'YYYY'       :  "         "             "          "
+   Dstry Trig 'ZZZZ'       :  "         "             "          "
+   DZ at 'Z'               : Yellow flare is lit at waypoint 25
+   Ion Cannon              : Ion cannon available
+   Lose                    : You lose the mission
+   Reinforce.              : Reinforcements arrive
+   Win                     : You win the mission
+   Nuclear Missile         : Nuke available 
+   Production              : Until this effect occurs, the computer will
+                             not rebuild any of it's buildings or build
+                             any teams back at it's base.
+4: This is a counter which is related to the activator. It can count things
+   like time units, # of buildings destroyed, number of credits, or type
+   of building built. Time units vary from computer to computer, but when I
+   tried it on my 486DX2/66 with 8 meg RAM, 8 time units was about equal to
+   1 minute. Further Note: The counter for Built It denotes what building
+   needs to be built. The proper indeces are listed under the Structures
+   section 2.8.1.
+5: House associated with activator. Can mean different things with different
+   with different activators.
+6: TeamType associated with trigger or "None" for no team. The name you
+   make up can be pretty much anything, though try to keep it short.
+7: Looping Bit. If value is 0, trigger will only be activated once. If it
+   is either 1 or 2, then trigger will be activated whenever it's activator
+   has been satisfied.
+
+   Note: When you make your mission, don't forget you have to have a trigger
+for Win, and one for Lose. If you want the computer to also build stuff, you
+will also need a Production trigger.
+
+****************
+2.13 [TeamTypes]
+****************
+   
+   This can be a complicated section, because there are several numbers here
+which no one short of the programmers really understands. Here's the basic
+format...
+
+ATeam=GoodGuy,1,0,0,0,0,7,0,0,0,2,RMBO:5,APC:1,2,Move:0,Guard,50,0,0
+^^^^^ ^^^^^^^ ^^^^^^^^^^^^^^^^^ ^ ^^^^^^^^^^^^ ^ ^^^^^^^^^^^^^^^ ^^^
+  |      |             |        |      |       |        |         |
+  1      2             3        4      5       6        7         8
+
+1: Name of Team. can be just about anything. Try to keep it short.
+2: Owner of Team.
+3: Bizzare assortment of numbers. Not sure exactly what they mean. Here are
+   some basic patterns which should be all that you need...
+
+   * Reinforce by Chinook, Hovercraft, APC, A-10s or by any other units
+     moving in from the side of the screen.
+       1,0,0,0,0,7,0,0,0
+   * Reinforce by an empty Chinook that you can select and control.
+       0,0,0,0,0,7,0,0,0
+   * Create a team from base, or from the field if available.
+       1,0,0,1,0,15,1,0,0
+
+Note: These aren't very sure numbers. Sometimes if you use the first pattern
+   you can still use it with CREATE TEAM etc. but basically these work fine.
+   Further: When you want to let the computer have an Air Strike to send
+   against you, rather than use the "Airstrike" effect in the trigger, use
+   "Reinforce." and make a team type similar to the following.
+
+   a10s=GoodGuy,1,0,0,0,0,7,0,0,0,1,A10:3,0,0,0
+
+      Also, if you send for reinforcements by land, you should make the side
+   that they come from only have one opening while all other parts of that
+   edge are covered by some map pieces so that you can "force" the
+   reinforcements to come out where you want them to. Otherwise they'll just
+   come out of the one side in a random position.
+
+4: Number of different Types of units.
+5: The different units, using same abbreviations as under Units and Infantry.
+   The number after the colon represents how many of the preceding unit.
+   For example, RMBO:5,APC:1 stands for 5 commandos and 1 APC, in this case
+   the 5 commandos will be in the APC.
+
+      Note: If you send reinforcements via Chinook, you can have it unload
+   as many units as you like including vehicles.
+
+6: Number of actions the team will undertake. In this case two. Can be 0.
+   You should usually use 0 here for hovercraft reinforcements, and A-10s.
+7: Actions that the team will take.
+    Move:#         Move to the waypoint which would be in place of #
+    Unload:#       Unload a Chinook, hovercraft, or APC
+    Loop           Repeat previous actions.
+
+   In addition to the above, are all of the commands under the Units section.
+After those actions would follow ":##" where ## stands for the number of
+time units the team will undertake that action. Note: When a unit or team is
+set to Hunt or attack something, it will attack the most North Western unit
+that is visible by the player.
+
+8: These two 0's aren't really known as to what they do. But, all Teams
+   usually end with them or 1,0 but just leave it at 0,0.
+
+***********
+2.14 [Base]
+***********
+
+   This section will specify which buildings the computer will rebuild and
+which ones it won't bother to. Here's the format...
+
+000=NUKE,151006464
+ |   |       |
+ 1   2       3
+
+1: Index of the Base line, not very important.
+2: The type of building to be rebuilt.
+3: Very confusing set of numbers which specifies the location of the
+   building. It is recommended that you simply use something like CCTOOLS
+   to do this, otherwise you will really need a calculator badly.
+   The formula for this number I received from Andrew Griffin who got it
+   from someone else.
+
+   [ ( y * 65472 ) + CellNumber ] * 256
+
+   Where Y is equal to the building's Y coordinate. You can find this out
+   if you know the Cell position with the formula...
+
+   y = Trunc ( CellNumber / 64 )
+
+   Trunc means to truncate, or to only take the integer part of the number.
+   For example, if a buildings cell number is 160, then you would divide
+   it by 64 giving you 2.5. Then you would truncate 2.5 giving you 2 which
+   is the Y position of the building which you can use in the formula.
+
+   At the end of the [Base] section, should be a line of the form
+"Count=X" where X is the number of entries.
+   Another useful method of using this section is calculating the positions
+of all of the computer's buildings with the above formula. Then, instead
+of giving the computer all of those buildings, just give it a Construction
+Yard and a lot of money and it will build up its base from scratch.
+
+***************
+2.15 [Briefing]
+***************
+
+   When you make your custom mission, you want to have a description of the
+mission and this is where you put it. When you have this section, it will
+appear just like in Covert Operations after you would see the Brief and
+Action video clips. The format is as follows...
+
+[Briefing]
+1=You would be typing your briefing description here. However it is
+2=VERY important that your briefing not be too long. I have discovered
+3=that in total, your briefing may not contain more than 260 ASCII
+4=characters, though it can have as many lines as you want.
+
+   I did find that if your briefing contains more than 260 characters, then
+when your mission starts, it will play music during your cutscenes even
+if you don't want it to, then during the mission it won't play music at all.
+Basically, keep it under 260 characters or else it will screw up the mission
+pretty badly.
+
+***********
+3. Examples
+***********
+
+   I would recommend that you try using an INI editor like CCTOOLS at first
+to help you out. What follows are some examples which should help you out.
+Another very good way to help you out is to extract INIs from the GENERAL.MIX
+files and look at some of the real examples there.
+
+* If you (BadGuy) pick up a steel crate at cell position 1063, then a flare
+  will be lit at cell position 1000 making it appear as though when you pick
+  up the crate, a flare is lit when you pick it up.
+
+  [Overlay]
+  1063=SCRATE
+
+  [Waypoints]
+  25=1000
+
+  [Celltriggers]
+  1063=Flare
+
+  [Triggers]
+  Flare=Player Enters,DZ at 'Z',0,BadGuy,None,0
+
+* At the beginning of the mission, you (GoodGuy) will receive reinforcements
+  in the form of an MCV on a hovercraft, and a few seconds later, you'll
+  get another hovercraft with a Mammoth Tank on it. Note: As far as my
+  testing has found, Hovercrafts may only come up from the South.
+
+  [TeamTypes]
+  CYard=1,0,0,0,0,7,0,0,0,2,MCV:1,LST:1,0,0,0
+  Mamth=1,0,0,0,0,7,0,0,0,2,HTNK:1,LST:1,0,0,0
+
+  [Triggers]
+  STRT=Time,Reinforce.,1,GoodGuy,CYard,0
+  Help=Time,Reinforce.,2,GoodGuy,Mamth,0
+
+* Every 150 time units, the computer (GoodGuy) will send 2 A-10s to attack
+  you. Once you (BadGuy) build a SAM site, the A-10s will stop coming.
+
+  [TeamTypes]
+  A10s=GoodGuy,1,0,0,0,0,7,0,0,0,1,A10:2,0,0,0
+
+  [Triggers]
+  XXXX=Time,Reinforce.,150,GoodGuy,A10s,1
+  Stop=Built It,Dstry Trig 'XXXX',10,BadGuy,None,0
+ 
+* Every 100 time units, the computer will build 2 Mammoth Tanks and 2 Rocket
+  Trucks to attack your base for 99 time units. The computer however will
+  only start building them after you have collected 2000 credits.
+
+  [TeamTypes]
+  TNKS=GoodGuy,1,0,0,1,0,15,1,0,0,2,HTNK:2,MSAM:2,1,Attack Base:99,0,0
+
+  [Triggers]
+  Attk=Time,Create Team,100,GoodGuy,TNKS,1
+  Begin=Credits,Production,2000,BadGuy,None,0
+
+* If you (GoodGuy) attack the computer's (BadGuy) Temple of Nod, then it
+  will launch a Nuclear Missle at you.
+
+  [Structures]
+  000=BadGuy,TMPL,256,2080,0,Rehit
+
+  [Triggers]
+  Rehit=Attacked,Nuclear Missile,0,BadGuy,None,0
+
+* A common trigger in GDI missions which you can replicate is to give
+  yourself Air Strikes after all SAM sites have been destroyed. In this
+  example, once the four SAMs have been destroyed you get your Air Strike.
+
+  [Structures]
+  003=BadGuy,SAM,256,2451,0,Air
+  002=BadGuy,SAM,256,2430,0,Air
+  001=BadGuy,SAM,256,1120,0,Air
+  000=BadGuy,SAM,256,1656,0,Air
+
+  [Triggers]
+  Air=Destroyed,Airstrike,0,None,None,1
+
+* There is a wooden crate at cell position 2000 and another at cell
+  position 3000. You (Multi1) are trying to get the one at position 2000, and
+  the computer (Multi2) is trying to get the one at position 3000 with his
+  APC. If you get yours first, you win. If the AI (computer) gets its first,
+  then you lose. The APC will go for the crate as soon as the mission starts.
+
+  Note: This is still a good example, however since it was written I
+        discovered that it will not work because the computer player cannot
+        move onto a cell which has a crate on it.
+
+  [Overlay]
+  2000=WCRATE
+  3000=WCRATE
+
+  [Units]
+  000=Multi2,APC,256,1234,Guard,0,None
+
+  [CellTriggers]
+  2000=Mine
+  3000=Its
+
+  [Waypoints]
+  1=3000
+
+  [TeamTypes]
+  Cargo=Multi2,1,0,0,1,0,15,1,0,0,1,APC:1,1,Move:1,0,0
+
+  [Triggers]
+  Start=Time,Create Team,1,Multi2,Cargo,0
+  Mine=Player Enters,Win,0,Multi1,None,0
+  Its=Player Enters,Lose,0,Multi2,None,0
+
+* Here's a trigger you've probably also seen before in some GDI missions.
+  In this one, to win, you must evacuate Dr. Moebius in a Chinook, which
+  will come after you destroy all Nod SAM sites, to win the mission. However,
+  in this example, in addition, you must also destroy Nod's Bio-Research
+  Facility. Furthermore, if Moebius dies, then you lose the mission. Note:
+  When you have a "Civ. Evac." trigger activator, when you load a civilian
+  (Moebius) into the Chinook, it automatically flys off. Phew, this one's
+  getting complicated.
+
+  [Infantry]
+  000=GoodGuy,MOEBIUS,256,2080,0,Guard,0,Fail
+
+  [Structures]
+  000=BadGuy,BIO,256,1234,0,Win2
+  001=BadGuy,SAM,256,1232,0,FreeSky
+  002=BadGuy,SAM,256,1236,0,FreeSky
+
+  [Waypoints]
+  5=2081
+
+  [TeamTypes]
+  Evac=GoodGuy,0,0,0,0,0,7,0,0,0,1,TRAN:1,1,Move:5,0,0
+
+  [Triggers]
+  Fail=Destroyed,Lose,0,None,None,0
+  FreeSky=Destroyed,Reinforce.,0,None,Evac,1
+  Win2=Destroyed,Allow Win,0,None,None,0
+  Win=Civ. Evac.,Win,0,GoodGuy,None,0
+
+**************************
+4. Making Multiplayer Maps
+**************************
+
+   Making Multiplayer maps is actually much simpler than making single player
+maps because mainly all you need to do is make the map and that's it.
+   First start out as usual, create your map, then before exiting CCMAP,
+look through the map you created and find the cell numbers of all the
+possible start postitions that you would like.
+   Now, under the waypoints section, use all of those starting position
+cell numbers and use them as the first few waypoints, (0,1,2,...). Depending
+on how many you place, that is the number of possible starting positions.
+   From there, you're pretty much done, all you have to do is add a Name
+entry and use the techniques described below to make the map playable.
+   I haven't confirmed it, however I've heard that if you put units in your
+map, regardless of color, they will be hostile to all players. Since the
+last revision, I have tested it, and Triggers will NOT work in multiplayer
+maps. Furthermore, you cannot place crates in a multiplayer map either. In
+both cases, they simply won't show up in your map.
+
+*******************************
+5. Making Your Mission Playable
+*******************************
+
+   Well, now that you've made your great, or not so great mission, you need
+to be able to play it so that you can test it. I shall describe two
+techniques to do this. I would highly recommend the NEW MISSIONS method over
+the GENERAL.MIX method, but in order to use the NEW MISSIONS method, you need
+either the Covert Operations CD installed, or the Covert Operations demo.
+
+************************************
+5.1 GENERAL.MIX to Hard Drive Method
+************************************
+
+   This method will require MIXMAN, a hexidecimal editor, and for you to
+copy some files to your hard drive. First off, if you made a GDI mission,
+then copy the GENERAL.MIX file from the GDI CD to your C&C directory, or
+from the Nod CD if your mission is a Nod mission. Once you've done that,
+rename GENERAL.MIX to GENER.MIX. Next, you will need a Hexadecimal editor
+(a text editor will not work). Use the Hex editor to search the GAME.DAT
+file in your C&C directory for two occurences of "GENERAL.MIX" then change
+both of these to "C:GENER.MIX" with your editor. It is strongly recommended
+that you make a back-up copy of your GAME.DAT file first because making
+mistaken hex edits can seriously screw up your program.
+   Now that this is done, use MIXMAN to replace two matching INI and MAP
+files in the new GENER.MIX file with the two you created. Replace a
+mission who's number is the same as the BuildLevel that you want. Then,
+start up the game, and load a savegame you have on the mission which you
+replaced and then select restart.
+   Note: When using this method, the Name you gave your mission will never
+appear, and the briefing will not be shown unless you select Restate.
+
+***********************
+5.2 NEW MISSIONS Method
+***********************
+
+   This method works much better however it requires that you either have
+the Covert Operations CD installed, or the Covert Operations demo.
+   When you have one of the above, in the main menu there will be a button
+labeled NEW MISSIONS. After you've done the following, your mission will
+appear in that menu for you to start from.
+   Once you've completed making your mission, name it in the method described
+in the [Basic] section otherwise you'll just see an "X", then you should
+probably also give the mission a [Briefing] section. Note: If your mission
+has a video clip for the Intro section, it won't be shown.
+   Now that you have done that, you must name your INI and MAP file properly.
+If you have a GDI mission, name both files SCG##EA.* Rename the MAP file
+to have the extension BIN instead. In place of the "##" you need to put
+a number. Most of the numbers upto 30 are used by the campaign and
+Covert Operations. Just to be safe, simply name it 50 or 60, anything
+upto 99. So you should have two files named something like SCG50EA.INI and
+SCG50EA.BIN. Now when you start the game and press the NEW MISSIONS button,
+in the menu near the end should be your mission.
+   If the mission you made was Nod rather than GDI, then instead name the
+files as SCB##EA.*. To make multiplayer maps, name them as SCM##EA.*
+
+***************************************
+6. Where to Send Your Completed Mission
+***************************************
+
+   Now before you do send your mission to some web site so that people may
+play it, I'd like to make a few highly opinionated opinions. DON'T just
+send a mission as soon as you can get it to run without crashing. Take the
+time to make it at least reasonably fun to play. Making it fun to play
+(in my opinion anyway) means to...
+
+(1): Make sure it works correctly first (you'd be surprised that some people
+     don't understand this). 
+(2): Supplement your mission with at least a fairly decent story line. It
+     doesn't even have to be great, but as long as there is one. It is
+     very annoying to see someone make a mission, and all the briefing is,
+     "Okay, kill everything." That really makes the mission boring. However,
+     when you do write your story, try not to deter from the original plot.
+(3): Most importantly, THE BEST MISSION IS NOT THE HARDEST MISSION. It is
+     extremely annoying when people make their missions impossibly hard.
+     Missions should be a challenge, not a migraine.
+
+   Now that you've read my fanatical ravings, I suppose I can tell you that
+probably the best place to post your missions (also probably the best C&C
+web site) is "The Temple of the Conquerer" at http://www10.torget.se/temple.
+The only other site I've found which is for posting single player missions
+is "http://www.communique.net/~dream" although they haven't yet posted the
+missions I sent them so I'm not so sure how prompt they are.
+   If you make a multiplayer map, it is probably best to send it to the web
+site for CC-MAP PACK or something like that. I don't know the URL for that
+one, but just use a link from another site or do a search.
+   I'm sure there are other good places to send your missions, but thus far,
+these are the only two which I'm aware of.
+
+*****************
+7. Final Comments
+*****************
+
+   Hopefully this should help many of you out there, I certainly hope so
+since this took me several hours to write. If you have any further
+questions about INI editing, comments, or new information about INI
+editing that I could put into an update (giving you credit of course)
+then send me an e-mail at MastrMind3@aol.com.
+
+***************
+8. Thanks To...
+***************
+
+   Thanks to a whole bunch of people. Andrew Griffin for his help with some
+of the questions I originally had, Han Brunger definitely for making the
+original manual which helped immensely in the creation of this document,
+Vladan Bato for MIXMAN as well as answering some of my questions, and
+Richard Heesbeen and Jeroen Ritmeijer for the really cool CCMAP which helped
+a lot not only in making my custom missions, but in testing missions to
+create this document. Westwood Studios for the best game I've played to
+date without which this manual would be meaningless. Of course, hopefully
+this it won't have been the best game I've played after October.
+   Still there's more. Thanks to the person who figured the names of all
+the movie clips, and the person who figured out the music tracks. Sorry,
+but I don't know either of your names.
+   Wait I'm not done yet. There are probably dozens more people I who
+deserve thanks, but I'm only mortal and I'm not able to remember everybody.
+Some such people could include you as I got some of my information from
+looking at the custom missions people have made and posted.
+

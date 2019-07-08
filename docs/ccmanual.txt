@@ -1,0 +1,1026 @@
+          HOW TO CREATE YOUR OWN COMMAND & CONQUER MISSIONS
+
+
+                           version 1.1
+               Created by Maarten "Nyerguds" Meuris
+                http://nyerguds.arsaneus-design.com
+
+You are now reading a manual which exactly describes
+how to create your very own missions for Command & Conquer!!!
+I wrote this manual because I noticed there are a lot of people who
+are trying to create new missions, but somehow have problems with it.
+So I guess it is some sort of FAQ but without the questions.
+
+
+========================
+What will you find here?
+========================
+A detailed description of how to create a mission, step by step.
+But especially how to edit the INI-files. And how to make a mission
+playable.
+
+
+============================
+What will you NOT find here?
+============================
+Everything about creating maps. As there are several map editors, I am
+not gonna explain how they all work. Creating maps isn't that difficult
+after all.
+
+
+-----------------
+=================
+TABLE OF CONTENTS
+=================
+-----------------
+
+ 1. Getting started
+ 2. Editing the INI file
+        2.1 BASIC
+        2.2 BRIEFING
+        2.3 MAP
+        2.4 GOODGUY,BADGUY,MULTI1-MULTI6
+        2.5 TERRAIN
+        2.6 OVERLAY
+        2.7 SMUDGE
+        2.8 WAYPOINTS
+        2.9 STRUCTURES
+        2.10 UNITS
+        2.11 INFANTRY
+        2.12 CELLTRIGGERS
+        2.13 TRIGGERS
+        2.14 TEAMTYPES
+        2.15 BASE
+        2.16 REINFORCEMENTS
+        2.17 TEMPLATE
+ 3. Trigger examples
+ 4. How to make your mission playable
+        4.1 ADDING NEW COVERT OPERATIONS
+ 5. Final notes
+ 6. The 'Thanks to' chapter
+
+
+===================
+1. GETTING STARTED
+===================
+I assume you all use some version of CCMap and Mix Manager.
+Good. These are the only programs we need.
+
+Extract a BIN and INI file as described in the docs that came with Mixman.
+Depending on whether you want to create a new map or change an old one,
+use CCMAP to do this. See the docs for more information.
+
+After creating the map, you are going to need this manual badly.
+
+
+=======================
+2. EDITING THE INI FILE
+=======================
+The INI file is a textfile which acts like a kind of script. Besides telling
+the game what is on the map, it also contains all the information about
+which things should at what time or action. It exists of several entries
+starting with a header between [ and ]. You don't have to delete any of
+them if you use CCMAP.
+
+Another thing: there is one drawback to the .ini file. If it exceeds 16K,
+you'll start to miss some things from your mission. Maybe some triggers
+will disappear, then some Tiberium, then some units... well, whatever's
+at the end of your INI file. I always put the [Overlay] at the end, because
+that causes the least problems in the mission itself.
+
+I will now explain what's in those entries and how to change it correct.
+
+
+=========
+2.1 BASIC
+=========
+This is all about the mission itself. Here, you can change which side you
+play, what movies you see and some other stuff.
+
+[BASIC]
+CarryOverCap=-1                 1
+CarryOverMoney=20               2
+Intro=TBRINFO1                  3
+BuildLevel=8                    4
+Theme=No theme                  5
+Percent=100                     6
+Player=GoodGuy                  7
+Action=DESOLAT                  8
+Lose=GDILOSE                    9
+Win=HELLVALY                    10
+Brief=GDI8B                     11
+Name=Hellfire                   12
+
+1: I'm not sure about this one. Could be the amount of real tiberium that
+   the player takes over from the previous mission (divided by 100, probably)
+   All I know about it is that it's never used. (-1 means "not used")
+2: amount of credits that the player takes over from the previous mission
+   divided by 100. So 10 means 1000 credits.
+3: Introduction-video. Played before the briefing video. There are a lot of
+   titles available. Just look at MOVIES.TXT and pick them out. An X means no
+   video.
+4: Has to do with what stuff you can build and your score when you win.
+   This doesn't affect normal missions, but is necessary in Covert Operation
+   missions. This can be 0 to 99, but it is advised only to use 1 to 98,
+   as 99 allows you to build stuff like the Hospital, the Biolab, the
+   civilians and the Mobile HQ.
+5: Music playing. It is advised not to put anything here if you have an
+   "Action" video: the movie won't play fluently anymore because C&C will
+   read the movie and play the theme at the same time.
+6: Not sure about this one. Some say it is the Computer's intelligence.
+7: this side is controlled by the player
+                GoodGuy: GDI
+                BadGuy: Nod
+   You can also put the following teams there, but beware: if you do that,
+   C&C will CRASH when you accomplish your mission. This is because these
+   teams don't have a score screen.
+                Neutral: Civilians
+                Special: Dinosaurs (in Covert Ops. hidden missions)
+                Multi1 - Multi6: multiplayer teams
+   If you say Player=Special or one of the Multi-teams (1-6) you can build
+   stuff from both Nod AND GDI. When you say Player=Neutral, you won't be
+   able to build anything.
+8: Video played after the briefing video
+9: video playing when you lose
+10: video playing when you win
+11: briefing video
+12: mission name. This is only necessary for multiplayer missions and
+    Covert Operations missions. The name can be some 33 characters in length.
+
+
+============
+2.2 BRIEFING
+============
+This part is used to give your mission a briefing text.
+
+Although most people use the file MISSION.INI for this, you don't have to
+include a MISSION.INI to get a briefing: you can just put "[BRIEFING]" in
+your .INI file. Also, this briefing can't be changed by putting MISSION.INI
+in your C&C directory.
+
+Use it like this:
+
+[BRIEFING]
+1=GDI has attacked and cut off one of our bases. Find a way into
+2=the base. One of our agents will assist you by placing a landing 
+3=flare at the right time. Once you're in,
+4=rebuild the base and destroy the GDI forces in the area.
+
+It doesn't matter how much you write on one line, C&C will make sure it fits
+in the "restate" window. You have to keep in mind that the maximum is 498
+characters, spaces and line ends included, and C&C shows max. 47 characters
+on each line. This also means that in this example,
+
+"rebuild the base and destroy the GDI forces in the area."
+
+will not necessarily appear on the next line. If you want something to
+appear on the next line, you'll have to do it by adding extra spaces
+between the words.
+
+
+=======
+2.3 MAP
+=======
+This part describes the map. It is best that you edit this first
+before using CCMAP. This way you can determine the size of the map.
+(A C&C map has a size of 64x64)
+
+[MAP]
+Height=61               1
+Width=60                2
+X=2                     3
+Y=1                     4
+Theater=WINTER          5
+
+1: Height of the map (max 62)
+2: Width of the map (max 62)
+3: horizontal position of left corner of map
+4: vertical position of left corner of map
+5: graphics set: WINTER, DESERT, TEMPERATE
+
+Note: you should use a border of 1 cell width around your map which you leave
+empty. This is because the Antonov and A10's don't really fly off the map but
+get stuck at the border. If they fly by, you will still see them sticking at
+the border of the map. Funny thing is you still can shoot them!
+
+To determine exactly where your reinforcements enter the map, you have to
+make rock borders just outside the visible part of the map. Now make a hole
+in this "wall" and you will be sure your reinforcements will show up there.
+
+Now, to edit the map and still be able to make these borders, use this:
+
+[MAP]
+Height=64
+Width=64
+X=0
+Y=0
+Theater=(Whatever you're using)
+
+==================================
+2.4 GOODGUY, BADGUY, MULTI1-MULTI6
+==================================
+These entries are all the same and say something about the different
+types of forces.
+
+[GoodGuy]               0
+FlagHome=0              1
+FlagLocation=0          2
+MaxBuilding=150         3
+MaxUnit=250             4
+Allies=GoodGuy          5
+Quota=0                 6
+Edge=South              7
+Credits=30              8
+
+0: team. This can be:
+     GoodGuy = GDI
+     BadGuy  = Nod
+     Neutral = Civilians
+     Special = Dinosaurs (in Covert Ops. hidden missions)
+     Multi1  = Blue multiplayer team
+     Multi2  = Orange multiplayer team
+     Multi3  = Green multiplayer team
+     Multi4  = White multiplayer team
+     Multi5  = Yellow multiplayer team
+     Multi6  = Red multiplayer team
+1: don't know. Has something to do with the flag in multiplayer games.
+2: same as above. You don't have to add these for single player scenario's.
+3: originally a limit to the number of buildings (in DUNE II). Not used.
+4: originally a limit to the number of units (in DUNE II). Not used.
+5: this says who the friends are. You can't attack these guys in battle.
+   You can insert more than one side, example Allies=GoodGuy,Neutral
+   WARNING: You have to add your team to the "Allies" list of that ally,
+   otherwise they won't hesitate to attack YOU.
+6: unknown. In DUNE II, this was used as trigger: amount of credits to win.
+   I have no idea why they put it in C&C.
+7: reinforcements will come from this direction (North, East, South or West)
+8: number of credits they start with divided by 100 (so 10 means 1000)
+
+You see that there are some unknown things but they are not that important.
+The only things you should change are Allies, Egde and Credits.
+
+
+===========
+2.5 TERRAIN
+===========
+These are the trees (and some of the rocks) on the map.
+You don't have to worry about this. CCMAP's got it all worked out.
+I can give you the explanation though.
+
+Syntax:
+        3786=T06,None
+        ^^^^ ^^^ ^^^^
+         1    2   3
+
+1: cellnumber
+2: Name of the Terrain item. T## means tree, TC## means clump of trees.
+   SPLIT2 and SPLIT3 are the blossom trees.
+3: unknown. It's always "None". I DO know it's not a trigger. I tested that.
+
+Note: The blossom tree SPLIT2 can't be used in Desert Theater.
+
+
+===========
+2.6 OVERLAY
+===========
+You don't have to worry about this. CCMAP's got it all worked out.
+But if you're interested, there are a few specials that are not in CCMAP.
+Again, I'll give you the syntax.
+
+Syntax:
+        2430=WOOD
+        ^^^^ ^^^^
+         1    2
+
+1: cellnumber
+2: Name of the Overlay type.
+
+Here is a list of all the overlays:
+
+[*] =   SPECIAL: Can be built on, can be walked on, but can't be built. If
+        you build a building on it, the concrete bib under that building
+        is covered and that cell of the building is not shown on radar: you
+        only see the color of the overlay. Never used in the normal missions.
+        They can be used to mark a place and work with celltriggers.
+
+[*]     ROAD     : No road, but grey squares on the ground - looks a bit
+                   like a chessboard, but only 4x4. Can be used to mark a
+                   place and work with celltriggers. You can build walls
+                   on this one. The wall will just replace this overlay.
+[*]     CONC     : Concrete. No walls, just concrete on the ground.
+                   You can build walls on them, but if you do so,
+                   the CONC will be gone.
+[*]     FPLS     : Flag PLacement Sign. Round sign on the ground. Looks
+                   a bit like a landmine, but doesn't do anything. It is
+                   used to show under the flag in "capture the flag"
+                   multiplayer games. You can't build overlay on the FPLS.
+        SBAG     : Sandbag wall
+        CYCL     : chainlink fence
+        BRIK     : Concrete wall
+        BARB     : Barbwire fence
+        WOOD     : Wooden fence
+        TI1-TI12 : Tiberium 1 - 12
+
+        V12      : Haystacks           \
+        V13      : Haystack             | Invincible civilian buildings:
+        V14      : Wheat Field          | looks like they're just a part of
+        V15      : Fallow Field         | the map. Can't be attacked, not
+        V16      : Corn Field           | even with [CTRL]. Only visible in
+        V17      : Celery Field         | TEMPERATE/WINTER Theater.
+        V18      : Potato Field        /
+         \-> can be used as STEALTH BARRIERS in the DESERT theater ;)
+
+        WCRATE   : Wooden crate: gives you money ($2000)
+        SCRATE   : Steel crate (doesn't do anything - used for celltriggers)
+
+
+==========
+2.7 SMUDGE
+==========
+Well, can't remember having seen any smudges in CCMAP! These are things like
+scorchmarks and bomb-craters. Not really interesting, but you can make it
+look like a base has been under attack for a while when you start a mission.
+You could add them manually if you want:
+
+Syntax:
+        3815=SC3,3815,0
+        ^^^^ ^^^ ^^^^ ^
+         1    2   3   4
+1: cellnumber
+2: what kind of smudge
+        SC1  ... SC6  : several scorch-marks
+        CR1  ... CR6  : several craters
+
+3: Cellnumber (again) I don't know why they repeat it.
+4: Always a '0'. I don't know what it means, but it's always a '0'.
+
+I also found SQUISH in the GAME.DAT, but that didn't show anything,
+so I'm not sure if it is really a smudge. I found the SHP file though.
+It's a soldier crushed by a tank. It's a pity it isn't used.
+I remember having seen a similar thing in Dune II.
+
+
+=============
+2.8 WAYPOINTS
+=============
+Waypoints numbers are used in the TEAMTYPE-section. They are shortcuts to
+cellnumbers so you won't have to type the long cellnumbers time after time.
+There are 32 waypoints (0....31) which you may define as you wish. BUT there
+are 3 waypoints that have a special purpose:
+
+   waypoint 25: the yellow flare is always lit in this cell if necessary.
+   waypoint 26: this is the top-left corner of the screen at levelstart.
+   waypoint 27: default dropzone for Chinook if you don't use any 'move'
+                or 'unload' commands in the TEAMTYPE-section. (see later on)
+
+
+Syntax:
+        1=1362
+        ^ ^^^^
+        1   2
+
+1: waypoint number
+2: cellnumber it reflects to. '-1' means that it isn't used at all.
+
+
+==============
+2.9 STRUCTURES
+==============
+Nothing difficult about this one. Most of it is done by CCMAP. 
+
+Syntax:
+        000=BadGuy,OBLI,256,1344,0,Guard,cool
+        ^^^ ^^^^^^ ^^^^ ^^^ ^^^^ ^ ^^^^^ ^^^^
+         1    2     3    4   5   6  7     8
+
+1: number
+2: owner
+3: building type (done with editor)
+4: health. (256=100%) You can change that with CCMAP.
+5: Location of this building; given by the cellnumber of the top-left
+   corner of the building.
+6: direction (only useful for Gun Turrets). 0=north, 32=north-east, 64=east,
+   96=south-east, 128=south, 160=south-west 192=west, 224=north-west.
+7: action which it is undertaking at the moment. You don't have to add it:
+   it doesn't affect buildings, not even guard towers.
+   (I tried "Sleep", but it didn't work. The turret still attacked me.)
+8: this is a name you can make up yourself. It is used to connect the
+   building to a trigger with that name. This way you can let something
+   happen if anything happens to the building. (see TRIGGERS)
+   Make it "None" if it isn't connected with any trigger.
+
+
+==========
+2.10 UNITS
+==========
+Almost the same story as for STRUCTURES.
+These are the vehicles. You might want to edit some entries.
+
+Syntax:
+        000=BadGuy,BIKE,256,1231,0,Guard,None
+        ^^^ ^^^^^^ ^^^^ ^^^ ^^^^ ^ ^^^^^ ^^^^
+         1    2      3   4    5  6   7    8
+
+1: number
+2: owner
+3: type of unit (done with editor). Abbreviations are as follows:
+        VICE Viceroid           MCV  Mobile Construction Vehicle
+        FTNK Flame Tank         JEEP Humm-Vee
+        STNK Stealth Tank       BGGY Nod Buggy
+        LTNK Light Tank         BIKE Recon Bike
+        MTNK Medium Tank        MSAM Rocket Launcher
+        HTNK Mammoth Tank       APC  APC
+        MHQ  Mobile HQ          BOAT Gunboat
+        LST  Hovercraft         TRIC Triceratops
+        MLRS SSM-launcher       TREX Tyrannosaurus rex
+        ARTY Mobile Artillery   RAPT Velociraptor
+        HARV Harvester          STEG Stegosaurus
+ Yes, dino's in C&C. To see them, you need the Covert Operations (C&C v1.20).
+ Just start C&C by typing "C&C FUNPARK" on the command line. Then, start
+ a new game and have a lot of fun killing these prehistoric monsters!
+
+ Note: the MHQ is a heavy bastard! If it is destroyed, its owner is destroyed
+       COMPLETELY!!!!!!!!!!! Just like a dozen of nuke missiles dropping on
+       your head. Very cool, it's game over then.
+       (used in Multiplayer: Capture the flag, Bases off.)
+
+4: health (256=100%)
+5: cellnumber
+6: direction which it is facing. 0=north, 32=north-east, 64=east,
+   96=south-east, 128=south, 160=south-west 192=west, 224=north-west.
+7: action which it is undertaking at the moment. Choose from:
+        Ambush             : Go to 'Hunt' when discovered. 
+                              \-> leftover from Dune II; Not sure if it works
+        Area Guard         : Keep guarding an area around the cell
+        Guard              : Attack enemies who come in shooting range
+        Harvest            : Only for harvesters
+        Hunt               : Search the entire map for enemies to kill
+        None               : No command
+        Sleep              : Don't move, don't react on anything.
+        Sticky             : "Sleep" until attacked twice
+        Stop               : Unarmed equivalent of Guard (Harvester, MCV)
+        Timed Hunt         : Go to Hunt after a random time
+        Unload             : For MCVs: this makes them deploy to C.Y.
+   Other existing commands are Attack, Capture, Construction, Enter, Missile,
+   Move, Repair, Rescue, Return, Retreat, Sabotage and Selling, but these can't
+   be used because they are either linked to special functions, or require a
+   target.
+8: any triggername it is connected to (make up a name yourself)
+ 
+
+=============
+2.11 INFANTRY
+=============
+These are all the people on the map.
+
+Syntax:
+        000=GoodGuy,E1,256,2343,0,Guard,0,None
+        ^^^ ^^^^^^^ ^^ ^^^ ^^^^ ^ ^^^^^ ^ ^^^^
+         1    2     3   4   5   6   7   8  9
+
+1: just their number, from high to 000
+2: owner of this guy
+3: type of infantry. Which stands for:
+        E1:     minigunner
+        E2:     grenadier
+        E3:     bazooka
+        E4:     flame thrower
+        E5:     chem warrior
+        E6:     engineer
+        RMBO:   commando
+        C1:     civilian     (Joe: technician #1; has a gun)
+        C2:     civilian     (Bill)
+        C3:     civilian     (Shelly)
+        C4:     civilian     (Maria)
+        C5:     civilian     (Eydie)
+        C6:     civilian     (Dave)
+        C7:     civilian     (Phil: technician #2; has a gun)
+        C8:     civilian     (Dwight)
+        C9:     civilian     (Erik)
+        C10:    Nikoomba     (the guy you have to kill in Nod mission #1)
+        MOEBIUS Dr. Moebius
+        DELPHI  special agent
+        CHAN    scientist
+
+4: health of soldier. (256=100%)
+5: cellnumber it is in
+6: sub-cellnumber. each cell is divided in 5 positions. Choose 0-4 like this:
+        1   2
+          0
+        3   4
+7: action he currently undertakes. See "UNITS"
+8: direction he is facing (0=north, 32=north-east, 64=east, 96=south-east,
+   128=south, 160=south-west 192=west, 224=north-west)
+9: any triggername which he is connected to. You can make up this 
+   name yourself.
+
+
+=================
+2.12 CELLTRIGGERS
+=================
+Add these yourself. They are used for activating a trigger if some soldier or
+unit enters this cell.
+
+Syntax:
+        143=kill
+        ^^^ ^^^^
+         1   2
+
+1: cellnumber which activates this trigger
+2: triggername connected to that cell (make it up yourself)
+
+So if cell 143 is crossed, the trigger with name KILL is activated, but ONLY
+if KILL is a "Player enters" trigger. (see TRIGGERS)
+
+
+=============
+2.13 TRIGGERS
+=============
+Now this is something! This is in fact THE part of the file which describes 
+what is going on in your mission. A sort of script. It is a lot of work to 
+describe it as exact as possible, but I'll try...
+
+IMPORTANT: make sure you read part 3: "Trigger Examples".
+They will give you a better look on the use of the triggers.
+
+Syntax:
+        kill=Player enters,Create Team,0,BadGuy,tanks,0
+        ^^^^ ^^^^^^^^^^^^^ ^^^^^^^^^^^ ^ ^^^^^^ ^^^^^ ^
+         1         2            3      4    5     6   7
+
+1: name of the trigger (the one you made up earlier)
+   -> max. 4 characters.
+2: what must happen so the TRIGGER will be activated?
+ Choose from:
+        # Bldgs Dstr.      : if specified nr of structures is destroyed.
+        # Units Dstr.      : if specified number of units is destroyed.
+        All Destr.         : if EVERYTHING of one side is destroyed
+        Any                : only used with Cap=Win/Des=Lose
+        Attacked           : if it gets attacked
+        Bldgs Destr.       : if all buildings have been destroyed
+        Built it           : if a specific structure was built (see 4)
+        Civ. Evac.         : if civilian(s) have been evacuated
+        Credits            : certain amount of credits is reached
+        Destroyed          : if it has been destroyed
+        Discovered         : if it has been discovered (only works with 
+                             infantry, units and buildings)
+        House Discov.      : if this enemy has been seen
+        No Factories       : if all Construction Yards are destroyed
+        None               : no activation at all
+        Player Enters      : if player enters this cell/building
+                             (celltriggers/buildings)      \-> captured
+        Time               : if a certain amount of time has passed
+        Units Destr.       : if all vehicles and soldiers are destroyed
+
+3: what should happen if the trigger is activated?
+ Choose from:
+        Airstrike          : airstrikes available to the human player.
+        All to Hunt        : everybody searches for the enemy
+        Allow Win          : used when there is more than one goal
+                             to win the mission
+        Autocreate         : random create the teams specified in
+                             TEAMTYPES (see TEAMTYPES part 3d)
+        Cap=Win/Des=Lose   : for buildings: captured=win/destroyed=lose
+        Create Team        : create a specific team (name at '6')
+        Dstry Teams        : unknown. Could be: remove teamtype(s) from
+                             AUTOCREATE list
+        Dstry Trig 'XXXX'  : destroy trigger with name XXXX. For example:
+                             you can attach XXXX to a timed Ion 
+                             Cannon attack. If for example the 
+                             Adv. Comm. Center is destroyed which has
+                             that trigger "Dstry Trig 'XXXX'", no more
+                             Ion Cannons will be fired.
+        Dstry Trig 'YYYY'  : Same as XXXX, but now with YYYY
+        Dstry Trig 'ZZZZ'  : Same as XXXX, but now with ZZZZ
+        DZ at 'Z'          : yellow flare is lit at waypoint 25
+        Ion Cannon         : For GDI: Ion Cannon available (only if you have
+                                      an Advanced Communications Center)
+                             For Nod: Player will be attacked with Ion Cannon
+        Lose               : you lose the mission
+        None               : nothing
+        Reinforce.         : Send reinforcements (see 6 and TEAMTYPES)
+        Win                : you win the mission
+        Nuclear Missile    : For Nod: Nuke available. Only once in a mission,
+                                      and only if you have a Temple of Nod
+                                      (can't be launched without)
+                             For GDI: Player will be attacked with a Nuke
+        Production         : computer rebuilds destroyed buildings
+                             specified in [BASE] section (see BASE)
+
+4: this is a counter and can have more functions. Depending
+   on your trigger action it counts : number of buildings destroyed,
+   number of units destroyed, number of credits, amount of time.
+
+   With the "Built it" action, this is the structure ID. Here is the
+   list of structure ID's for the normal buildings that can be built.
+ Choose from:
+        TMPL = 20             PROC = 7              PYLE = 15
+        EYE  = 21             SILO = 8              HAND = 19
+        WEAP = 0              HPAD = 9              FIX  = 17
+        GTWR = 1              HQ   = 4              SBAG = 60 (*)
+        ATWR = 2              SAM  = 10             CYCL = 61 (*)
+        OBLI = 3              AFLD = 11             BRIK = 62 (*)
+        GUN  = 5              NUKE = 12             BARB = 63 (*)
+        FACT = 6              NUK2 = 13             WOOD = 64 (*)
+ (*) : I haven't tested these...but the numbers are right.
+
+5: Which player can activate the trigger? Note that this does not determine
+   which player is affected by the trigger effect.
+   Examples: for "Built it": Who builds the structure?
+             for "Attacked": who attacks the target?
+             for "Player Enters": who entered the cell/building?
+6: teamtype name connected with trigger (make up a name yourself)
+7: if 0: trigger is activated only once.
+   if 1: trigger is activated only once when all units/buildings with this
+         trigger have been activated.
+   (used in GDI missions: you get Airstrikes when all SAM's are destroyed)
+   if 2: trigger is activated every time when any of the units/buildings
+         with this trigger have been activated.
+   -if 1 or 2: trigger keeps being activated when the number at place 4
+               is reached.
+
+Note that there are some triggers you must use, like "Win" and "Lose".
+
+
+==============
+2.14 TEAMTYPES
+==============
+Probably the most complicated part of the INI files. This part contains
+a lot of unknown things. You can use some default combinations though. 
+See EXAMPLES.
+
+Syntax:
+        tanks=GoodGuy,1,0,0,1,0,15,1,0,0,2,E6:5,APC:1,2,Move:5,Guard:30,0,0
+        ^^^^^ ^^^^^^^ ^ ^ ^ ^ ^ ^^ ^ ^ ^ ^ ^^^^^^^^^^ ^ ^^^^^^^^^^^^^^^ ^ ^
+          1      2   [a b c d e f  g h i]4     5      6        7        8 9
+
+1: teamname, defined in the TRIGGER section (place 6)
+2: owner
+3: Combination of numbers, always 9 of them.
+   I've called them a, b, c, d, e, f, g, h and i. This is what they mean:
+ - a: Seems to act something like the "X" key, but links and unlinks the
+      team members logically as well as physically. 1=on.
+ - c: I believe to be a toggle for the "ALT" key. 1=on.
+ - d: Enables Autocreate for this teamtype.
+ - f: I have no idea. Changing it at random has no discernible effects.
+      But note that in Westwood's .INI's there is a strong correlation
+      between this number and the team's build/tech level.
+ - g: The number of teams of this type that will act concurrently (i.e.,
+      x,x,x,x,x,x,5,x,x,1,E2:3,1,move:2,0,0 will get you 15 grenadiers at
+      waypoint 2). When this number is greater than zero, it will cause the
+      team to be produced, regardless of any trigger.
+ - b, e, h and i don't seem to have any function at all.
+
+ To make this easier, I suggest you use the following 'templates':
+    -> CREATE TEAM:  (will be "autocreated")
+        1,0,0,1,0,15,1,0,0,
+    -> REINFORCE. by APC, Chinook, hovercraft, or units coming out of the
+       edge of the map:
+        0,0,0,0,0,7,0,0,0,
+    -> REINFORCE. by A10 airstrike:
+        1,0,0,0,0,7,0,0,0,
+4: number of unit-types, here 2: E6 (the Engineer) and APC.
+5: what units and how much, here 5 Engineers and one APC.
+6: number of action they will undertake, here 2
+7: what actions they undertake, here 2; Move to waypoint 5 and then guard for
+   a time of 30 counts.
+   Contrary to popular belief, these are NOT the same as the unit commands.
+   ONLY these will work:
+        None:??            : (Don't do anything?)
+        Move:waypoint      : Go to waypoint ...
+	Move to Cell:cell? : Not sure how to use it; don't know if it works.
+        Attack Base:time   : Attack enemy base (also for Engineers)
+        Attack Units:time  : Attack enemy units
+        Attack Civil.:time : Attack civilians ("Neutral" side)
+        Attack Tarcom:??   : Unknown
+        Defend Base:time   : Defend own base
+        Guard:time         : Attack enemies who come in shooting range
+        Loop:##actions     : The "loop" instruction does not cause looping,
+                             it prevents it. All teams loop by nature.
+                             "loop:N" causes the first N instructions
+                             to be left out of the loop. The "loop" action
+                             should be at the end of the list of actions.
+        Rampage:??         : Unknown
+        Retreat:??         : Unknown, in Dune II it was
+                             "return to original location on the map"
+        Unload:waypoint    : For Chinooks, hovercrafts and APCs used as
+                             reinforcements. It makes them unload anything
+                             they carry with them. Behind the ":", just
+                             repeat the waypoint where he stopped/landed.
+                             This doesn not work to make an MCV deploy to C.Y.
+                             unless it had the Unload command at map start but
+                             was moved by this teamtype before deploying.
+8: This can be either "0" or "1". If this is put on "1",
+   destroyed members of the team will be replaced.
+9: This can be either "0" or "1".
+   if "1", the team will be produced, regardless of any trigger other than
+   "autocreate". A team autochthonously produced in this way will not carry
+   out orders and will be repeatedly replaced upon destruction. If the team
+   was produced by trigger, this "1" : will produce an inactive backup of
+   the team.
+
+
+   I found out that helicopters with passengers don't need the "Unload"
+   command: when you only use a "Move" command, the helicopter will also
+   unload its passengers and fly off the map.
+
+   If you make a team with an APC and infantry units, and you make it come
+   as reinforcements, the infantry units will automatically be IN the APC.
+   The APC will NOT unload automatically. It will only unload when you
+   give it the "unload" command.
+
+
+=========
+2.15 BASE
+=========
+These are the buildings that the computer player has to rebuild as a result
+of the "Production" trigger. Most of the times, this trigger is connected to
+a timer.
+
+Use BaseIT to put the [base] section in your level.
+
+Syntax:
+        000=HAND,436212992
+        ^^^ ^^^^ ^^^^^^^^^
+         1    2      3
+
+
+1: priority number: nr. 000 will be rebuilt first, then 001, then 002 etc.
+   You can change the numbers yourself if you want one specific building to
+   be rebuilt before the others.
+2: building type it reflects to (here: Hand of Nod)
+3: This number is calculated from the coordinates: [16777216*Y + 256*X]
+   The Hand of Nod coordinates can be calculated form this number:
+   Y=26 and X=21. The cellnumber is [64*Y + X], here 1685.
+
+The owner is not determined in any way: I 've once seen a Multi3 silo that
+was rebuilt by GDI.  (in Jon Magne Austenaa's mission "Too much tax, GDI!")
+
+
+===================
+2.16 REINFORCEMENTS
+===================
+This part is sometimes used to control hovercraft reinforcements.
+I advise you not to use it: after all, you can do this with triggers too.
+If you do want to use it, you can look at some examples from the game like
+GDI mission 1. I don't know how it works.
+
+Well... I found some info about it. I'll put it here anyway.
+
+Syntax:
+        1=GoodGuy,E1,Beach,0
+        ^ ^^^^^^^ ^^ ^^^^^ ^
+        1    2    3    4   5
+
+1. Number
+2. Owner
+3. Unit type to reinforce
+4. Place to reinforce. Choose from:
+        North/East/South/West
+        Shipping
+        Beach
+        Ocean
+        Air
+        Visible
+        EnemyBase
+        HomeBase
+   I don't know anything more about them.
+5. Don't know. I think it has something to do with the time after which
+   something is reinforced. Sometimes a "+" is added behind that number.
+   (maybe to loop the reinforcement??)
+
+
+=============
+2.17 TEMPLATE
+=============
+In mission SCG06EA, I found a special part named [TEMPLATE].
+This part is used to modify the map in the .INI file.
+
+[TEMPLATE] overrides the values in the map file , but it is not meant
+to make a map: Making a map in the .INI file is very difficult, and
+it overloads the .INI file. (see "2. EDITING THE INI FILE")
+In mission SCG06EA, this was used to correct some errors (I suppose).
+
+It works in the same way as the [OVERLAY] section:
+
+Syntax:
+        3965=W2
+        ^^^^ ^^
+         1   2
+
+1: Cellnumber of the top-left corner of this template
+2: what map-image you have on this place (W2 is a 2x2 square of water)
+   In GAME.DAT, I found a whole list of these templates: some 220 of them!
+   This is also the reason why I didn't put it here.
+  
+
+===================
+3. TRIGGER EXAMPLES
+===================
+*** If you (BadGuy) enter cel 232, 233 or 234, the enemy should create a team
+    of 2 MTNK's and 5 minigunners which move to cell 2211 and attack you:
+
+    [CELLTRIGGERS]
+    232=kill
+    233=kill
+    234=kill
+
+    [TRIGGERS]
+    kill=Player Enters,Create Team,0,BadGuy,atk1,0
+
+    [TEAMTYPES]
+    atk1=GoodGuy,1,0,0,1,0,15,1,0,0,2,MTNK:2,E1:5,2,Move:4,Attack Units:50,0,0
+
+    [WAYPOINTS]
+    4=2211
+
+*** After 150 time-units a chopper should arrive at cell 1846 and unload 5
+    engineers which start capturing your base:
+
+    [TRIGGERS]
+    chop1=Time,Reinforce.,150,GoodGuy,chop,0
+
+    [TEAMTYPES]
+    chop=GoodGuy,0,0,0,0,0,7,0,0,0,2,E6:5,TRAN:1,3,Move:1,Unload:1,Attack Base:50,0,0
+
+    [WAYPOINTS]
+    1=1846
+
+*** If you attack the harvester, the enemy sends out 4 A10's which drop 
+    some napalm on your heads.
+
+    [UNITS]
+    012=GoodGuy,HARV,256,1211,0,Harvest,fire
+
+    [TRIGGERS]
+    fire=Attacked,Reinforce.,0,None,a10s,0
+
+    [TEAMTYPES]
+    a10s=GoodGuy,1,0,0,0,0,7,0,0,0,1,A10:4,0,0
+
+   -Don't let the trigger end on "1": the enemy will send out 4 planes
+    for EVERY BULLET you shoot at their harvester.
+
+*** Every time when 80 time-units have passed, the enemy sends out 2 A10's
+    which drop some napalm on your heads.
+
+    [TRIGGERS]
+    airs=Time,Reinforce.,80,None,a10s,1
+
+    [TEAMTYPES]
+    a10s=GoodGuy,1,0,0,0,0,7,0,0,0,1,A10:2,0,0
+
+*** Every time when 200 time-units have passed, you want the enemy to fire a
+    nuclear missile.
+
+    [TRIGGERS]
+    miss=Time,Nuclear Missile,200,None,None,1
+
+*** When three of the GDI computer player's buildings are destroyed,
+    the computer player will start rebuilding its structures.
+
+    [TRIGGERS]
+    prod=# Bldgs Dstr.,Production,3,GoodGuy,None,0
+
+*** When four specific Nod obelisks are destroyed, a GDI MCV will be
+    reinforced and it will move to cell 1342.
+
+    [STRUCTURES]
+    024=BadGuy,OBLI,256,1219,0,obel
+    025=BadGuy,OBLI,256,1324,0,obel
+    026=BadGuy,OBLI,256,1344,0,obel
+    027=BadGuy,OBLI,256,1354,0,obel
+
+    [TRIGGERS]
+    obel=Destroyed,Reinforce.,0,None,start,1
+
+    [TEAMTYPES]
+    start=GoodGuy,0,0,0,0,0,7,0,0,0,1,MCV:1,1,Move:5,0,0
+
+    [WAYPOINTS]
+    5=1342
+    
+   -The "1" at the end of the trigger does not mean "repeat" here,
+    but exactly the opposite: only execute the trigger when it is activated
+    at every unit/structure that has the trigger.
+
+    This kind of trigger is frequently used in the GDI missions to give
+    the player Airstrike capability once all SAM-sites are destroyed.
+
+
+====================================
+4. HOW TO MAKE YOUR MISSION PLAYABLE
+====================================
+You can play the missions without messing around in the general.mix:
+Just rename your mission files to the format described here.
+
+Syntax:
+        SCB01EA.BIN
+         || |||  | 
+    1 <--'| |||  `-> 6
+      2 <-' ||`-> 5
+        3 <-'`-> 4
+
+
+1. The name of every mission file starts with "SC". This means "scenario".
+2. Player. Choose from:
+       G: Goodguy (GDI)
+       B: Badguy (Nod)
+       J: JP (for Funpark missions)
+       M: Multi (For multiplayer maps)
+3. Number of the mission it replaces (here mission 01)
+4. E/W: The "W" is only used with GDI mission 4 and 5.
+   This could be East/West on the map where you choose your mission.
+5. A/B/C: In the game, you can sometimes choose more than one mission
+   on the map. The "B" and "C" (and the "W" from 4.) don't work for
+   multiplayer and Covert Operations missions.
+6. BIN/INI: You always need two files: a map and a text file.
+   BIN is the extension for the map file, INI for the text file.
+
+C&C will accept your .INI and .BIN as the normal mission files, and you will
+be able to play the mission.
+
+
+================================
+4.1 ADDING NEW COVERT OPERATIONS
+================================
+When you have the Covert Operations installed, you can also add missions
+to the "New missions" list by giving them a mission number higher than 19
+(starting from 20) that isn't already used by the Covert Ops. / Special Ops.
+missions.
+
+The available numbers are:
+
+- For GDI:  20, 21, 24..35, 42, 49, 53..59, 64..99
+
+- For Nod:  22..29, 34, 36, 38, 39, 42..59, 62..99
+
+Note that for the Covert operations you can't add missions ending on EB, EC,
+WA, WB or WC (See: "4. HOW TO MAKE YOUR MISSION PLAYABLE"). Only files ending
+on "EA" will be accepted. The others won't appear in the "New missions" list.
+
+Now, you have to make sure the "BuildLevel=" setting is set correctly.
+This doesn't affect normal missions, but is necessary in Covert Operation
+missions. This can be 0 to 99, but it is advised only to use 1 to 98,
+as 99 lets you build stuff like the Hospital and Biolab, the civilians and
+the MHQ.
+
+
+You 'll also have to give your mission a name by puting "Name=xxx" in the
+[BASIC] section, where xxx is the name you want to give it. This name can
+be some 33 characters in length.
+
+Like this:      [BASIC]
+                CarryOverCap=-1
+                CarryOverMoney=0
+                Intro=x
+                BuildLevel=12
+                Theme=No theme
+                Percent=100
+                Player=BadGuy
+                Action=SEIGE
+                Win=FORESTKL
+                Lose=RETRO
+                Brief=x
+           ->   Name=Run for your life!
+
+As the Covert Operations don't have briefing videos, the "Action" video
+is used as 'briefing'. If an added Covert Operations mission has no "Action"
+video, you won't get a "VIDEO" button in the Restate window.
+When you have an "Action" AND a "Brief" video, the "Brief" video will be
+shown when you press "VIDEO" in the Restate window.
+
+Note that not all video's are on the Covert Operations CD. You'll have to
+choose videos you can use with Covert Operations (see MOVIES.TXT).
+
+
+==============
+5. FINAL NOTES
+==============
+Well, I guess you should be able to create a fine mission now.
+Anyway, I did it with this information!
+
+HINT: Use the Mix Manager to extract some INI's and take a look at them.
+It sure helped me with certain problems I had. And keep testing.
+If you have any comment or questions about this manual, you are
+welcome to send me some e-mail with the subject 'C&C MANUAL'.
+
+
+==========================
+6. THE 'THANKS TO' CHAPTER
+==========================
+I really should thank some people for giving me help and discovering lots of
+information.
+
+Andrew Griffin who actually started this all
+Richard Heesbeen and Jeroen Ritmeijer for making CCMAP
+Vladan Bato for making the Mix Manager
+Han Brunger for making the text file I based this on
+Lin Kuei Ominae, for his trigger research
+Everyone else who thinks he/she deserves it ;)
+
+
+GOOD LUCK AND HAVE FUN!
+
+Maarten 'Nyerguds' Meuris
+http://nyerguds.arsaneus-design.com
