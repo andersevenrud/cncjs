@@ -6,7 +6,7 @@ Written on a custom engine using canvas 2d renderer.
 
 ## Demo
 
-*Coming soon*. Meanwhile you can look at an older [video preview](https://www.youtube.com/watch?v=6Es4uBTH8yg&feature=youtu.be).
+*Coming soon*. Meanwhile you can look at a [video preview](https://www.youtube.com/watch?v=KmGqKZGeN9Y&feature=youtu.be).
 
 ## Requirements
 
