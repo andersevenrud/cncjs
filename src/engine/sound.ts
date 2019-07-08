@@ -9,10 +9,16 @@ import { MusicPlaylist, MusicTrack } from './playlist';
 import { Vector } from 'vector2d';
 import { Core } from './core';
 
+/**
+ * Sound loder class interface
+ */
 export interface SoundLoader {
   fetch(source: string): Promise<AudioBuffer>;
 }
 
+/**
+ * Sound Effect
+ */
 export interface SoundEffect {
   context: AudioBuffer;
   volume?: number;
@@ -22,6 +28,9 @@ export interface SoundEffect {
   block?: boolean;
 }
 
+/**
+ * Sound Node Map
+ */
 export interface SoundNodes {
   [Key: string]: GainNode;
 }

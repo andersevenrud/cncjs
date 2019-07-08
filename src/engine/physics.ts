@@ -5,6 +5,9 @@
  */
 import { Vector } from 'vector2d';
 
+/**
+ * Box interface
+ */
 export interface Box {
   x1: number;
   x2: number;

@@ -5,6 +5,9 @@
  */
 import EventEmitter from 'eventemitter3';
 
+/**
+ * Music track interface;
+ */
 export interface MusicTrack {
   source: string;
   title?: string;
@@ -27,7 +30,7 @@ export class MusicPlaylist extends EventEmitter {
   }
 
   /**
-   * Convert to string
+   * Convert to string (for debugging)
    */
   public toString(): string {
     const status = this.isPaused ? 'paused' : 'playing';

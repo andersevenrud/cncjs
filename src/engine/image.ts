@@ -6,6 +6,9 @@
 import { DataArchive } from './archive';
 import { CachedLoader, fetchImage } from './io';
 
+/**
+ * Image Loader class interface
+ */
 export interface ImageLoader {
   fetch(source: string): Promise<HTMLImageElement>;
 }

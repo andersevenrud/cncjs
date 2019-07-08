@@ -93,6 +93,9 @@ export abstract class IODevice {
     this.engine = engine;
   }
 
+  /**
+   * Destroys instance
+   */
   public destroy(): void {
   }
 

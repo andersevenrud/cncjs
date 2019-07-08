@@ -19,6 +19,9 @@ export interface UIEntityHit {
   position: Vector;
 }
 
+/**
+ * UI Scene Scale interface
+ */
 export interface UISceneScale {
   offset: Vector;
   scale: number;
@@ -40,6 +43,9 @@ export class UIScene extends Entity {
     this.engine = engine;
   }
 
+  /**
+   * Initializes UI scene
+   */
   public async init(): Promise<void> {
     for (let i = 0; i < this.elements.length; i++) {
       await this.elements[i].init();
@@ -48,9 +54,15 @@ export class UIScene extends Entity {
     this.inited = true;
   }
 
+  /**
+   * Click action
+   */
   public onClick(hit: UIEntityHit): void {
   }
 
+  /**
+   * Update action
+   */
   public onUpdate(deltaTime: number): void {
     if (!this.inited) {
       return;
@@ -102,6 +114,9 @@ export class UIScene extends Entity {
     });
   }
 
+  /**
+   * Render action
+   */
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
     if (!this.inited) {
       return;
@@ -114,6 +129,9 @@ export class UIScene extends Entity {
     ctx.drawImage(this.canvas, 0, 0);
   }
 
+  /**
+   * Resize action
+   */
   public onResize(): void {
     const dimension = this.engine.getDimension();
     this.dimension = dimension;
@@ -124,6 +142,9 @@ export class UIScene extends Entity {
     this.elements.forEach((el): void => el.onResize());
   }
 
+  /**
+   * Gets "real" mouse position (based on scale)
+   */
   protected getRealMousePosition(): Vector {
     const position = this.engine.mouse.getVector();
     if (this.scaled) {
@@ -134,6 +155,9 @@ export class UIScene extends Entity {
     return position;
   }
 
+  /**
+   * Gets all UI entities colliding with given position
+   */
   protected getCollidingEntity(position: Vector): UIEntityHit | undefined {
     return this.elements
       .filter((el): boolean => el.isClickable())
@@ -142,10 +166,16 @@ export class UIScene extends Entity {
       [0];
   }
 
+  /**
+   * Gets the UI Scaling information
+   */
   public setScale(scaled?: UISceneScale): void {
     this.scaled = scaled;
   }
 
+  /**
+   * Gets element by a name
+   */
   public getElementByName(name: string): UIEntity | undefined {
     const tree: UIEntity[] = [
       ...this.elements,
@@ -178,30 +208,48 @@ export class UIEntity extends Entity {
     this.originalPosition = position;
   }
 
+  /**
+   * Initializes UI Entity
+   */
   public async init(): Promise<void> {
     for (let i = 0; i < this.elements.length; i++) {
       await this.elements[i].init();
     }
   }
 
+  /**
+   * Register event
+   */
   public on(name: string, cb: ListenerFn): void {
     this.ee.on(name, cb);
   }
 
+  /**
+   * Unregister event
+   */
   public off(name: string, cb: ListenerFn): void {
     this.ee.off(name, cb);
   }
 
+  /**
+   * Emit event
+   */
   protected emit(name: string, ...args: any[]): void {
     this.ee.emit(name, ...args);
   }
 
+  /**
+   * Resize action
+   */
   public onResize(): void {
     this.calculatePosition();
 
     this.elements.forEach((el): void => el.onResize());
   }
 
+  /**
+   * Update action
+   */
   public onUpdate(deltaTime: number): void {
     this.elements.forEach((el): void => {
       el.onUpdate(deltaTime);
@@ -211,6 +259,9 @@ export class UIEntity extends Entity {
     });
   }
 
+  /**
+   * Render action
+   */
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
     if (!this.isVisible()) {
       return;
@@ -219,18 +270,30 @@ export class UIEntity extends Entity {
     this.elements.forEach((el): void => el.onRender(deltaTime, this.context));
   }
 
+  /**
+   * Mouse up action
+   */
   public onMouseUp(position: Vector): void {
   }
 
+  /**
+   * Mouse down action
+   */
   public onMouseDown(position: Vector): void {
   }
 
+  /**
+   * Mouse click action
+   */
   public onClick(position: Vector, button: MouseButton): void {
     if (!this.isDisabled()) {
       this.emit('click', position, button);
     }
   }
 
+  /**
+   * Calculates the entity posittion based on parents
+   */
   public calculatePosition(): void {
     let [x, y] = this.originalPosition.toArray();
 
@@ -250,6 +313,9 @@ export class UIEntity extends Entity {
     this.position = new Vector(x, y);
   }
 
+  /**
+   * Check collision of position
+   */
   public collides(position: Vector, scaled?: UISceneScale): UIEntityHit | undefined {
     if (!this.isVisible() || this.isDisabled()) {
       return undefined;
@@ -279,54 +345,90 @@ export class UIEntity extends Entity {
     return collides ? { element: this, position } : undefined;
   }
 
+  /**
+   * Add UI Entity as child
+   */
   public addChild(child: UIEntity): UIEntity {
     child.setParent(this);
     this.elements.push(child);
     return child;
   }
 
+  /**
+   * Triggers an update call
+   */
   public triggerUpdate(): void {
     this.updated = true;
     this.elements.forEach((el: UIEntity) => el.triggerUpdate());
   }
 
+  /**
+   * Sets parent UI Entity
+   */
   public setParent(parent: UIEntity): void {
     this.parent = parent;
   }
 
+  /**
+   * Sets visibility
+   */
   public setVisible(v: boolean): void {
     this.visible = v;
     this.triggerUpdate();
   }
 
+  /**
+   * Sets if clickable
+   */
   public setClickable(c: boolean): void {
     this.clickable = c;
   }
 
+  /**
+   * Sets if disabled
+   */
   public setDisabled(d: boolean): void {
     this.disabled = d;
   }
 
+  /**
+   * Gets if visible
+   */
   public isVisible(): boolean {
     return this.visible;
   }
 
+  /**
+   * Gets if clickable
+   */
   public isClickable(): boolean {
     return this.clickable && this.visible;
   }
 
+  /**
+   * Gets if updated
+   */
   public isUpdated(): boolean {
     return this.updated;
   }
 
+  /**
+   * Gets if disabled
+   */
   public isDisabled(): boolean {
     return this.disabled;
   }
 
+  /**
+   * Gets children UI Entities
+   */
   public getElements(): UIEntity[] {
     return this.elements;
   }
 
+  /**
+   * Gets UI Entity by name
+   */
   public getElementByName(name: string): UIEntity | undefined {
     const tree: UIEntity[] = [
       ...this.elements,
@@ -336,6 +438,9 @@ export class UIEntity extends Entity {
     return tree.find((el): boolean => el.name === name);
   }
 
+  /**
+   * Gets the collision box
+   */
   public getBox(scaled?: UISceneScale): Box {
     const box = {
       x1: this.position.x,

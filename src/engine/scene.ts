@@ -20,6 +20,15 @@ export abstract class Scene extends EventEmitter {
     this.onCreate();
   }
 
+  /**
+   * Initialize scene
+   */
+  public async init(): Promise<void> {
+  }
+
+  /**
+   * Destroys instance
+   */
   public destroy(): void {
     if (this.destroyed) {
       return;
@@ -30,28 +39,46 @@ export abstract class Scene extends EventEmitter {
     this.onDestroy();
   }
 
+  /**
+   * Convert to string (for debugging)
+   */
   public toString(): string {
     return '<null>';
   }
 
+  /**
+   * Destruction action
+   */
   public onDestroy(): void {
   }
 
+  /**
+   * Creation action
+   */
   public onCreate(): void {
   }
 
+  /**
+   * Resize action
+   */
   public onResize(): void {
   }
 
+  /**
+   * Pause action
+   */
   public onPause(state: boolean): void {
   }
 
+  /**
+   * Update action
+   */
   public onUpdate(deltaTime: number): void {
   }
 
+  /**
+   * Render action
+   */
   public onRender(deltaTime: number): void {
-  }
-
-  public async init(): Promise<void> {
   }
 }

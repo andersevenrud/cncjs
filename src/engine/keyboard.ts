@@ -5,6 +5,9 @@
  */
 import { IODevice } from './io';
 
+/**
+ * Keyboard key type
+ */
 export type KeyboardKey = string;
 
 /**
@@ -37,6 +40,9 @@ export class KeyboardInput extends IODevice {
     document.addEventListener('keypress', onKeyPress);
   }
 
+  /**
+   * On every update
+   */
   public onUpdate(): void {
     this.activePresses.clear();
   }

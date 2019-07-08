@@ -12,7 +12,14 @@ import { Core, CoreConfiguration } from './core';
 import { Vector } from 'vector2d';
 import { merge } from 'lodash';
 
+/*
+ * Deep partial
+ */
 type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;
+
+/**
+ * Engine scene switch callback
+ */
 export type EngineSceneFn = () => Scene;
 
 /**
@@ -30,6 +37,7 @@ export class NullScene extends Scene {
     context.lineWidth = 2;
     context.font = '28px monospace';
     const dimension = this.engine.getDimension();
+    // Creates a loading indicator ("..." -> "|.." -> ".|." -> "..|")
     const text = Array(3).fill('').map((s, i) => Math.round(this.index) === i ? '|' : '.');
     context.fillText(text.join(''), dimension.x / 2, dimension.y / 2);
     this.index = (this.index + 0.1) % 3;

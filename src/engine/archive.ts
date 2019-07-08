@@ -7,6 +7,9 @@ import JSZip, { OutputType } from 'jszip';
 import EventEmitter from 'eventemitter3';
 import { fetchArrayBufferXHR } from './io';
 
+/**
+ * Data archive output type
+ */
 export type DataArchiveType = ArrayBuffer | Blob | string | number[];
 
 

@@ -17,7 +17,7 @@ export class Entity {
   protected destroyed: boolean = false;
 
   /**
-   * Converts to string
+   * Convert to string (for debugging)
    */
   public toString(): string {
     return `${this.position.toString()} ${this.dimension.toString()}`;

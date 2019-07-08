@@ -19,6 +19,9 @@ export class Animation extends EventEmitter {
   protected stopped: boolean = false;
   protected reversed: boolean = false;
 
+  /**
+   * Creates a new instance
+   */
   public constructor(name: string, offset: Vector, count: number, speed: number, loop: boolean = true, reversed: boolean = false) {
     super();
 
@@ -60,7 +63,7 @@ export class Animation extends EventEmitter {
   }
 
   /**
-   * Get current frame
+   * Get current frame index vector
    */
   public getFrameIndex(offset: Vector = new Vector(0, 0)): Vector {
     let frame = Math.floor(this.current);

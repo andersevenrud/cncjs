@@ -6,12 +6,24 @@
 import { IODevice } from './io';
 import { Vector } from 'vector2d';
 
+/**
+ * How many pixels the curor can move (maximum) before a click is rejected
+ */
 export const CLICK_MOVEMENT_GRACE = 8;
 
+/**
+ * Mouse button map
+ */
 export const mouseButtonMap: MouseButton[] = ['left', 'middle', 'right'];
 
+/**
+ * Mouse button type
+ */
 export type MouseButton = 'left' | 'middle' | 'right';
 
+/**
+ * Mouse position
+ */
 export interface MousePosition {
   x: number;
   y: number;
