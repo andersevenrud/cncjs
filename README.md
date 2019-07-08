@@ -4,6 +4,8 @@ A javascript (typescript) remake of the classic Real-time strategy game "Command
 
 Written on a custom engine using canvas 2d renderer.
 
+![Screenshot](https://raw.githubusercontent.com/andersevenrud/cncjs/development/docs/screenshot.png)
+
 ## Demo
 
 *Coming soon*. Meanwhile you can look at a [video preview](https://www.youtube.com/watch?v=KmGqKZGeN9Y&feature=youtu.be).
