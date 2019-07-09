@@ -193,7 +193,7 @@ export class UIEntity extends Entity {
   protected readonly originalPosition: Vector;
   protected parent?: UIEntity;
   public readonly ui: UIScene;
-  protected readonly elements: UIEntity[] = [];
+  protected elements: UIEntity[] = [];
   public readonly name: string;
   protected disabled: boolean = false;
   protected visible: boolean = true;
@@ -355,6 +355,23 @@ export class UIEntity extends Entity {
   }
 
   /**
+   * Removes a child
+   */
+  public removeChild(child: UIEntity): void {
+    const foundIndex = this.elements.findIndex(c => c === child);
+    if (foundIndex !== -1) {
+      this.elements.splice(foundIndex, 1);
+    }
+  }
+
+  /**
+   * Removes all children
+   */
+  public removeChildren(): void {
+    this.elements = [];
+  }
+
+  /**
    * Triggers an update call
    */
   public triggerUpdate(): void {
@@ -428,6 +445,7 @@ export class UIEntity extends Entity {
 
   /**
    * Gets UI Entity by name
+   * FIXME: getChildByName
    */
   public getElementByName(name: string): UIEntity | undefined {
     const tree: UIEntity[] = [
