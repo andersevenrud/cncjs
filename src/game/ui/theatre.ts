@@ -235,9 +235,8 @@ export class TheatreUI extends UIScene {
       const h = y2 - y1;
 
       if (isRectangleVisible(this.selectionRectangle)) {
-        ctx.fillStyle = 'rgba(0, 255, 0, 0.2)';
-        ctx.strokeStyle = '#00ff00';
-        ctx.fillRect(x1, y1, w, h);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#ffffff';
         ctx.strokeRect(x1, y1, w, h);
       }
     }
