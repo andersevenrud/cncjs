@@ -47,6 +47,7 @@
     - [x] Menus
     - [x] Construction
     - [x] Construction mask on map
+    - [ ] Tooltips
 - [x] Rendering
     - [x] Map
     - [x] Entities

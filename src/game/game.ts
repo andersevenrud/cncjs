@@ -86,19 +86,24 @@ export class GameEngine extends Engine {
     await this.cursor.init();
 
     if (this.configuration.debugMode) {
+      const debugMuted: string | null = q.get('muted');
+      const debugZoom: string | null = q.get('zoom');
       const debugState: boolean = q.get('debug') !== 'false';
       this.debug = debugState;
+
+
+      if (debugZoom) {
+        this.setScale(parseFloat(debugZoom));
+      }
+
+      if (debugMuted) {
+        this.sound.setMuted(debugMuted === 'true');
+      }
 
       if (debugScene) {
         const debugMap: string | null = q.get('map');
         const debugMovie: string = q.get('movie') as string;
         const debugPlayer: string = q.get('player') || 'GoodGuy';
-        const debugMuted: string | null = q.get('muted');
-        const debugZoom: string | null = q.get('zoom');
-
-        if (debugZoom) {
-          this.setScale(parseFloat(debugZoom));
-        }
 
         if (debugScene === 'theatre') {
           await this.pushTheatreScene(debugMap || 'scg01ea', debugPlayer as MIXPlayerName);
@@ -110,10 +115,6 @@ export class GameEngine extends Engine {
           await this.pushScoreScene();
         } else {
           await this.pushMenuScene();
-        }
-
-        if (debugMuted) {
-          this.sound.setMuted(debugMuted === 'true');
         }
       } else {
         await this.pushMenuScene();
