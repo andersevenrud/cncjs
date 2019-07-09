@@ -164,4 +164,11 @@ export class MusicPlaylist extends EventEmitter {
     this.clear();
     this.list = list;
   }
+
+  /**
+   * Gets list
+   */
+  public getList(): MusicTrack[] {
+    return this.list;
+  }
 }
