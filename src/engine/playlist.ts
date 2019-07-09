@@ -73,7 +73,7 @@ export class MusicPlaylist extends EventEmitter {
   /**
    * Play current track
    */
-  public play(track?: string): void {
+  public play(track?: string | number): void {
     console.debug('MusicPlaylist::play()');
 
     this.isPaused = false;
@@ -81,9 +81,11 @@ export class MusicPlaylist extends EventEmitter {
     if (this.currentIndex !== -1) {
       this.emit('pause', false);
     } else {
-      const foundIndex = track
-        ? this.list.findIndex((item): boolean => item.name === track)
-        : -1;
+      const foundIndex = typeof track === 'number'
+        ? (this.list[track] ? track : -1)
+        : (track
+          ? this.list.findIndex((item): boolean => item.name === track)
+          : -1);
 
       if (foundIndex === -1) {
         this.next();
