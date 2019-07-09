@@ -32,7 +32,6 @@ export class GameMapMask extends Entity {
   private yellow?: CanvasPattern;
   private red?: CanvasPattern;
 
-  // TODO: Pattern
   public constructor(name: string, map: GameMap) {
     super();
     this.name = name;
@@ -102,6 +101,84 @@ export class GameMapMask extends Entity {
 }
 
 /**
+ * Mep Entity Selection
+ */
+export class GameMapEntitySelection extends Entity {
+  public readonly map: GameMap;
+  private readonly sprite: Sprite = spriteFromName('CONQUER.MIX/select.png');
+
+  public constructor(map: GameMap) {
+    super();
+    this.map = map;
+  }
+
+  public async init(): Promise<void> {
+    await this.map.engine.loadArchiveSprite(this.sprite);
+  }
+
+  public render(target: GameMapBaseEntity, ctx: CanvasRenderingContext2D): void {
+    // TODO: This can be cached based on dimensions
+    const { canvas } = this.sprite;
+    const position = target.getPosition();
+    const dimension = target.dimension.clone(); // FIXME
+    const isInfantry = target instanceof InfantryEntity;
+    const f = isInfantry ? 0 : 1;
+    const l = isInfantry ? 3 : 5;
+    const o = isInfantry ? new Vector(10, 3) : new Vector(7, 2);
+    const size = isInfantry ? new Vector(11, 12) : new Vector(16, 16);
+
+    // top-left
+    ctx.drawImage(
+      canvas,
+      o.x,
+      o.y + (f * this.sprite.size.y),
+      l,
+      l,
+      position.x,
+      position.y,
+      l,
+      l
+    );
+
+    ctx.drawImage( // top-right
+      canvas,
+      o.x + size.x - l,
+      o.y + (f * this.sprite.size.y),
+      l,
+      l,
+      position.x + dimension.x - l,
+      position.y,
+      l,
+      l
+    );
+
+    ctx.drawImage( // bottom-left
+      canvas,
+      o.x,
+      o.y + (f * this.sprite.size.y) + (size.y - l),
+      l,
+      l,
+      position.x,
+      position.y + dimension.y - l,
+      l,
+      l
+    );
+
+    ctx.drawImage( // bottom-right
+      canvas,
+      o.x + size.x - l,
+      o.y + (f * this.sprite.size.y) + (size.y - l),
+      l,
+      l,
+      position.x + dimension.x - l,
+      position.y + dimension.y - l,
+      l,
+      l
+    );
+  }
+}
+
+/**
  * Map Entity Factory
  */
 export class GameMapEntityFactory {
@@ -163,6 +240,7 @@ export class GameMap extends Entity {
   public readonly objects: Entity = new Entity();
   public readonly overlay: Entity = new Entity();
   public readonly factory: GameMapEntityFactory = new GameMapEntityFactory(this);
+  public readonly selection: GameMapEntitySelection = new GameMapEntitySelection(this);
 
   public constructor(name: string, engine: GameEngine, scene: TheatreScene) {
     super();
@@ -196,17 +274,14 @@ export class GameMap extends Entity {
     this.setDimension(d);
     this.objects.setDimension(d);
     this.terrain.setDimension(d);
-    /*
-    this.structures.setDimension(d);
-    this.infantry.setDimension(d);
-    this.units.setDimension(d);
-    */
     this.overlay.setDimension(d);
     this.fow.setDimension(d);
 
     const createEntityFrom = (type: string, list: any) =>
       list.map((data: any) => this.factory.load(type, data));
 
+
+    await this.selection.init();
     await this.fow.init();
     await this.drawBaseMap(data);
 

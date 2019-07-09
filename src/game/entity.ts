@@ -392,6 +392,7 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
   }
 
   protected renderSelectionRectangle(deltaTime: number, context: CanvasRenderingContext2D): void {
+    /*
     const x = Math.trunc(this.position.x);
     const y = Math.trunc(this.position.y);
 
@@ -403,6 +404,8 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
       this.dimension.x - 2,
       this.dimension.y - 2
     );
+    */
+    this.map.selection.render(this, context);
   }
 
   protected renderSprite(deltaTime: number, context: CanvasRenderingContext2D, sprite?: Sprite, frame?: Vector): void {

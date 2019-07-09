@@ -49,7 +49,7 @@
     - [x] Construction mask on map
     - [ ] Button icon support
     - [x] Tooltips
-    - [ ] Render active rectangle from select.png
+    - [x] Render active unit selection
 - [x] Rendering
     - [x] Map
     - [x] Entities

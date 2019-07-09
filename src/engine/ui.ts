@@ -507,6 +507,9 @@ export class UIEntity extends Entity {
     return box;
   }
 
+  /**
+   * Gets the real position according to all parents
+   */
   public getRealPosition(): Vector {
     let position = this.getPosition();
     let item: UIEntity | undefined = this.parent;
