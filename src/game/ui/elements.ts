@@ -16,6 +16,7 @@ export type UIActionsName = 'sell' | 'repair';
 export type UIConstructionState = 'constructing' | 'hold' | 'ready';
 export type UIConstructionResponse = 'construct' | 'hold' | 'cancel' | 'busy' | 'place' | 'finished' | 'tick';
 export type UIBorderType = 'inset' | 'outset';
+export type UISliderOrientation = 'horizontal' | 'vertical';
 
 export interface UIConstructionItem {
   name: string;
@@ -55,6 +56,8 @@ export const POWER_WIDTH = 20;
 export const POWER_HEIGHT = 224;
 export const INDICATOR_WIDTH = 19;
 export const INDICATOR_HEIGHT = 7;
+export const LISTVIEW_ITEM_HEIGHT = 12;
+export const LISTVIEW_PADDING = 4;
 
 /**
  * Game UI Entity abstraction
@@ -310,21 +313,115 @@ export class UIBox extends GameUIEntity {
 /**
  * List VIew
  */
+class UIListViewList extends GameUIEntity {
+  public current: number = -1;
+  protected clickable: boolean = true;
+  protected offset: number = 0;
+
+  public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
+    this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
+
+    const p = LISTVIEW_PADDING;
+    const h = LISTVIEW_ITEM_HEIGHT + p;
+
+    if (this.isVisible()) {
+      if (this.current !== -1) {
+        const px = 0;
+        const py = (this.current * h);
+        const w = this.dimension.x - (p * 2);
+        this.context.fillStyle = '#80858b';
+        this.context.fillRect(px, py, w, h - p);
+      }
+
+      super.onRender(deltaTime, ctx);
+    }
+
+    const off = this.offset * h;
+    ctx.drawImage(this.canvas, this.position.x, this.position.y - off);
+  }
+
+  public onClick(position: Vector): void {
+    const p = LISTVIEW_PADDING;
+    const h = LISTVIEW_ITEM_HEIGHT;
+    const index = Math.floor(position.y / (h + p));
+    this.current = index + this.offset;
+    this.emit('change', index);
+  }
+
+  public setList(items: string[]): void {
+    this.removeChildren();
+
+    const p = LISTVIEW_PADDING;
+    const h = LISTVIEW_ITEM_HEIGHT;
+
+    this.setDimension(new Vector(
+      this.parent!.dimension.x - 22,
+      (h + p) * items.length
+    ));
+
+    for (let i = 0; i < items.length; i++) {
+      const label = items[i];
+      const name = `${this.name}_${i}`;
+      const position = new Vector(0, (h + p) * i);
+      const child = new UIText(name, label, '8point', position, this.ui);
+      this.addChild(child);
+    }
+  }
+
+  public setCurrent(current: number): void {
+    this.current = current;
+  }
+
+  public setOffset(offset: number): void {
+    this.offset = offset;
+  }
+}
+
 export class UIListView extends GameUIEntity {
+  private items: string[] = [];
+  private scrollTop: number = 0;
+  private list: UIListViewList;
+  private slider: UISlider;
+
   public constructor(name: string, dimension: Vector, position: Vector, ui: UIScene) {
     super(name, position, ui);
     this.setDimension(dimension);
+
+    const p = LISTVIEW_PADDING;
+    this.list = new UIListViewList(name + '-list', new Vector(p, p), ui);
+    this.slider = new UISlider(name + 'slider', 0, new Vector(18, this.dimension.y - 2), new Vector(dimension.x - 19, 1), ui);
+    this.slider.setOrientation('vertical');
+    this.addChild(this.list);
+    this.addChild(this.slider);
+
+    this.slider.on('change', value => {
+      const off = Math.floor(Math.max(this.items.length - 7, 1) * value);
+      this.list.setOffset(off);
+    });
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
     this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
 
     if (this.isVisible()) {
-      this.drawBorder('inset');
       super.onRender(deltaTime, ctx);
+      this.drawBorder('inset');
     }
 
     ctx.drawImage(this.canvas, this.position.x, this.position.y);
+  }
+
+  public setList(items: string[]): void {
+    this.items = items;
+    this.list.setList(items);
+  }
+
+  public setCurrent(current: number): void {
+    this.list.setCurrent(current);
+  }
+
+  public getCurrent(): number {
+    return this.list.current;
   }
 }
 
@@ -337,6 +434,7 @@ export class UISlider extends GameUIEntity {
   private button: UIButton;
   private dragStart?: Vector;
   private buttonStart?: Vector;
+  private orientation: UISliderOrientation = 'horizontal';
 
   public sprites: Map<string, Sprite> = new Map([
     ['background', spriteFromName('UPDATEC.MIX/btexture.png')],
@@ -347,9 +445,9 @@ export class UISlider extends GameUIEntity {
     this.setDimension(dimension);
 
     this.value = value;
-    const maxX = this.dimension.x - 32;
-    const newX = maxX * this.value;
-    this.button = new UIButton(name + '_button', '', new Vector(32, dimension.y), new Vector(newX, 0), ui);
+    this.position = position;
+    this.button = new UIButton(name + '_button', '', dimension, new Vector(0, 0), ui);
+    this.calculatePosition();
   }
 
   public async init(): Promise<void> {
@@ -372,13 +470,25 @@ export class UISlider extends GameUIEntity {
 
   public onUpdate(deltaTime: number): void {
     if (this.dragStart) {
-      const diff = this.ui.engine.mouse.getVector().x - this.dragStart.x;
-      const maxX = this.dimension.x - this.button.dimension.x;
-      const newX = Math.min(maxX, Math.max(0, this.buttonStart!.x + diff));
+      let value = 0;
 
-      const value = newX / maxX;
-      this.button.setPosition(new Vector(newX, 0));
-      if  (value != this.value) {
+      if (this.orientation === 'horizontal') {
+        const diff = this.ui.engine.mouse.getVector().x - this.dragStart.x;
+        const maxX = this.dimension.x - this.button.dimension.x;
+        const newX = Math.min(maxX, Math.max(0, this.buttonStart!.x + diff));
+        value = newX / maxX;
+
+        this.button.setPosition(new Vector(newX, 0));
+      } else if (this.orientation === 'vertical') {
+        const diff = this.ui.engine.mouse.getVector().y - this.dragStart.y;
+        const mayY = this.dimension.y - this.button.dimension.y;
+        const newY = Math.min(mayY, Math.max(0, this.buttonStart!.y + diff));
+        value = newY / mayY;
+
+        this.button.setPosition(new Vector(0, newY));
+      }
+
+      if (value != this.value) {
         this.emit('change', value);
       }
       this.value = value;
@@ -398,6 +508,23 @@ export class UISlider extends GameUIEntity {
     }
 
     ctx.drawImage(this.canvas, this.position.x, this.position.y);
+  }
+
+  public calculatePosition(): void {
+    const maxX = this.dimension.x - 32;
+    const maxY = this.dimension.y - 32;
+    const newX = this.orientation === 'vertical' ? 0 : maxX * this.value;
+    const newY = this.orientation === 'vertical' ? maxY * this.value : 0;
+
+    const width = this.orientation === 'vertical' ? this.dimension.x : 32;
+    const height = this.orientation === 'vertical' ? 32 : this.dimension.y;
+
+    this.button.setDimension(new Vector(width, height));
+    this.button.setPosition(new Vector(newX, newY));
+  }
+
+  public setOrientation(orientation: UISliderOrientation): void {
+    this.orientation = orientation;
   }
 }
 

@@ -12,6 +12,7 @@ import packageJson from '../../../package.json';
 
 export const createSoundControlsMenu = (ui: UIScene, position: Vector): UIBox => {
   const engine = ui.engine;
+  const playlist = ui.engine.sound.getPlaylist();
   const settings = new UIBox('sound-controls', new Vector(464, 282), position, ui);
   const musicVolume = engine.sound.getVolume('music');
   const soundVolume = engine.sound.getVolume('sfx');
@@ -24,16 +25,27 @@ export const createSoundControlsMenu = (ui: UIScene, position: Vector): UIBox =>
   settings.addChild(new UIText('label_sound-volume', 'Sound volume', '8point', new Vector(18, 80), ui));
   const sliderSoundVolume = settings.addChild(new UISlider('game-controls_sound-volume', soundVolume, new Vector(272, 10), new Vector(140, 80), ui));
 
-  settings.addChild(new UIListView('game-controls_themes', new Vector(428, 120), new Vector(18, 100), ui));
+  const listViewThemes = settings.addChild(new UIListView('game-controls_themes', new Vector(428, 120), new Vector(18, 100), ui)) as UIListView;
 
-  settings.addChild(new UIButton('game-controls_sound-stop', 'ST', new Vector(32, 18), new Vector(18, 250), ui));
-  settings.addChild(new UIButton('game-controls_sound-play', 'PL', new Vector(32, 18), new Vector(56, 250), ui));
+  const buttonStop = settings.addChild(new UIButton('game-controls_sound-stop', 'ST', new Vector(32, 18), new Vector(18, 250), ui));
+  const buttonPlay = settings.addChild(new UIButton('game-controls_sound-play', 'PL', new Vector(32, 18), new Vector(56, 250), ui));
   settings.addChild(new UIText('label_shuffle', 'Shuffle', '8point', new Vector(104, 254), ui));
   settings.addChild(new UIButton('game-controls_sound-shuffle', '1', new Vector(32, 18), new Vector(160, 250), ui));
   settings.addChild(new UIText('label_repeat', 'Repeat', '8point', new Vector(200, 254), ui));
   settings.addChild(new UIButton('game-controls_sound-repeat', '1', new Vector(32, 18), new Vector(254, 250), ui));
 
   settings.addChild(new UIButton('sound-controls_back', 'Options Menu', new Vector(140, 18), new Vector(306, 250), ui));
+
+  buttonStop.on('click', () => {
+    engine.sound.pauseMusic();
+  });
+
+  buttonPlay.on('click', () => {
+    const current = listViewThemes.getCurrent();
+    if (current !== -1) {
+      playlist.play(current, true);
+    }
+  });
 
   sliderMusicVolume.on('change', (value: number) => {
     engine.sound.setVolume(value, 'music');
@@ -42,6 +54,14 @@ export const createSoundControlsMenu = (ui: UIScene, position: Vector): UIBox =>
   sliderSoundVolume.on('change', (value: number) => {
     engine.sound.setVolume(value, 'sfx');
     engine.sound.setVolume(value, 'gui');
+  });
+
+  listViewThemes.setList(playlist.getList().map(item => {
+    return item.source; // FIXME
+  }))
+
+  playlist.on('play', index => {
+    listViewThemes.setCurrent(playlist.index);
   });
 
   settings.setDecorations(1);
