@@ -12,6 +12,7 @@ export interface MusicTrack {
   source: string;
   title?: string;
   name?: string;
+  length?: number;
 }
 
 /**

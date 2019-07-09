@@ -47,6 +47,7 @@
     - [x] Menus
     - [x] Construction
     - [x] Construction mask on map
+    - [ ] Button icon support
     - [ ] Tooltips
 - [x] Rendering
     - [x] Map
@@ -119,6 +120,7 @@
 
 ## Misc
 
+- [ ] Fix font matrixes
 - [ ] Remove theatre from the data in constructors
 - [ ] Further optimizations
 

@@ -447,10 +447,10 @@ export class UISlider extends GameUIEntity {
     this.value = value;
     this.position = position;
     this.button = new UIButton(name + '_button', '', dimension, new Vector(0, 0), ui);
-    this.calculateButtonPosition();
   }
 
   public async init(): Promise<void> {
+    this.calculateButtonPosition();
     this.addChild(this.button);
 
     await super.init();

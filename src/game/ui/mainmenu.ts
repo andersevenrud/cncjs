@@ -10,6 +10,8 @@ import { UIBox, UIButton, UIText, UISlider, UIListView } from './elements';
 import { Vector } from 'vector2d';
 import packageJson from '../../../package.json';
 
+const formatTime = (s: number) => Math.floor(s / 60) + ':' + ('0' + Math.floor(s % 60)).slice(-2);
+
 export const createSoundControlsMenu = (ui: UIScene, position: Vector): UIBox => {
   const engine = ui.engine;
   const playlist = ui.engine.sound.getPlaylist();
@@ -56,8 +58,12 @@ export const createSoundControlsMenu = (ui: UIScene, position: Vector): UIBox =>
     engine.sound.setVolume(value, 'gui');
   });
 
-  listViewThemes.setList(playlist.getList().map(item => {
-    return item.source; // FIXME
+  const names = playlist.getList().map(item => item.title || item.name || item.source);
+  const maxLength = Math.max(...names.map(name => name.length)) + 2;
+
+  listViewThemes.setList(playlist.getList().map((item, index) => {
+    const name = names[index];
+    return `Track ${String(index + 1).padStart(2, ' ')} ${name.padEnd(maxLength, ' ')} (${formatTime(item.length || 0)})`;
   }))
 
   playlist.on('play', index => {

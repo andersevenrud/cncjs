@@ -58,7 +58,8 @@ export class TheatreScene extends Scene {
         return {
           source: `SCORES.MIX/${key.toLowerCase()}.wav`,
           title: iter.Title,
-          name: key.toLowerCase()
+          name: key.toLowerCase(),
+          length: iter.Length
         };
       });
 
