@@ -21,6 +21,7 @@ import {
   UIConstructionResponse,
   UIConstructionItem,
   UIPowerBar,
+  UITooltip,
   UIButton,
   UIText,
   UIBox
@@ -59,6 +60,7 @@ export class TheatreUI extends UIScene {
     const mission = this.scene.engine.mix.mission.get(this.scene.name.toUpperCase()) as MIXMission;
     const tabMenu = new UITab('tab-menu', 'Menu', new Vector(0, 0), this);
     const tabSidebar = new UITab('tab-sidebar', 'Sidebar', new Vector(-0, 0), this);
+    const tooltip = new UITooltip('tooltip', new Vector(0, 0), this);
 
     this.elements.push(tabMenu);
     this.elements.push(new UITab('tab-credits', emitCredits, new Vector(-TAB_WIDTH, 0), this));
@@ -98,6 +100,25 @@ export class TheatreUI extends UIScene {
 
     elStructures.on('change', onConstruct);
     elFactories.on('change', onConstruct);
+
+    const onTooltipOver = (root: UIEntity) => (position: Vector, text: string) => {
+      const newPosition = root.getRealPosition()
+        .add(position)
+        .subtract(new Vector(tooltip.dimension.x, tooltip.dimension.y / 2));
+
+      tooltip.setPosition(newPosition);
+      tooltip.setText(text);
+      tooltip.setVisible(true);
+    };
+
+    const onTooltipOut = () => {
+      tooltip.setVisible(false);
+    };
+
+    elStructures.on('mouseover', onTooltipOver(elStructures));
+    elStructures.on('mouseout', onTooltipOut);
+    elFactories.on('mouseover', onTooltipOver(elFactories));
+    elFactories.on('mouseout', onTooltipOut);
 
     tabMenu.on('click', () => {
       menu.setVisible(true);
@@ -154,6 +175,7 @@ export class TheatreUI extends UIScene {
     visuals.setVisible(false);
     sounds.setVisible(false);
     menu.setVisible(false);
+    tooltip.setVisible(false);
 
     this.elements.push(sidebar);
     this.elements.push(menu);
@@ -161,6 +183,7 @@ export class TheatreUI extends UIScene {
     this.elements.push(visuals);
     this.elements.push(sounds);
     this.elements.push(restate);
+    this.elements.push(tooltip);
 
     await super.init();
   }

@@ -48,7 +48,8 @@
     - [x] Construction
     - [x] Construction mask on map
     - [ ] Button icon support
-    - [ ] Tooltips
+    - [x] Tooltips
+    - [ ] Render active rectangle from select.png
 - [x] Rendering
     - [x] Map
     - [x] Entities

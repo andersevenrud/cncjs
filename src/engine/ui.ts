@@ -36,6 +36,7 @@ export class UIScene extends Entity {
   protected updated: boolean = true;
   protected scaled?: UISceneScale;
   protected lastDownElement?: UIEntity;
+  protected lastOverElement?: UIEntity;
   protected inited: boolean = false;
 
   public constructor(engine: Core) {
@@ -75,17 +76,36 @@ export class UIScene extends Entity {
       ? 'left'
       : mouse.wasClicked('right') ? 'right' : undefined;
 
-    if (button) {
-      const hit = this.getCollidingEntity(position);
+    const hit = this.getCollidingEntity(position);
 
+    if (!hit || this.lastOverElement !== hit.element) {
+      if (this.lastOverElement) {
+        this.lastOverElement.onMouseOut();
+      }
+      this.lastOverElement = undefined;
+    }
+
+    if (hit) {
+      if (this.lastOverElement && this.lastOverElement !== hit.element) {
+        this.lastOverElement.onMouseOut();
+      }
+
+      this.lastOverElement = hit.element;
+      this.lastOverElement.onMouseOver(hit.position);
+    } else {
+      if (this.lastOverElement) {
+        this.lastOverElement.onMouseOut();
+      }
+      this.lastOverElement = undefined;
+    }
+
+    if (button) {
       if (hit) {
         hit.element.onClick(hit.position, button);
         this.onClick(hit);
         this.updated = true;
       }
     } else if (mouse.isPressed('left')) {
-      const hit = this.getCollidingEntity(position);
-
       if (hit) {
         if (this.lastDownElement && this.lastDownElement !== hit.element) {
           this.lastDownElement.onMouseUp(hit.position);
@@ -283,6 +303,18 @@ export class UIEntity extends Entity {
   }
 
   /**
+   * Mouse over action
+   */
+  public onMouseOver(position: Vector): void {
+  }
+
+  /**
+   * Mouse out action
+   */
+  public onMouseOut(): void {
+  }
+
+  /**
    * Mouse click action
    */
   public onClick(position: Vector, button: MouseButton): void {
@@ -473,5 +505,21 @@ export class UIEntity extends Entity {
     }
 
     return box;
+  }
+
+  public getRealPosition(): Vector {
+    let position = this.getPosition();
+    let item: UIEntity | undefined = this.parent;
+
+    while (item) {
+      if (item instanceof UIScene) {
+        break;
+      }
+
+      position.add(item.getPosition());
+      item = item.parent;
+    }
+
+    return position;
   }
 }

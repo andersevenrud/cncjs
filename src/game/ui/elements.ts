@@ -193,10 +193,19 @@ export class UIText extends GameUIEntity {
     return { width: currentWidth, height, calculated };
   }
 
+  public setLabel(label: string | Function): void {
+    this.label = label;
+    this.updated = true;
+  }
+
   public getRealLabel(): string {
     return typeof this.label === 'function'
       ? this.label()
       : this.label;
+  }
+
+  public getTypeface(): MIXFont {
+    return this.typeface;
   }
 }
 
@@ -740,6 +749,46 @@ export class UIPowerBar extends GameUIEntity {
 }
 
 /**
+ * Tooltip
+ */
+export class UITooltip extends GameUIEntity {
+  private text: UIText;
+
+  public constructor(name: string, position: Vector, ui: UIScene) {
+    super(name, position, ui);
+    this.position = position;
+
+    this.setDimension(new Vector(30, 30));
+
+    this.text = new UIText(name + '-label', '', '6point', new Vector(4, 0.5), ui);
+    this.addChild(this.text);
+  }
+
+  public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
+    if (this.isVisible()) {
+      if (this.updated) {
+        this.context.textAlign = 'center';
+        this.context.textBaseline = 'middle';
+        this.context.fillStyle = '#000000';
+        this.context.strokeStyle = '#00ff00';
+        this.context.fillRect(0, 0, this.dimension.x, this.dimension.y);
+        this.context.strokeRect(0, 0, this.dimension.x, this.dimension.y);
+        super.onRender(deltaTime, ctx);
+      }
+
+      ctx.drawImage(this.canvas, this.position.x, this.position.y);
+    }
+  }
+
+  public setText(text: string): void {
+    const tf = this.text.getTypeface();
+    this.text.setLabel(text);
+    this.setDimension(new Vector(text.length * tf.width, tf.height + 4));
+    this.updated = true;
+  }
+}
+
+/**
  * Sidebar
  */
 export class UISidebar extends GameUIEntity {
@@ -800,6 +849,7 @@ export abstract class UIConstruction extends GameUIEntity {
   private strip: Entity = new Entity();
   private names: string[] = [];
   private items: Map<string, UIConstructionItem> = new Map();
+  private lastHoverIndex: number = -1;
 
   public async init(): Promise<void> {
     this.setDimension(new Vector(THUMB_WIDTH, THUMB_HEIGHT * THUMB_COUNT + BUTTON_HEIGHT + 1));
@@ -822,6 +872,30 @@ export abstract class UIConstruction extends GameUIEntity {
   protected emit(name: string, ...args: any[]): void {
     this.ee.emit(name, ...args);
     this.ee.emit('change', name, ...args);
+  }
+
+  public onMouseOut(): void {
+    this.lastHoverIndex = -1;
+    this.ee.emit('mouseout');
+  }
+
+  public onMouseOver(position: Vector): void {
+    const index = Math.floor(position.y / THUMB_HEIGHT);
+    if (index < THUMB_COUNT) {
+      if (this.lastHoverIndex !== index) {
+        const found = this.names[index + this.offset];
+        const properties = (this.ui.engine as GameEngine).mix.getProperties(found.toUpperCase());
+        const text = properties ? `\$${properties.Cost}` : '$?';
+
+        this.ee.emit('mouseover', new Vector(
+          0,
+          (index * THUMB_HEIGHT) + (THUMB_HEIGHT / 2)
+        ), text);
+      }
+      this.lastHoverIndex = index;
+    } else {
+      this.onMouseOut();
+    }
   }
 
   public onClick(position: Vector, button: MouseButton): void {
@@ -909,7 +983,6 @@ export abstract class UIConstruction extends GameUIEntity {
       }
     }
 
-
     if (this.items.size > 0 && this.ui.engine.frames % 2 === 0) {
       this.updated = true;
     }
@@ -975,6 +1048,7 @@ export abstract class UIConstruction extends GameUIEntity {
     }
 
     ctx.drawImage(this.canvas, 0, 0, this.dimension.x, this.dimension.y, this.position.x, this.position.y, this.dimension.x, this.dimension.y);
+
     this.updated = false;
   }
 
