@@ -4,28 +4,18 @@
  * @license MIT
  */
 
-import { Entity, Sprite, UIScene, UIEntity, MouseButton, collidePoint } from '../../engine';
+import { Sprite, UIScene, UIEntity, MouseButton } from '../../engine';
 import { GameMap } from '../map';
 import { GameEngine } from '../game';
 import { TheatreUI } from './theatre';
 import { spriteFromName } from '../sprites';
 import { MIXFont, fontMap } from '../mix';
+import { ConstructionQueue } from '../construction';
 import { getScaledDimensions } from '../physics';
 import { Vector } from 'vector2d';
 
-export type UIConstructionType = 'structure' | 'unit' | 'aircraft';
-export type UIConstructionState = 'constructing' | 'hold' | 'ready';
-export type UIConstructionResponse = 'construct' | 'hold' | 'cancel' | 'busy' | 'place' | 'finished' | 'tick';
 export type UIBorderType = 'inset' | 'outset';
 export type UISliderOrientation = 'horizontal' | 'vertical';
-
-export interface UIConstructionItem {
-  name: string;
-  state: UIConstructionState;
-  cost: number;
-  progress: number;
-  type: UIConstructionType;
-}
 
 export interface UITextCalculationOffset {
   left: number;
@@ -805,24 +795,26 @@ export class UISidebar extends GameUIEntity {
 /**
  * Construction strip
  */
-export abstract class UIConstruction extends GameUIEntity {
+export class UIConstruction extends GameUIEntity {
   protected offset: number = 0;
-  private names: string[] = [];
-  private items: Map<string, UIConstructionItem> = new Map();
   private lastHoverIndex: number = -1;
+  private queue: ConstructionQueue;
+  private theatre: string;
+
+  public constructor(name: string, theatre: string, queue: ConstructionQueue, position: Vector, ui: UIScene) {
+    super(name, position, ui);
+    this.queue = queue;
+    this.theatre = theatre;
+
+    queue.getNames().forEach(name => {
+      this.sprites.set(name.toLowerCase(), spriteFromName(`${theatre.substring(0, 4).toUpperCase()}ICNH.MIX/${name.toLowerCase()}icnh.png`));
+    });
+  }
 
   public async init(): Promise<void> {
     this.setDimension(new Vector(THUMB_WIDTH, CONSTRUCTION_HEIGHT));
-
-    let index = 0;
-    for (const name of this.sprites.keys()) {
-      this.names[index] = name;
-      index++;
-    }
-
     this.sprites.set('pips', spriteFromName('UPDATEC.MIX/hpips.png'));
     this.sprites.set('clock', spriteFromName('UPDATEC.MIX/hclock.png'));
-
     await super.init();
   }
 
@@ -839,66 +831,38 @@ export abstract class UIConstruction extends GameUIEntity {
   public onMouseOver(position: Vector): void {
     const index = Math.floor(position.y / THUMB_HEIGHT);
     if (this.lastHoverIndex !== index) {
-      const found = this.names[index + this.offset];
-      const properties = (this.ui.engine as GameEngine).mix.getProperties(found.toUpperCase());
-      const text = properties ? `\$${properties.Cost}` : '$?';
+      const item = this.queue.getItem(index);
+      if (item) {
+        const text = `\$${item.properties.Cost}`;
 
-      this.ee.emit('mouseover', new Vector(
-        0,
-        (index * THUMB_HEIGHT) + (THUMB_HEIGHT / 2)
-      ), text);
+        this.ee.emit('mouseover', new Vector(
+          0,
+          (index * THUMB_HEIGHT) + (THUMB_HEIGHT / 2)
+        ), text);
+      }
     }
+
     this.lastHoverIndex = index;
   }
 
   public onClick(position: Vector, button: MouseButton): void {
     const thumbnail = Math.floor(position.y / THUMB_HEIGHT);
-    const found = this.names[thumbnail + this.offset];
+    const index = thumbnail + this.offset;
+    const found = this.queue.getItem(index);
     if (found) {
-      const busy = this.items.get(found);
       if (button === 'right') {
-        if (busy) {
-          if (busy.state === 'hold' || busy.state === 'ready') {
-            this.items.delete(found);
-            this.emit('cancel', busy);
-          } else {
-            busy.state = 'hold';
-            this.emit('hold', busy);
-          }
+        if (found.state === 'hold' || found.state === 'ready') {
+          this.queue.cancel(index);
+        } else {
+          this.queue.hold(index);
         }
       } else {
-        if (busy) {
-          const progress = busy.cost > 0
-            ? busy.progress / busy.cost
-            : 1;
-
-          if (progress >= 1.0) {
-            this.emit('place', busy);
-
-            // FIXME: Do this when it is actually placed
-            this.items.delete(found);
-          } else if (busy.state === 'hold') {
-            busy.state = 'constructing';
-            this.emit('construct', busy);
-          } else {
-            this.emit('busy', busy);
-          }
-        } else {
-          const properties = (this.ui.engine as GameEngine).mix.getProperties(found.toUpperCase());
-
-          if (properties) {
-            const cost = properties.Cost || 1;
-            const item = {
-              name: found,
-              state: 'constructing' as UIConstructionState,
-              cost: cost,
-              progress: 0,
-              type: this instanceof UIFactoryConstruction ? 'unit' : 'structure' as UIConstructionType  // FIXME
-            };
-
-            this.items.set(found, item);
-            this.emit('construct', item);
-          }
+        if (found.state === 'ready') {
+          // FIXME: Should happen when structure is placed
+          this.queue.reset(index);
+          this.emit('place', found);
+        } else if (found.state === undefined) {
+          this.queue.build(index);
         }
       }
     }
@@ -911,22 +875,11 @@ export abstract class UIConstruction extends GameUIEntity {
       return;
     }
 
+    this.queue.onUpdate(deltaTime);
     super.onUpdate(deltaTime);
 
-    for (let item of this.items.values()) {
-      if (item.progress < item.cost) {
-        if (item.state === 'constructing') {
-          // FIXME: Rule
-          item.progress = Math.min(item.cost, item.progress + 1.0);
-          this.emit('tick', item);
-        }
-      } else if (item.state != 'ready') {
-        this.emit('finished', item);
-        item.state = 'ready';
-      }
-    }
-
-    if (this.items.size > 0 && this.ui.engine.frames % 2 === 0) {
+    // FIXME: Check length of items > 0
+    if (this.ui.engine.frames % 2 === 0) {
       this.updated = true;
     }
   }
@@ -940,27 +893,29 @@ export abstract class UIConstruction extends GameUIEntity {
       this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
 
       let index = -this.offset;
-      for (let i = 0; i < this.names.length; i++) {
-        const sprite = this.sprites.get(this.names[i]) as Sprite;
+      const available = this.queue.getAvailable();
+      for (let i = 0; i < available.length; i++) {
+        const item = available[i];
+        const name = item.name.toLowerCase();
+        const sprite = this.sprites.get(name) as Sprite;
         const position = new Vector(0, index * THUMB_HEIGHT);
         this.context.clearRect(position.x, position.y, sprite.size.x, sprite.size.y);
         sprite.render(frame, position, this.context);
 
-        const state = this.items.get(this.names[i]);
-        if (state) {
-          let p = state.progress / state.cost;
+        if (typeof item.state !== 'undefined') {
+          let p = item.progress / item.properties.Cost;
           let f = new Vector(0, Math.round(clock.frames * p));
 
           this.context.globalCompositeOperation = 'destination-out';
           clock.render(f, new Vector(position.x, position.y), this.context);
           this.context.globalCompositeOperation = 'source-over';
 
-          if (state.state === 'ready') {
+          if (item.state === 'ready') {
             pip.render(new Vector(0, 3), new Vector(
               position.x + (sprite.size.x / 2) - (pip.size.x / 2),
               position.y + (sprite.size.y / 2) - (pip.size.y / 2)
             ), this.context);
-          } else if (state.state === 'hold') {
+          } else if (item.state === 'hold') {
             pip.render(new Vector(0, 4), new Vector(
               position.x + (sprite.size.x / 2) - (pip.size.x / 2),
               position.y + (sprite.size.y / 2) - (pip.size.y / 2)
@@ -986,67 +941,11 @@ export abstract class UIConstruction extends GameUIEntity {
   }
 
   public moveDown(): void {
-    this.offset = Math.min(this.names.length - THUMB_COUNT, this.offset + 1);
+    const count = this.queue.getAvailableCount();
+    this.offset = Math.min(count - THUMB_COUNT, this.offset + 1);
     this.updated = true;
     console.debug('UIConstruction::moveDown()', this.offset);
   }
-}
-
-/**
- * Factory construction strip
- */
-export class UIFactoryConstruction extends UIConstruction {
-  protected readonly sprites: Map<string, Sprite> = new Map([
-    ['e1', spriteFromName('TEMPICNH.MIX/e1icnh.png')],
-    ['e2', spriteFromName('TEMPICNH.MIX/e2icnh.png')],
-    ['e3', spriteFromName('TEMPICNH.MIX/e3icnh.png')],
-    ['e4', spriteFromName('TEMPICNH.MIX/e4icnh.png')],
-    ['e6', spriteFromName('TEMPICNH.MIX/e6icnh.png')],
-    ['apc', spriteFromName('TEMPICNH.MIX/apcicnh.png')],
-    ['arty', spriteFromName('TEMPICNH.MIX/artyicnh.png')],
-    ['bggy', spriteFromName('TEMPICNH.MIX/bggyicnh.png')],
-    ['bike', spriteFromName('TEMPICNH.MIX/bikeicnh.png')],
-    ['ftnk', spriteFromName('TEMPICNH.MIX/ftnkicnh.png')],
-    ['harv', spriteFromName('TEMPICNH.MIX/harvicnh.png')],
-    ['heli', spriteFromName('TEMPICNH.MIX/heliicnh.png')],
-    ['htnk', spriteFromName('TEMPICNH.MIX/htnkicnh.png')],
-    ['jeep', spriteFromName('TEMPICNH.MIX/jeepicnh.png')],
-    ['ltnk', spriteFromName('TEMPICNH.MIX/ltnkicnh.png')],
-    ['mcv', spriteFromName('TEMPICNH.MIX/mcvicnh.png')],
-    ['msam', spriteFromName('TEMPICNH.MIX/msamicnh.png')],
-    ['mtnk', spriteFromName('TEMPICNH.MIX/mtnkicnh.png')],
-    ['orca', spriteFromName('TEMPICNH.MIX/orcaicnh.png')],
-    ['stnk', spriteFromName('TEMPICNH.MIX/stnkicnh.png')],
-  ]);
-}
-
-/**
- * Structure construction strip
- */
-export class UIStructureConstruction extends UIConstruction {
-  protected readonly sprites: Map<string, Sprite> = new Map([
-    ['nuke', spriteFromName('TEMPICNH.MIX/nukeicnh.png')],
-    ['nuk2', spriteFromName('TEMPICNH.MIX/nuk2icnh.png')],
-    ['pyle', spriteFromName('TEMPICNH.MIX/pyleicnh.png')],
-    ['hand', spriteFromName('TEMPICNH.MIX/handicnh.png')],
-    ['afld', spriteFromName('TEMPICNH.MIX/afldicnh.png')],
-    ['atwr', spriteFromName('TEMPICNH.MIX/atwricnh.png')],
-    ['brik', spriteFromName('TEMPICNH.MIX/brikicnh.png')],
-    ['cycl', spriteFromName('TEMPICNH.MIX/cyclicnh.png')],
-    ['eye',  spriteFromName('TEMPICNH.MIX/eyeicnh.png')],
-    ['fix',  spriteFromName('TEMPICNH.MIX/fixicnh.png')],
-    ['gtwr', spriteFromName('TEMPICNH.MIX/gtwricnh.png')],
-    ['gun',  spriteFromName('TEMPICNH.MIX/gunicnh.png')],
-    ['hpad', spriteFromName('TEMPICNH.MIX/hpadicnh.png')],
-    ['hq',  spriteFromName('TEMPICNH.MIX/hqicnh.png')],
-    ['obli', spriteFromName('TEMPICNH.MIX/obliicnh.png')],
-    ['proc', spriteFromName('TEMPICNH.MIX/procicnh.png')],
-    ['sam',  spriteFromName('TEMPICNH.MIX/samicnh.png')],
-    ['sbag', spriteFromName('TEMPICNH.MIX/sbagicnh.png')],
-    ['silo', spriteFromName('TEMPICNH.MIX/siloicnh.png')],
-    ['tmpl', spriteFromName('TEMPICNH.MIX/tmplicnh.png')],
-    ['weap', spriteFromName('TEMPICNH.MIX/weapicnh.png')],
-  ]);
 }
 
 /**

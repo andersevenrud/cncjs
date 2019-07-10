@@ -68,8 +68,8 @@ export class TheatreScene extends Scene {
 
     playlist.setList(list);
 
-    await this.ui.init();
     await this.map.init();
+    await this.ui.init();
 
     playlist.play('aoi');
     this.loaded = true;

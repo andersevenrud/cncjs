@@ -232,7 +232,7 @@ export class GameMap extends Entity {
   protected mask?: GameMapMask;
 
   public grid: Grid = new Grid(64, 64);
-  public readonly theatre: string = 'temperat';
+  public theatre: string = 'temperat';
   public readonly engine: GameEngine;
   public readonly fow: FOW = new FOW(this);
   public readonly scene: TheatreScene;
@@ -271,6 +271,7 @@ export class GameMap extends Entity {
     console.time();
     const data = await this.engine.mix.loadMap(this.name);
 
+    this.theatre = data.theatre;
     this.mapDimension = new Vector(data.width, data.height);
     this.grid = new Grid(data.width, data.height);
 

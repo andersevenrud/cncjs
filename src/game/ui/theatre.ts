@@ -20,10 +20,7 @@ import {
   UISidebar,
   UIRadar,
   UIIconButton,
-  UIStructureConstruction,
-  UIFactoryConstruction,
-  UIConstructionResponse,
-  UIConstructionItem,
+  UIConstruction,
   UIPowerBar,
   UITooltip,
   UIButton,
@@ -35,6 +32,7 @@ import { createGameMenus } from './mainmenu';
 import { GameEngine } from '../game';
 import { GameMapBaseEntity } from '../entity';
 import { GameMapMask } from '../map';
+import { ConstructionQueue } from '../construction';
 import { cellFromPoint, isRectangleVisible } from '../physics';
 import { Vector } from 'vector2d';
 
@@ -53,13 +51,24 @@ export class TheatreUI extends UIScene {
   private mapButton?: UIIconButton;
   private minimap?: UIMinimap;
   private sidebar?: UISidebar;
+  private structureConstruction: ConstructionQueue;
+  private factoryConstruction: ConstructionQueue;
 
   public constructor(scene: TheatreScene) {
     super(scene.engine);
     this.scene = scene;
+
+    // FIXME
+    const structures = ['nuke', 'nuk2', 'pyle', 'hand', 'afld', 'atwr', 'brik', 'cycl', 'eye', 'fix', 'gtwr', 'gun', 'hpad', 'hq', 'obli', 'proc', 'sam', 'sbag', 'silo', 'tmpl', 'weap'];
+    const factories = ['e1', 'e2', 'e3', 'e4', 'e6', 'apc', 'arty', 'bggy', 'bike', 'ftnk', 'harv', 'heli', 'htnk', 'jeep', 'ltnk', 'mcv', 'msam', 'mtnk', 'orca', 'stnk'];
+
+    this.structureConstruction = new ConstructionQueue(structures, this.scene.player, this.scene.engine);
+    this.factoryConstruction = new ConstructionQueue(factories, this.scene.player, this.scene.engine);
   }
 
   public async init(): Promise<void> {
+    const theatre = this.scene.map.theatre;
+
     // Tabs
     const emitCredits = () => String(this.scene.player.getCredits());
     const tabMenu = new UITab('tab-menu', 'Menu', new Vector(0, 0), this);
@@ -74,10 +83,10 @@ export class TheatreUI extends UIScene {
     const btnSell = sidebar.addChild(new UIIconButton('sell', 'UPDATEC.MIX/hsell.png', new Vector(49, 16), new Vector(4, RADAR_HEIGHT + 2), this));
     const btnRepair = sidebar.addChild(new UIIconButton('sell', 'UPDATEC.MIX/hrepair.png', new Vector(49, 16), new Vector(4 + ACTION_WIDTH, RADAR_HEIGHT + 2), this));
     const btnMap = sidebar.addChild(new UIIconButton('sell', 'UPDATEC.MIX/hmap.png', new Vector(49, 16), new Vector(8 + ACTION_WIDTH * 2, RADAR_HEIGHT + 2), this));
-    const elStructures = sidebar.addChild(new UIStructureConstruction('structures', new Vector(20,  cy), this)) as UIStructureConstruction;
+    const elStructures = sidebar.addChild(new UIConstruction('structures', theatre, this.structureConstruction, new Vector(20,  cy), this)) as UIConstruction;
     const elStructuresUp = sidebar.addChild(new UIIconButton('structures-up', 'UPDATEC.MIX/hstripup.png', new Vector(BUTTON_WIDTH, BUTTON_HEIGHT), new Vector(20, cy + CONSTRUCTION_HEIGHT + 2), this)) as UIIconButton;
     const elStructuresDown = sidebar.addChild(new UIIconButton('structures-down', 'UPDATEC.MIX/hstripdn.png', new Vector(BUTTON_WIDTH, BUTTON_HEIGHT), new Vector(20 + BUTTON_WIDTH, cy + CONSTRUCTION_HEIGHT + 2), this)) as UIIconButton;
-    const elFactories = sidebar.addChild(new UIFactoryConstruction('factories', new Vector(90, cy), this)) as UIFactoryConstruction;
+    const elFactories = sidebar.addChild(new UIConstruction('factories', theatre, this.factoryConstruction, new Vector(90, cy), this)) as UIConstruction;
     const elFactoriesUp = sidebar.addChild(new UIIconButton('factories-up', 'UPDATEC.MIX/hstripup.png', new Vector(BUTTON_WIDTH, BUTTON_HEIGHT), new Vector(90, cy + CONSTRUCTION_HEIGHT + 2), this)) as UIIconButton;
     const elFactoriesDown = sidebar.addChild(new UIIconButton('factories-down', 'UPDATEC.MIX/hstripdn.png', new Vector(BUTTON_WIDTH, BUTTON_HEIGHT), new Vector(90 + BUTTON_WIDTH, cy + CONSTRUCTION_HEIGHT + 2), this)) as UIIconButton;
 
@@ -113,12 +122,18 @@ export class TheatreUI extends UIScene {
     }
 
     // Glue
-    const onConstruct = this.handleConstructionCallback.bind(this);
-    elStructures.on('change', onConstruct);
+    const onConstruct = (item: any) => {
+      const name = item.name.toUpperCase();
+      this.placeConstruction = name;
+      const mask = new GameMapMask(name, this.scene.map);
+      this.scene.map.setMask(mask);
+    };
+
+    elStructures.on('place', onConstruct);
     elStructuresUp.on('click', () => elStructures.moveUp());
     elStructuresDown.on('click', () => elStructures.moveDown());
 
-    elFactories.on('change', onConstruct);
+    elFactories.on('place', onConstruct);
     elFactoriesUp.on('click', () => elFactories.moveUp());
     elFactoriesDown.on('click', () => elFactories.moveDown());
 
@@ -291,33 +306,6 @@ export class TheatreUI extends UIScene {
 
     super.onRender(deltaTime, ctx);
     this.updated = false;
-  }
-
-  private handleConstructionCallback(state: UIConstructionResponse, item?: UIConstructionItem) {
-    if (state === 'construct') {
-      this.scene.engine.playArchiveSfx('SPEECH.MIX/bldging1.wav', 'gui', {}, 'eva');
-    } else if (state === 'finished') {
-      if (item!.type === 'unit') {
-        this.scene.engine.playArchiveSfx('SPEECH.MIX/unitredy.wav', 'gui', {}, 'eva');
-      } else {
-        this.scene.engine.playArchiveSfx('SPEECH.MIX/constru1.wav', 'gui', {}, 'eva');
-      }
-    } else if (state === 'cancel') {
-      this.scene.engine.playArchiveSfx('SPEECH.MIX/cancel1.wav', 'gui', {}, 'eva');
-      this.scene.player.addCredits(item!.progress);
-    } else if (state === 'busy') {
-      this.scene.engine.playArchiveSfx('SPEECH.MIX/bldg1.wav', 'gui', {}, 'eva');
-    } else if (state === 'hold') {
-      this.scene.engine.playArchiveSfx('SPEECH.MIX/onhold1.wav', 'gui', {}, 'eva');
-    } else if (state === 'tick') {
-      this.scene.engine.playArchiveSfx('SOUNDS.MIX/clock1.wav', 'gui', { volume: 0.2, block: true });
-      this.scene.player.subScredits(1.0); // FIXME
-    } else if (state === 'place') {
-      const name = item!.name.toUpperCase();
-      this.placeConstruction = name;
-      const mask = new GameMapMask(name, this.scene.map);
-      this.scene.map.setMask(mask);
-    }
   }
 
   private handleConstructionPlot(cell: Vector) {
