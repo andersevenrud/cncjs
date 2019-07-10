@@ -11,6 +11,7 @@ import {
   RADAR_HEIGHT,
   ACTION_HEIGHT,
   SIDEBAR_WIDTH,
+  UIMinimap,
   UITab,
   UISidebar,
   UIRadar,
@@ -26,7 +27,6 @@ import {
   UIText,
   UIBox
 } from './elements';
-import { Minimap } from './minimap';
 import { MIXMission, MIXCursorType } from '../mix';
 import { createGameMenus } from './mainmenu';
 import { GameEngine } from '../game';
@@ -45,13 +45,11 @@ export class TheatreUI extends UIScene {
   private placeConstruction?: string;
   private currentAction?: UIActionsName;
   private menuOpen: boolean = false;
-  private minimap: Minimap;
   private cursor: MIXCursorType = 'default';
 
   public constructor(scene: TheatreScene) {
     super(scene.engine);
     this.scene = scene;
-    this.minimap = new Minimap(this, this.scene.map, this.scene.engine);
   }
 
   public async init(): Promise<void> {
@@ -72,6 +70,7 @@ export class TheatreUI extends UIScene {
     const elStructures = sidebar.addChild(new UIStructureConstruction('structures', new Vector(20,  RADAR_HEIGHT + ACTION_HEIGHT + 6), this));
     const elFactories = sidebar.addChild(new UIFactoryConstruction('factories', new Vector(90,  RADAR_HEIGHT + ACTION_HEIGHT + 6), this));
     sidebar.addChild(new UIPowerBar(new Vector(0,  RADAR_HEIGHT + ACTION_HEIGHT + 2), this));
+    sidebar.addChild(new UIMinimap(this.scene.map, this));
     sidebar.setVisible(this.sidebarVisible);
 
     const menu = new UIBox('menu', new Vector(420, 230), new Vector(0.5, 0.5), this);
@@ -210,10 +209,6 @@ export class TheatreUI extends UIScene {
   public onUpdate(deltaTime: number): void {
     const { mouse } = this.engine;
 
-    if (!this.menuOpen) {
-      this.minimap.onUpdate(deltaTime);
-    }
-
     super.onUpdate(deltaTime);
 
     if (!this.menuOpen) {
@@ -254,9 +249,6 @@ export class TheatreUI extends UIScene {
     }
 
     super.onRender(deltaTime, ctx);
-    if (this.getSidebarVisible()) {
-      this.minimap.onRender(deltaTime, ctx);
-    }
     this.updated = false;
   }
 

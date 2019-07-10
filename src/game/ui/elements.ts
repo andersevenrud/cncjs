@@ -5,10 +5,12 @@
  */
 
 import { Entity, Sprite, UIScene, UIEntity, MouseButton, collidePoint } from '../../engine';
+import { GameMap } from '../map';
 import { GameEngine } from '../game';
 import { TheatreUI } from './theatre';
 import { spriteFromName } from '../sprites';
 import { MIXFont, fontMap } from '../mix';
+import { getScaledDimensions } from '../physics';
 import { Vector } from 'vector2d';
 
 export type UIConstructionType = 'structure' | 'unit' | 'aircraft';
@@ -58,6 +60,9 @@ export const INDICATOR_WIDTH = 19;
 export const INDICATOR_HEIGHT = 7;
 export const LISTVIEW_ITEM_HEIGHT = 12;
 export const LISTVIEW_PADDING = 4;
+export const MINIMAP_WIDTH = 156;
+export const MINIMAP_HEIGHT = 138;
+export const MINIMAP_OFFSET = 4;
 
 /**
  * Game UI Entity abstraction
@@ -1124,3 +1129,55 @@ export class UIStructureConstruction extends UIConstruction {
     ['weap', spriteFromName('TEMPICNH.MIX/weapicnh.png')],
   ]);
 }
+
+/**
+ * Minimap
+ */
+export class UIMinimap extends GameUIEntity {
+  private readonly map: GameMap;
+  public readonly ui: TheatreUI;
+
+  public constructor(map: GameMap, ui: TheatreUI) {
+    super('minimap', new Vector(MINIMAP_OFFSET, MINIMAP_OFFSET), ui);
+
+    this.setDimension(new Vector(MINIMAP_WIDTH - MINIMAP_OFFSET, MINIMAP_HEIGHT - MINIMAP_OFFSET));
+    this.context.strokeStyle = '#ffffff';
+    this.context.lineWidth = 1;
+    this.ui = ui;
+    this.map = map;
+  }
+
+  public onRender(deltaTime: number, ctx: CanvasRenderingContext2D) {
+    if (this.ui.engine.frames % 6 === 0 && !this.ui.isMenuOpen()) {
+      const { sx, sy, sw, sh, dx, dy, dw, dh, bR } = getScaledDimensions(this.map.dimension, this.dimension);
+
+      this.context.fillStyle = '#000000';
+      this.context.fillRect(0, 0, this.dimension.x, this.dimension.y);
+      this.context.drawImage(this.map.getCanvas(), sx, sy, sw, sh, dx, dy, dw, dh);
+
+      this.map.getEntities()
+        .forEach(e => {
+          const x = Math.trunc(e.position.x * bR) + dx;
+          const y = Math.trunc(e.position.y * bR) + dy;
+          const w = Math.trunc(e.dimension.x * bR);
+          const h = Math.trunc(e.dimension.y * bR);
+          this.context.fillStyle = e.getColor();
+          this.context.fillRect(x, y, w, h);
+        });
+
+      if (this.map.isFowVisible()) {
+        this.context.drawImage(this.map.fow.getCanvas(), 0, 0, this.map.dimension.x, this.map.dimension.y, 0, 0, this.dimension.x, this.dimension.y);
+      }
+
+      const v = this.ui.getViewport();
+      const w = (v.x2 - v.x1) * bR;
+      const h = (v.y2 - v.y1) * bR;
+      const x = this.map.position.x * bR;
+      const y = this.map.position.y * bR;
+      this.context.strokeRect(x, y, w, h);
+    }
+
+    ctx.drawImage(this.canvas, this.position.x ,this.position.y);
+  }
+}
+
