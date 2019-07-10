@@ -455,11 +455,13 @@ export class UISlider extends GameUIEntity {
 
     this.value = value;
     this.position = position;
-    this.button = new UIButton(name + '_button', '', dimension, new Vector(0, 0), ui);
+
+    const newPos = this.calculateButtonPosition();
+    this.button = new UIButton(name + '_button', '', dimension, newPos, ui);
   }
 
   public async init(): Promise<void> {
-    this.calculateButtonPosition();
+    this.handleButtonPosition();
     this.addChild(this.button);
 
     await super.init();
@@ -519,17 +521,22 @@ export class UISlider extends GameUIEntity {
     ctx.drawImage(this.canvas, this.position.x, this.position.y);
   }
 
-  public calculateButtonPosition(): void {
+  public calculateButtonPosition(): Vector {
     const maxX = this.dimension.x - 32;
     const maxY = this.dimension.y - 32;
     const newX = this.orientation === 'vertical' ? 0 : maxX * this.value;
     const newY = this.orientation === 'vertical' ? maxY * this.value : 0;
 
+    return new Vector(newX, newY);
+  }
+
+  public handleButtonPosition(): void {
+    const newPos = this.calculateButtonPosition();
     const width = this.orientation === 'vertical' ? this.dimension.x : 32;
     const height = this.orientation === 'vertical' ? 32 : this.dimension.y;
 
     this.button.setDimension(new Vector(width, height));
-    this.button.setPosition(new Vector(newX, newY));
+    this.button.setPosition(new Vector(newPos.x, newPos.y));
   }
 
   public setOrientation(orientation: UISliderOrientation): void {
