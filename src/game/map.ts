@@ -120,7 +120,7 @@ export class GameMapEntitySelection extends Entity {
     // TODO: This can be cached based on dimensions
     const { canvas } = this.sprite;
     const position = target.getPosition();
-    const dimension = target.dimension.clone(); // FIXME
+    const dimension = target.getDimension();
     const isInfantry = target instanceof InfantryEntity;
     const f = isInfantry ? 0 : 1;
     const l = isInfantry ? 3 : 5;
@@ -378,11 +378,12 @@ export class GameMap extends Entity {
     return this.entities
       .filter(e => {
         const c: Vector = e.getCell();
+        const d: Vector = e.getDimension();
         return collidePoint(cell, {
           x1: c.x,
-          x2: c.x + Math.floor(e.dimension.x / CELL_SIZE) - 1,
+          x2: c.x + Math.floor(d.x / CELL_SIZE) - 1,
           y1: c.y,
-          y2: c.y + Math.floor(e.dimension.y / CELL_SIZE) - 1
+          y2: c.y + Math.floor(d.y / CELL_SIZE) - 1
         }) && test(e);
       });
   };
@@ -435,9 +436,9 @@ export class GameMap extends Entity {
     const dh = sh;
 
     context.clearRect(dx, dy, dw, dh);
-    terrain.clearRect(0, 0, this.overlay.dimension.x, this.overlay.dimension.y);
-    objects.clearRect(0, 0, this.objects.dimension.x, this.objects.dimension.y);
-    overlay.clearRect(0, 0, this.overlay.dimension.x, this.overlay.dimension.y);
+    terrain.clearRect(0, 0, this.dimension.x, this.dimension.y);
+    objects.clearRect(0, 0, this.dimension.x, this.dimension.y);
+    overlay.clearRect(0, 0, this.dimension.x, this.dimension.y);
 
     visible.forEach(e => e.onRender(deltaTime));
 

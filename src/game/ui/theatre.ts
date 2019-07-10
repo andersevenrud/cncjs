@@ -102,9 +102,10 @@ export class TheatreUI extends UIScene {
     elFactories.on('change', onConstruct);
 
     const onTooltipOver = (root: UIEntity) => (position: Vector, text: string) => {
+      const dimension = tooltip.getDimension();
       const newPosition = root.getRealPosition()
         .add(position)
-        .subtract(new Vector(tooltip.dimension.x, tooltip.dimension.y / 2));
+        .subtract(new Vector(dimension.x, dimension.y / 2));
 
       tooltip.setPosition(newPosition);
       tooltip.setText(text);
@@ -398,12 +399,13 @@ export class TheatreUI extends UIScene {
 
   private handleSelectionRectangle(): void {
     const map = this.scene.map;
+    const position = map.getPosition();
 
     const rect = {
-      x1: this.selectionRectangle!.x1 + map.position.x,
-      x2: this.selectionRectangle!.x2 + map.position.x,
-      y1: this.selectionRectangle!.y1 + map.position.y,
-      y2: this.selectionRectangle!.y2 + map.position.y
+      x1: this.selectionRectangle!.x1 + position.x,
+      x2: this.selectionRectangle!.x2 + position.x,
+      y1: this.selectionRectangle!.y1 + position.y,
+      y2: this.selectionRectangle!.y2 + position.y
     };
 
     const selected = map.getEntities()

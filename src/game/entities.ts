@@ -315,7 +315,7 @@ export class DynamicEntity extends GameMapEntity {
 export class StructureEntity extends GameMapEntity {
   protected zIndex: number = 1;
   protected directions: number = 8;
-  public dimension: Vector = new Vector(24, 24);
+  protected dimension: Vector = new Vector(24, 24);
   protected properties: MIXStructure = this.engine.mix.structures.get(this.data.name) as MIXStructure;
   protected animation: string = 'Idle';
   protected bibOffset: number = 0;
@@ -525,7 +525,7 @@ export class StructureEntity extends GameMapEntity {
  * Unit Entity
  */
 export class UnitEntity extends DynamicEntity {
-  public dimension: Vector = new Vector(16, 16);
+  protected dimension: Vector = new Vector(16, 16);
   protected wakeSprite?: Sprite;
   protected wakeAnimation?: Animation;
   protected properties: MIXUnit = this.engine.mix.units.get(this.data.name) as MIXUnit;
@@ -643,7 +643,7 @@ export class UnitEntity extends DynamicEntity {
  * Infantry Entity
  */
 export class InfantryEntity extends DynamicEntity {
-  public dimension: Vector = new Vector(16, 16);
+  protected dimension: Vector = new Vector(16, 16);
   protected directions: number = 8;
   protected properties: MIXInfantry = this.engine.mix.infantry.get(this.data.name) as MIXInfantry;
   protected animation: string = 'Ready';
@@ -806,7 +806,7 @@ export class SmudgeEntity extends GameMapEntity {
  */
 export class TerrainEntity extends GameMapEntity {
   protected zIndex: number = 2;
-  public dimension: Vector = new Vector(16, 16);
+  protected dimension: Vector = new Vector(16, 16);
   protected properties: MIXTerrain = this.engine.mix.terrain.get(this.data.name) as MIXTerrain;
   protected occupy?: MIXGrid = {
     name: '',
@@ -895,8 +895,8 @@ export class EffectEntity extends GameMapEntity {
       this.offset = new Vector(this.sprite.size.x / 2, this.sprite.size.y / 2);
 
       if (this.centerEntity) {
-        const dimension = this.centerEntity.dimension;
-        this.offset.subtract(new Vector(dimension.x / 2, dimension.y / 2));
+        const dimension = this.centerEntity.getDimension().divS(2);
+        this.offset.subtract(dimension);
       }
 
       this.animations.set(name, anim);

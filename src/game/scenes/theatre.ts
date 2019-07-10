@@ -151,9 +151,10 @@ export class TheatreScene extends Scene {
 
   private updateSoundContext(): void {
     const viewport = this.getScaledViewport();
+    const position = this.map.getPosition();
     const center = new Vector(
-      ((viewport.x2 - viewport.x1) / 2) + this.map.position.x,
-      ((viewport.y2 - viewport.y1) / 2) + this.map.position.y
+      ((viewport.x2 - viewport.x1) / 2) + position.x,
+      ((viewport.y2 - viewport.y1) / 2) + position.y
     );
 
     this.engine.sound.setContextPosition(center);

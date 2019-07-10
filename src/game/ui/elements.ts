@@ -398,7 +398,7 @@ class UIListViewList extends GameUIEntity {
     const h = LISTVIEW_ITEM_HEIGHT;
 
     this.setDimension(new Vector(
-      this.parent!.dimension.x - 22,
+      this.parent!.getDimension().x - 22,
       (h + p) * items.length
     ));
 
@@ -517,16 +517,17 @@ export class UISlider extends GameUIEntity {
     if (this.dragStart) {
       let value = 0;
 
+      const buttonDimension = this.button.getDimension();
       if (this.orientation === 'horizontal') {
         const diff = this.ui.engine.mouse.getVector().x - this.dragStart.x;
-        const maxX = this.dimension.x - this.button.dimension.x;
+        const maxX = this.dimension.x - buttonDimension.x;
         const newX = Math.min(maxX, Math.max(0, this.buttonStart!.x + diff));
         value = newX / maxX;
 
         this.button.setPosition(new Vector(newX, 0));
       } else if (this.orientation === 'vertical') {
         const diff = this.ui.engine.mouse.getVector().y - this.dragStart.y;
-        const mayY = this.dimension.y - this.button.dimension.y;
+        const mayY = this.dimension.y - buttonDimension.y;
         const newY = Math.min(mayY, Math.max(0, this.buttonStart!.y + diff));
         value = newY / mayY;
 
@@ -582,7 +583,7 @@ export class UISlider extends GameUIEntity {
  * Tabs
  */
 export class UITab extends GameUIEntity {
-  public dimension: Vector = new Vector(TAB_WIDTH, TAB_HEIGHT);
+  protected dimension: Vector = new Vector(TAB_WIDTH, TAB_HEIGHT);
   private frame: Vector = new Vector(0, 0);
 
   public sprites: Map<string, Sprite> = new Map([
@@ -626,7 +627,7 @@ export class UITab extends GameUIEntity {
  * TODO: Replace with icon buttons
  */
 export class UIActions extends GameUIEntity {
-  public dimension: Vector = new Vector(RADAR_WIDTH, ACTION_HEIGHT);
+  protected dimension: Vector = new Vector(RADAR_WIDTH, ACTION_HEIGHT);
   public sprites: Map<string, Sprite> = new Map([
     ['buttonMap', spriteFromName('UPDATEC.MIX/hmap.png')],
     ['buttonSell', spriteFromName('UPDATEC.MIX/hsell.png')],
@@ -725,7 +726,7 @@ export class UIActions extends GameUIEntity {
  * Radar
  */
 export class UIRadar extends GameUIEntity {
-  public dimension: Vector = new Vector(RADAR_WIDTH, RADAR_HEIGHT);
+  protected dimension: Vector = new Vector(RADAR_WIDTH, RADAR_HEIGHT);
   private frame: Vector = new Vector(0, 0);
   public sprites: Map<string, Sprite> = new Map([
     ['radarGdi', spriteFromName('UPDATEC.MIX/hradar_gdi.png')],
@@ -844,7 +845,7 @@ export class UITooltip extends GameUIEntity {
  */
 export class UISidebar extends GameUIEntity {
   private backgroundPattern: CanvasPattern | null = null;
-  public dimension: Vector = new Vector(SIDEBAR_WIDTH, SIDEBAR_HEIGHT);
+  protected dimension: Vector = new Vector(SIDEBAR_WIDTH, SIDEBAR_HEIGHT);
 
   public sprites: Map<string, Sprite> = new Map([
     ['sidebarTop', spriteFromName('UPDATEC.MIX/hside1.png')],
@@ -866,7 +867,7 @@ export class UISidebar extends GameUIEntity {
   public onResize(): void {
     this.setDimension(new Vector(
       this.dimension.x,
-      this.ui.dimension.y
+      this.ui.getDimension().y
     ));
 
     super.onResize();
@@ -1051,10 +1052,11 @@ export abstract class UIConstruction extends GameUIEntity {
       const down = this.sprites.get('buttonDown') as Sprite;
       const clock = this.sprites.get('clock') as Sprite;
       const pip = this.sprites.get('pips') as Sprite;
+      const stripDimension = this.strip.getDimension();
 
       this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
 
-      this.strip.getContext().clearRect(0, 0, this.strip.dimension.x, this.strip.dimension.y);
+      this.strip.getContext().clearRect(0, 0, stripDimension.x, stripDimension.y);
 
       let index = -this.offset;
       for (let i = 0; i < this.names.length; i++) {
@@ -1092,14 +1094,14 @@ export abstract class UIConstruction extends GameUIEntity {
       }
 
       if (this.offset > 0) {
-        up.render(new Vector(0, 0), new Vector(0, this.strip.dimension.y + 1), this.context);
+        up.render(new Vector(0, 0), new Vector(0, stripDimension.y + 1), this.context);
       }
 
       if (this.offset < this.names.length - THUMB_COUNT) {
-        down.render(new Vector(0, 0), new Vector(BUTTON_WIDTH, this.strip.dimension.y + 1), this.context);
+        down.render(new Vector(0, 0), new Vector(BUTTON_WIDTH, stripDimension.y + 1), this.context);
       }
 
-      this.context.drawImage(this.strip.getCanvas(), 0, 0, this.strip.dimension.x, this.strip.dimension.y);
+      this.context.drawImage(this.strip.getCanvas(), 0, 0, stripDimension.x, stripDimension.y);
     }
 
     ctx.drawImage(this.canvas, 0, 0, this.dimension.x, this.dimension.y, this.position.x, this.position.y, this.dimension.x, this.dimension.y);
@@ -1198,7 +1200,7 @@ export class UIMinimap extends GameUIEntity {
     }
 
     if (this.ui.engine.frames % 6 === 0 && !this.ui.isMenuOpen()) {
-      const { sx, sy, sw, sh, dx, dy, dw, dh, bR } = getScaledDimensions(this.map.dimension, this.dimension);
+      const { sx, sy, sw, sh, dx, dy, dw, dh, bR } = getScaledDimensions(this.map.getDimension(), this.dimension);
 
       this.context.fillStyle = '#000000';
       this.context.fillRect(0, 0, this.dimension.x, this.dimension.y);
@@ -1206,23 +1208,27 @@ export class UIMinimap extends GameUIEntity {
 
       this.map.getEntities()
         .forEach(e => {
-          const x = Math.trunc(e.position.x * bR) + dx;
-          const y = Math.trunc(e.position.y * bR) + dy;
-          const w = Math.trunc(e.dimension.x * bR);
-          const h = Math.trunc(e.dimension.y * bR);
+          const p = e.getPosition();
+          const d = e.getDimension();
+          const x = Math.trunc(p.x * bR) + dx;
+          const y = Math.trunc(p.y * bR) + dy;
+          const w = Math.trunc(d.x * bR);
+          const h = Math.trunc(d.y * bR);
           this.context.fillStyle = e.getColor();
           this.context.fillRect(x, y, w, h);
         });
 
+      const p = this.map.getPosition();
+      const d = this.map.getDimension();
       if (this.map.isFowVisible()) {
-        this.context.drawImage(this.map.fow.getCanvas(), 0, 0, this.map.dimension.x, this.map.dimension.y, 0, 0, this.dimension.x, this.dimension.y);
+        this.context.drawImage(this.map.fow.getCanvas(), 0, 0, d.x, d.y, 0, 0, this.dimension.x, this.dimension.y);
       }
 
       const v = this.ui.getViewport();
       const w = (v.x2 - v.x1) * bR;
       const h = (v.y2 - v.y1) * bR;
-      const x = this.map.position.x * bR;
-      const y = this.map.position.y * bR;
+      const x = p.x * bR;
+      const y = p.y * bR;
       this.context.strokeRect(x, y, w, h);
     }
 

@@ -116,7 +116,7 @@ export class ScoreScene extends Scene {
     const context = this.engine.getContext();
     const dimension = this.engine.getScaledDimension();
     const { sx, sy, sw, sh, dx, dy, dw, dh } = getScaledDimensions(
-      this.screen.dimension,
+      this.screen.getDimension(),
       dimension
     );
 

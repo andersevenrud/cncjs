@@ -79,7 +79,7 @@ export class ProjectileEntity extends GameMapBaseEntity {
       const speed = this.bullet.BulletSpeed / 18;
       const directions = 32;
       const position = this.position.clone() as Vector;
-      const targetPosition = this.target.position.clone() as Vector;
+      const targetPosition = this.target.getPosition();
 
       const direction = getDirection(targetPosition, position, directions);
       const angleRadians = (direction / directions) * 2 * Math.PI;

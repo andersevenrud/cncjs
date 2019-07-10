@@ -276,8 +276,8 @@ export abstract class GameMapBaseEntity extends Entity {
  * Map Entity
  */
 export abstract class GameMapEntity extends GameMapBaseEntity {
-  public dimension: Vector = new Vector(24, 24);
   public readonly player?: Player;
+  protected dimension: Vector = new Vector(24, 24);
   protected readonly data: MIXMapEntityData;
   protected properties?: MIXObject;
   protected occupy?: MIXGrid;

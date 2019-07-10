@@ -69,7 +69,7 @@ export class MenuScene extends Scene {
 
     playlist.play();
 
-    this.ui.setDimension(this.screen.dimension);
+    this.ui.setDimension(this.screen.getDimension());
     await this.ui.init();
   }
 
@@ -88,7 +88,7 @@ export class MenuScene extends Scene {
   public onUpdate(deltaTime: number): void {
     const dimension = this.engine.getScaledDimension();
     const { dx, dy, bR } = getScaledDimensions(
-      this.screen.dimension,
+      this.screen.getDimension(),
       dimension
     );
 
@@ -102,7 +102,7 @@ export class MenuScene extends Scene {
 
   public onRender(deltaTime: number): void {
     const { sx, sy, sw, sh, dx, dy, dw, dh } = getScaledDimensions(
-      this.screen.dimension,
+      this.screen.getDimension(),
       this.engine.getScaledDimension()
     );
 
