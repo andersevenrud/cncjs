@@ -39,7 +39,7 @@ export const SCROLL_BORDER = 2;
 
 export class TheatreUI extends UIScene {
   public readonly scene: TheatreScene;
-  protected sidebarVisible: boolean = true; // FIXME
+  protected sidebarVisible: boolean = false;
   private selectionRectangleStart?: Vector;
   private selectionRectangle?: Box;
   private placeConstruction?: string;
@@ -59,18 +59,19 @@ export class TheatreUI extends UIScene {
     const tabMenu = new UITab('tab-menu', 'Menu', new Vector(0, 0), this);
     const tabSidebar = new UITab('tab-sidebar', 'Sidebar', new Vector(-0, 0), this);
     const tooltip = new UITooltip('tooltip', new Vector(0, 0), this);
+    const minimap = new UIMinimap(this.scene.map, this);
 
     this.elements.push(tabMenu);
     this.elements.push(new UITab('tab-credits', emitCredits, new Vector(-TAB_WIDTH, 0), this));
     this.elements.push(tabSidebar);
 
     const sidebar = new UISidebar(new Vector(-0, TAB_HEIGHT), this);
-    sidebar.addChild(new UIRadar(new Vector(0, 0), this));
     const btnActions = sidebar.addChild(new UIActions(new Vector(4, RADAR_HEIGHT + 2), this));
     const elStructures = sidebar.addChild(new UIStructureConstruction('structures', new Vector(20,  RADAR_HEIGHT + ACTION_HEIGHT + 6), this));
     const elFactories = sidebar.addChild(new UIFactoryConstruction('factories', new Vector(90,  RADAR_HEIGHT + ACTION_HEIGHT + 6), this));
     sidebar.addChild(new UIPowerBar(new Vector(0,  RADAR_HEIGHT + ACTION_HEIGHT + 2), this));
-    sidebar.addChild(new UIMinimap(this.scene.map, this));
+    sidebar.addChild(new UIRadar(new Vector(0, 0), this));
+    sidebar.addChild(minimap);
     sidebar.setVisible(this.sidebarVisible);
 
     const menu = new UIBox('menu', new Vector(420, 230), new Vector(0.5, 0.5), this);
@@ -145,7 +146,15 @@ export class TheatreUI extends UIScene {
       this.toggleSidebar();
     });
 
-    btnActions.on('click', (action?: UIActionsName) => (this.currentAction = action));
+    btnActions.on('click', (action?: UIActionsName) => {
+      if (action === 'minimap') {
+        if (this.scene.player.hasMinimap()) {
+          minimap.setVisible(!minimap.isVisible());
+        }
+      } else {
+        this.currentAction = action;
+      }
+    });
 
     btnAbort.on('click', () => {
       this.scene.engine.sound.playlist.pause();
@@ -340,6 +349,14 @@ export class TheatreUI extends UIScene {
         map.moveSelectedEntities(cell);
       }
     }
+  }
+
+  public toggleMinimap(toggle?: boolean): void {
+    const minimap = this.getElementByName('minimap') as UIMinimap;
+    if (typeof toggle === 'undefined') {
+      toggle = !minimap.isVisible();
+    }
+    minimap.setVisible(toggle);
   }
 
   public toggleSidebar(toggle?: boolean): void {

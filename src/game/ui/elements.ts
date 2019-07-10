@@ -14,7 +14,7 @@ import { getScaledDimensions } from '../physics';
 import { Vector } from 'vector2d';
 
 export type UIConstructionType = 'structure' | 'unit' | 'aircraft';
-export type UIActionsName = 'sell' | 'repair';
+export type UIActionsName = 'sell' | 'repair' | 'minimap';
 export type UIConstructionState = 'constructing' | 'hold' | 'ready';
 export type UIConstructionResponse = 'construct' | 'hold' | 'cancel' | 'busy' | 'place' | 'finished' | 'tick';
 export type UIBorderType = 'inset' | 'outset';
@@ -623,6 +623,7 @@ export class UITab extends GameUIEntity {
 
 /**
  * Action buttons
+ * TODO: Replace with icon buttons
  */
 export class UIActions extends GameUIEntity {
   public dimension: Vector = new Vector(RADAR_WIDTH, ACTION_HEIGHT);
@@ -632,7 +633,7 @@ export class UIActions extends GameUIEntity {
     ['buttonRepair', spriteFromName('UPDATEC.MIX/hrepair.png')]
   ]);
 
-  private names: string[] = ['sell', 'repair'];
+  private names: string[] = ['sell', 'repair', 'minimap'];
 
   private indexes: Vector[] = [
     new Vector(0, 0),
@@ -643,7 +644,7 @@ export class UIActions extends GameUIEntity {
   private frames: Vector[] = [
     new Vector(0, 0),
     new Vector(0, 0),
-    new Vector(0, 2)
+    new Vector(0, 0)
   ];
 
   public constructor(position: Vector, ui: TheatreUI) {
@@ -675,6 +676,18 @@ export class UIActions extends GameUIEntity {
     const hitName = this.names[hitButton];
     this.emit(hitName as UIActionsName);
     this.emit('click', hitName as UIActionsName);
+  }
+
+  public onUpdate(deltaTime: number): void {
+    super.onUpdate(deltaTime);
+    const newValue = (this.ui as TheatreUI).scene.player.hasMinimap()
+      ? 0
+      : 2;
+
+    if (this.frames[2].y !== newValue) {
+      this.frames[2].setY(newValue);
+      this.updated = true;
+    }
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
@@ -724,15 +737,12 @@ export class UIRadar extends GameUIEntity {
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
-    if (this.updated) {
-      super.onRender(deltaTime, ctx);
+    // FIXME: optimize
+    super.onRender(deltaTime, ctx);
 
-      const sprite = this.sprites.get('radarGdi') as Sprite; // FIXME
-      sprite.render(this.frame, new Vector(0, 0), this.context);
-      ctx.drawImage(this.canvas, this.position.x, this.position.y);
-    }
-
-    this.updated = false;
+    const sprite = this.sprites.get('radarGdi') as Sprite; // FIXME
+    sprite.render(this.frame, new Vector(0, 0), this.context);
+    ctx.drawImage(this.canvas, this.position.x, this.position.y);
   }
 }
 
@@ -867,18 +877,22 @@ export class UISidebar extends GameUIEntity {
       return;
     }
 
-    const top = this.sprites.get('sidebarTop') as Sprite;
-    const bottom = this.sprites.get('sidebarBottom') as Sprite;
+    if (this.updated) {
+      const top = this.sprites.get('sidebarTop') as Sprite;
+      const bottom = this.sprites.get('sidebarBottom') as Sprite;
 
-    this.context.fillStyle = this.backgroundPattern as CanvasPattern;
-    this.context.fillRect(0, 0, this.dimension.x, this.dimension.y);
+      this.context.fillStyle = this.backgroundPattern as CanvasPattern;
+      this.context.fillRect(0, 0, this.dimension.x, this.dimension.y);
 
-    top.render(new Vector(0, 1), new Vector(0, RADAR_HEIGHT), this.context);
-    bottom.render(new Vector(0, 1), new Vector(0, RADAR_HEIGHT + top.size.y), this.context);
+      top.render(new Vector(0, 1), new Vector(0, RADAR_HEIGHT), this.context);
+      bottom.render(new Vector(0, 1), new Vector(0, RADAR_HEIGHT + top.size.y), this.context);
 
-    super.onRender(deltaTime, ctx);
+      super.onRender(deltaTime, ctx);
 
-    ctx.drawImage(this.canvas, this.position.x, this.position.y);
+      ctx.drawImage(this.canvas, this.position.x, this.position.y);
+    }
+
+    this.updated = false;
   }
 }
 
@@ -1179,6 +1193,10 @@ export class UIMinimap extends GameUIEntity {
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D) {
+    if (!this.isVisible()) {
+      return;
+    }
+
     if (this.ui.engine.frames % 6 === 0 && !this.ui.isMenuOpen()) {
       const { sx, sy, sw, sh, dx, dy, dw, dh, bR } = getScaledDimensions(this.map.dimension, this.dimension);
 

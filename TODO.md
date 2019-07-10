@@ -106,7 +106,7 @@
     - [ ] C4-ing
     - [ ] Primary structure selection
     - [ ] Subcell infantry group damage division
-    - [ ] Minimap availability
+    - [x] Minimap availability
     - [ ] Destruction of certain entities spawns infantry or civilians
     - [ ] Squashing of infantry when units drive over
 - [x] Sounds

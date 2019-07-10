@@ -24,10 +24,11 @@ const players: PlayerMap[] = playerMap.map((name, index): any => {
 export class TheatreScene extends Scene {
   public readonly engine: GameEngine;
   public readonly map: GameMap;
-  public readonly player: Player;
   public readonly ui: TheatreUI;
   public readonly viewport: Box = { x1: 0, x2: 800, y1: 0, y2: 600 };
   public readonly name: string;
+  public readonly playerName: MIXPlayerName;
+  public readonly player: Player;
   private players: Map<MIXPlayerName, Player> = new Map(players);
   private loaded: boolean = false;
 
@@ -36,8 +37,10 @@ export class TheatreScene extends Scene {
 
     this.engine = engine;
     this.name = name;
+    this.playerName = player;
     this.map = new GameMap(this.name, this.engine as GameEngine, this);
     this.player = this.players.get(player) as Player;
+    this.player.setSessionPlayer(true);
     this.ui = new TheatreUI(this);
   }
 
@@ -70,6 +73,8 @@ export class TheatreScene extends Scene {
 
     playlist.play('aoi');
     this.loaded = true;
+    this.ui.toggleSidebar(this.player.getTechLevel() > 0);
+    this.ui.toggleMinimap(this.player.hasMinimap());
 
     console.debug(this);
   }
@@ -152,6 +157,16 @@ export class TheatreScene extends Scene {
     );
 
     this.engine.sound.setContextPosition(center);
+  }
+
+  public getPlayerById(id: number): Player | undefined {
+    for (let p of this.players.values()) {
+      if (p.getId() === id) {
+        return p;
+      }
+    }
+
+    return undefined;
   }
 
   public getScaledViewport(): Box {

@@ -4,6 +4,7 @@
  * @license MIT
  */
 import { Animation, Entity, Box, Sprite, randomBetweenInteger } from '../engine';
+import { Player } from './player';
 import { GameEngine } from './game';
 import { GameMap } from './map';
 import { pointFromCell, cellFromPoint, CELL_SIZE } from './physics';
@@ -35,6 +36,7 @@ export class GameMapEntityAnimation extends Animation {
 
 export abstract class GameMapBaseEntity extends Entity {
   public readonly map: GameMap;
+  public readonly player?: Player;
   protected offset: Vector = new Vector(0, 0);
   protected cell: Vector = new Vector(0, 0);
   protected rendered: boolean = false;
@@ -189,6 +191,10 @@ export abstract class GameMapBaseEntity extends Entity {
     return 0;
   }
 
+  public getPlayerId(): number {
+    return -1;
+  }
+
   public getRenderBox(): Box {
     return this.getBox();
   }
@@ -203,6 +209,10 @@ export abstract class GameMapBaseEntity extends Entity {
 
   public getZindex(): number {
     return this.zIndex;
+  }
+
+  public getName(): string {
+    return '';
   }
 
   public canRotate(): boolean {
@@ -268,6 +278,7 @@ export abstract class GameMapBaseEntity extends Entity {
 export abstract class GameMapEntity extends GameMapBaseEntity {
   public dimension: Vector = new Vector(24, 24);
   public readonly data: MIXMapEntityData;
+  public readonly player?: Player;
   protected properties?: MIXObject;
   protected occupy?: MIXGrid;
   protected overlap?: MIXGrid;
@@ -286,6 +297,9 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
     this.data = data;
     this.direction = this.data.direction || 0;
     this.health = parseInt(String(data.health!), 10) || 1; // FIXME
+    this.player = typeof data.player === 'number'
+      ? map.scene.getPlayerById(data.player)
+      : undefined;
 
     this.setCell(data.cell, true);
   }
@@ -593,9 +607,19 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
       : '#ff0000';
   }
 
+  public getPlayerId(): number {
+    return typeof this.data.player === 'number'
+      ? this.data.player
+      : super.getPlayerId();
+  }
+
+  public getName(): string {
+    return this.data.name;
+  }
+
   public canReveal(): boolean {
     // FIXME: Neutral ?
-    return this.map.scene.player.getId() === this.data.player;
+    return this.isPlayer();
   }
 
   public isAttackable(source: GameMapEntity): boolean {
@@ -607,6 +631,6 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
   }
 
   public isPlayer(): boolean {
-    return this.map.scene.player.getId() === this.data.player;
+    return this.player ? this.player.isSessionPlayer() : false;
   }
 }

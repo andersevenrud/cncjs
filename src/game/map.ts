@@ -399,7 +399,7 @@ export class GameMap extends Entity {
       this.mask.onUpdate(deltaTime);
     }
 
-    const player = this.scene.player;
+    // FIXME: All players
     const power: [number, number] = [0, 0];
 
     this.entities.forEach(e => {
@@ -411,7 +411,8 @@ export class GameMap extends Entity {
       e.onUpdate(deltaTime);
     });
 
-    player.setPower(power);
+    this.scene.player.setPower(power);
+
     this.fow.onUpdate(deltaTime);
   }
 
@@ -503,6 +504,16 @@ export class GameMap extends Entity {
       if (cell.x < 0 || cell.y < 0 || cell.x > this.mapDimension.x || cell.y > this.mapDimension.y) {
         console.debug('GameMapEntity::addEntity()', 'Not adding entity outside borders', cell.toArray(), entity);
         return;
+      }
+
+      // FIXME: Handle this correctly
+      if (entity.player) {
+        if (['HQ', 'EYE'].indexOf(entity.getName()) !== -1) {
+          entity.player.setMinimap(true);
+          this.scene.ui.toggleMinimap(true);
+        }
+
+        entity.player.setTechLevel(1);
       }
 
       await entity.init();
