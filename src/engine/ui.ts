@@ -337,16 +337,17 @@ export class UIEntity extends Entity {
     let [x, y] = this.originalPosition.toArray();
 
     const parent = this.parent || this.ui;
+    const dimension = parent.getDimension();
     if (isFloat(x)) {
-      x = Math.round((parent.dimension.x / 2) - (this.dimension.x / 2));
+      x = Math.round((dimension.x / 2) - (this.dimension.x / 2));
     } else if (isNegative(x)) {
-      x += parent.dimension.x - this.dimension.x;
+      x += dimension.x - this.dimension.x;
     }
 
     if (isFloat(y)) {
-      y = Math.round((parent.dimension.y / 2) - (this.dimension.y / 2));
+      y = Math.round((dimension.y / 2) - (this.dimension.y / 2));
     } else if (isNegative(y)) {
-      y += parent.dimension.y - this.dimension.y;
+      y += dimension.y - this.dimension.y;
     }
 
     this.position = new Vector(x, y);

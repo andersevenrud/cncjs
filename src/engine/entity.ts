@@ -10,8 +10,8 @@ import { Box } from './physics';
  * Entity
  */
 export class Entity {
-  public position: Vector = new Vector(0, 0);
-  public dimension: Vector = new Vector(0, 0);
+  protected position: Vector = new Vector(0, 0);
+  protected dimension: Vector = new Vector(0, 0);
   protected readonly canvas: HTMLCanvasElement = document.createElement('canvas');
   protected readonly context: CanvasRenderingContext2D = this.canvas.getContext('2d') as CanvasRenderingContext2D;
   protected destroyed: boolean = false;
@@ -51,6 +51,13 @@ export class Entity {
    */
   public getPosition(): Vector {
     return this.position.clone() as Vector;
+  }
+
+  /**
+   * Gets current dimension
+   */
+  public getDimension(): Vector {
+    return this.dimension.clone() as Vector;
   }
 
   /**
