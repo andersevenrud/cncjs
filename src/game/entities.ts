@@ -668,6 +668,22 @@ export class InfantryEntity extends DynamicEntity {
       new Vector(dx, dy)
     ];
 
+    // TODO: Guy
+    if (this.data.name === 'C10') {
+      // FIXME: More sounds
+      this.reportSelect = 'MCOMND1';
+      this.reportMove = 'MCOURSE1';
+      this.reportAttack = this.reportMove;
+    } else if (this.properties.IsCivilian) {
+      this.reportSelect = 'GUYYEAH1';
+      this.reportMove = 'GUYOKAY1';
+      this.reportAttack = this.reportMove;
+    } if (this.properties.FemaleCiv) {
+      this.reportSelect = 'GIRLYEAH';
+      this.reportMove = 'GIRLOKAY';
+      this.reportAttack = this.reportMove;
+    }
+
     if (this.data!.subcell! > 0) {
       this.position.add(subcells[this.data!.subcell! - 1]);
     }
