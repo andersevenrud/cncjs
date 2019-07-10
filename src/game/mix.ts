@@ -26,6 +26,16 @@ export interface MIXMapEntityData {
   trigger?: string;
 }
 
+export interface MIXSaveGameEntityData extends MIXMapEntityData {
+  cell: any;
+  type: string;
+}
+
+export interface MIXSaveGame {
+  name: string;
+  entities: MIXSaveGameEntityData[];
+}
+
 export interface MIXMapEntitySounds {
   [Key: string]: number;
 }

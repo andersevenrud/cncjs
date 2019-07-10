@@ -7,7 +7,7 @@ import { Entity, Sprite, MousePosition, Box, collidePoint, collideAABB } from '.
 import { Grid, AStarFinder, DiagonalMovement } from 'pathfinding';
 import { TheatreScene } from './scenes/theatre';
 import { SmudgeEntity, TerrainEntity, InfantryEntity, EffectEntity, UnitEntity, OverlayEntity, StructureEntity } from './entities';
-import { MIXMapData, MIXMapEntityData, wallNames, parseDimensions } from './mix';
+import { MIXMapData, MIXMapEntityData, MIXSaveGame, wallNames, parseDimensions } from './mix';
 import { GameMapBaseEntity } from './entity';
 import { GameEngine } from './game';
 import { spriteFromName } from './sprites';
@@ -260,7 +260,14 @@ export class GameMap extends Entity {
     return `${this.name} ${size}${pos} ${current}${dimension}\nEntities: ${this.visibleEntities}/${this.entities.length}\n${entities}`;
   }
 
-  public async init(): Promise<void> {
+  public toJson(): any {
+    return {
+      name: this.name,
+      entities: this.entities.filter(e => !e.isDestroyed()).map(e => e.toJson())
+    };
+  }
+
+  public async init(save?: MIXSaveGame): Promise<void> {
     console.time();
     const data = await this.engine.mix.loadMap(this.name);
 
@@ -280,19 +287,29 @@ export class GameMap extends Entity {
     const createEntityFrom = (type: string, list: any) =>
       list.map((data: any) => this.factory.load(type, data));
 
-
     await this.selection.init();
     await this.fow.init();
     await this.drawBaseMap(data);
 
-    await Promise.all([
-      ...createEntityFrom('smudge', data.smudge),
-      ...createEntityFrom('terrain', data.terrain),
-      ...createEntityFrom('overlay', data.overlays),
-      ...createEntityFrom('structure', data.structures),
-      ...createEntityFrom('infantry', data.infantry),
-      ...createEntityFrom('unit', data.units)
-    ]);
+    if (save) {
+      this.entities = [];
+
+      await Promise.all(save.entities.map(e => {
+        return this.factory.load(e.type, {
+          ...e,
+          cell: new Vector(e.cell.x, e.cell.y)
+        });
+      }));
+    } else {
+      await Promise.all([
+        ...createEntityFrom('smudge', data.smudge),
+        ...createEntityFrom('terrain', data.terrain),
+        ...createEntityFrom('overlay', data.overlays),
+        ...createEntityFrom('structure', data.structures),
+        ...createEntityFrom('infantry', data.infantry),
+        ...createEntityFrom('unit', data.units)
+      ]);
+    }
 
     const start = data.waypoints.find(w => w.name === 'start');
     if (start) {
@@ -481,13 +498,13 @@ export class GameMap extends Entity {
   }
 
   public async addEntity(entity: GameMapBaseEntity): Promise<void> {
-    const cell = entity.getCell();
-    if (cell.x < 0 || cell.y < 0 || cell.x > this.mapDimension.x || cell.y > this.mapDimension.y) {
-      console.debug('GameMapEntity::addEntity()', 'Not adding entity outside borders', cell.toArray(), entity);
-      return;
-    }
-
     try {
+      const cell = entity.getCell();
+      if (cell.x < 0 || cell.y < 0 || cell.x > this.mapDimension.x || cell.y > this.mapDimension.y) {
+        console.debug('GameMapEntity::addEntity()', 'Not adding entity outside borders', cell.toArray(), entity);
+        return;
+      }
+
       await entity.init();
       this.entities.push(entity);
 

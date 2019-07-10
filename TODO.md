@@ -118,6 +118,13 @@
     - [ ] Attack nearest
     - [ ] SAM launchers
     - [ ] Boats
+- [x] Savegames
+    - [x] Basic support for load/save
+    - [ ] Reset scene on load
+    - [ ] Save FOW state
+    - [ ] Save map position
+    - [ ] Save player states
+    - [ ] Improve save format
 
 ## Misc
 
@@ -131,7 +138,6 @@
 
 ## Future
 
-- [ ] Savegames
 - [ ] Multiplayer
 - [ ] Look into using 'createImageBitmap'
 - [ ] Look into using 'OffscreenCanvas'

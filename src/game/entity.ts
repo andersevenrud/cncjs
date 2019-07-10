@@ -67,6 +67,13 @@ export abstract class GameMapBaseEntity extends Entity {
     return 'TODO'; // TODO
   }
 
+  public toJson(): any {
+    return {
+      cell: this.cell.toObject(),
+      health: this.health
+    }
+  }
+
   public async init(): Promise<void> {
   }
 
@@ -291,6 +298,15 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
   public toString(): string {
     const s = this.getDamageState();
     return `${this.data.player}:${this.data.name} ${this.health}/${this.hitPoints}H@${s} ${this.getTruncatedPosition().toString()}@${this.cell.toString()}x${this.direction.toFixed(1)} | ${this.animation || '<null>'}@${this.frame.toString()} ${this.zIndex}z`;
+  }
+
+  public toJson(): any {
+    return {
+      ...this.data,
+      ...super.toJson(),
+      health: this.health,
+      direction: this.direction
+    }
   }
 
   public async init(): Promise<void> {

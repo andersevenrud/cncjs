@@ -3,7 +3,7 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import { Box, UIEntity, UIScene, MousePosition, collideAABB, collidePoint, capitalize } from '../../engine';
+import { Box, UIEntity, UIScene, MousePosition, collideAABB, collidePoint, capitalize, requestLoadFile, requestSaveFile } from '../../engine';
 import { TheatreScene } from '../scenes/theatre';
 import {
   TAB_WIDTH,
@@ -76,8 +76,8 @@ export class TheatreUI extends UIScene {
 
     const menu = new UIBox('menu', new Vector(420, 230), new Vector(0.5, 0.5), this);
     menu.addChild(new UIText('title', 'Menu', '6point', new Vector(0.5, 6), this));
-    menu.addChild(new UIButton('load-mission', 'Load mission', new Vector(250, 18), new Vector(0.5, 40), this));
-    menu.addChild(new UIButton('save-mission', 'Save mission', new Vector(250, 18), new Vector(0.5, 64), this));
+    const btnLoad = menu.addChild(new UIButton('load-mission', 'Load mission', new Vector(250, 18), new Vector(0.5, 40), this));
+    const btnSave = menu.addChild(new UIButton('save-mission', 'Save mission', new Vector(250, 18), new Vector(0.5, 64), this));
     menu.addChild(new UIButton('delete-mission', 'Delete mission', new Vector(250, 18), new Vector(0.5, 88), this));
     const btnControls = menu.addChild(new UIButton('game-controls', 'Game Controls', new Vector(250, 18), new Vector(0.5, 112), this));
     const btnAbort = menu.addChild(new UIButton('abort-mission', 'Abort mission', new Vector(250, 18), new Vector(0.5, 136), this));
@@ -119,6 +119,18 @@ export class TheatreUI extends UIScene {
     elStructures.on('mouseout', onTooltipOut);
     elFactories.on('mouseover', onTooltipOver(elFactories));
     elFactories.on('mouseout', onTooltipOut);
+
+    btnSave.on('click', () => {
+      const data = this.scene.map.toJson();
+      const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+      requestSaveFile(blob, 'cncjs-savegame.json')
+    });
+
+    btnLoad.on('click', async () => {
+      const str = await requestLoadFile();
+      const savefile = JSON.parse(str);
+      this.scene.map.init(savefile);
+    });
 
     tabMenu.on('click', () => {
       menu.setVisible(true);

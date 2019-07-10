@@ -331,6 +331,13 @@ export class StructureEntity extends GameMapEntity {
     grid: [['x']]
   };
 
+  public toJson(): any {
+    return {
+      ...super.toJson(),
+      type: 'structure'
+    }
+  }
+
   public async init(): Promise<void> {
     await super.init();
 
@@ -520,6 +527,13 @@ export class UnitEntity extends DynamicEntity {
   protected properties: MIXUnit = this.engine.mix.units.get(this.data.name) as MIXUnit;
   protected zIndex: number = 3;
 
+  public toJson(): any {
+    return {
+      ...super.toJson(),
+      type: 'unit'
+    }
+  }
+
   public async init(): Promise<void> {
     await super.init();
 
@@ -636,6 +650,13 @@ export class InfantryEntity extends DynamicEntity {
   protected reportDestroy?: string = 'nuyell1'; // FIXME: Should be handled by projectile
   protected zIndex: number = 2;
 
+  public toJson(): any {
+    return {
+      ...super.toJson(),
+      type: 'infantry'
+    }
+  }
+
   public async init(): Promise<void> {
     const dx = (CELL_SIZE - this.dimension.x) / 2;
     const dy = (CELL_SIZE - this.dimension.y) / 2;
@@ -733,6 +754,13 @@ export class InfantryEntity extends DynamicEntity {
 export class SmudgeEntity extends GameMapEntity {
   protected zIndex: number = -1;
 
+  public toJson(): any {
+    return {
+      ...super.toJson(),
+      type: 'smudge'
+    }
+  }
+
   public async init(): Promise<void> {
     await super.init();
 
@@ -767,6 +795,13 @@ export class TerrainEntity extends GameMapEntity {
     grid: [['x']]
   };
 
+  public toJson(): any {
+    return {
+      ...super.toJson(),
+      type: 'terrain'
+    }
+  }
+
   public async init(): Promise<void> {
     await super.init();
 
@@ -794,6 +829,13 @@ export class OverlayEntity extends GameMapEntity {
     ? { name: '', grid: [['x']] }
     : { name: '', grid: [] };
 
+  public toJson(): any {
+    return {
+      ...super.toJson(),
+      type: 'overlay'
+    }
+  }
+
   public onRender(deltaTime: number): void {
     const context = this.map.overlay.getContext();
     this.renderSprite(deltaTime, context);
@@ -807,6 +849,13 @@ export class OverlayEntity extends GameMapEntity {
 export class EffectEntity extends GameMapEntity {
   protected zIndex: number = 5;
   protected centerEntity?: Entity;
+
+  public toJson(): any {
+    return {
+      ...super.toJson(),
+      type: 'effect'
+    }
+  }
 
   public async init(): Promise<void> {
     await super.init();
