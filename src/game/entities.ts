@@ -24,6 +24,8 @@ import { GameEngine } from './game';
 import { Vector } from 'vector2d';
 
 const DAMAGE_SUFFIX = ['', '-Damaged', '-Destroyed'];
+const SPEED_DIVIDER = 20;
+const TURNSPEED_DIVIDER = 10;
 
 /**
  * Bib underlay entity
@@ -209,7 +211,7 @@ export class DynamicEntity extends GameMapEntity {
     }
 
     if (this.targetDirection !== -1) {
-      const speed = this.getRotationSpeed() / 6;
+      const speed = this.getRotationSpeed() / TURNSPEED_DIVIDER;
       this.direction = getNewDirection(this.direction, this.targetDirection, speed, this.directions);
 
       if (Math.round(this.direction) === this.targetDirection) {
@@ -247,7 +249,7 @@ export class DynamicEntity extends GameMapEntity {
     this.attacking = false;
 
     if (this.targetPosition) {
-      const speed = this.getMovementSpeed() / 18;
+      const speed = this.getMovementSpeed() / SPEED_DIVIDER;
       const direction = getDirection(this.targetPosition, this.position, this.directions);
       const angleRadians = (direction / this.directions) * 2 * Math.PI;
       const vel = new Vector(speed * Math.sin(angleRadians), speed * Math.cos(angleRadians));
