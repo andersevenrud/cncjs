@@ -214,7 +214,6 @@ export class UIText extends GameUIEntity {
  */
 export class UIButton extends GameUIEntity {
   private backgroundPattern: CanvasPattern | null = null;
-  private label: string;
   private active: boolean = false;
 
   public sprites: Map<string, Sprite> = new Map([
@@ -224,7 +223,6 @@ export class UIButton extends GameUIEntity {
   public constructor(name: string, label: string, dimension: Vector, position: Vector, ui: UIScene) {
     super(name, position, ui);
     this.position = position;
-    this.label = label;
 
     this.setDimension(dimension);
 
