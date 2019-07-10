@@ -17,7 +17,6 @@ export type MIXFontGlyphs = number[][];
 export interface MIXMapEntityData {
   name: string;
   cell: Vector;
-  theatre: string;
   player?: number;
   health?: number;
   subcell?: number;
@@ -744,7 +743,6 @@ const mapInfantry = (theatre: string, offset: Vector) => (str: any): MIXMapEntit
 
   return {
     name,
-    theatre,
     subcell: parseInt(subcell, 10),
     action,
     direction: parseDirection(direction, 8),
@@ -760,7 +758,6 @@ const mapUnits = (theatre: string, offset: Vector) => (str: any): MIXMapEntityDa
 
   return {
     name,
-    theatre,
     action,
     direction: parseDirection(direction, 32),
     trigger,
@@ -775,7 +772,6 @@ const mapStructures = (theatre: string, offset: Vector) => (str: any): MIXMapEnt
 
   return {
     name,
-    theatre,
     action,
     direction: parseDirection(direction, 32),
     trigger,

@@ -377,7 +377,7 @@ export class StructureEntity extends GameMapEntity {
 
     if (this.properties!.HasBib) {
       const size = parseDimensions(this.properties!.Dimensions);
-      this.bib = await BibEntity.createOrCache(this.engine, size, this.data.theatre);
+      this.bib = await BibEntity.createOrCache(this.engine, size, this.map.theatre);
     }
 
     this.hitPoints = this.properties!.HitPoints;
@@ -562,8 +562,7 @@ export class UnitEntity extends DynamicEntity {
       const building = new StructureEntity({
         name: 'FACT',
         player: this.data.player,
-        cell: this.cell,
-        theatre: this.data.theatre
+        cell: this.cell
       },  this.map);
 
       this.map.addEntity(building);
@@ -576,8 +575,7 @@ export class UnitEntity extends DynamicEntity {
       const name = this.properties!.DeathAnimation;
       const effect = new EffectEntity({
         name,
-        cell: this.cell.clone() as Vector,
-        theatre: this.data.theatre
+        cell: this.cell.clone() as Vector
       }, this.map);
 
       effect.setCenterEntity(this);
@@ -795,7 +793,7 @@ export class SmudgeEntity extends GameMapEntity {
   }
 
   public getSpriteName(): string {
-    return `${this.data.theatre.toUpperCase()}.MIX/${this.data.name.toLowerCase()}.png`;
+    return `${this.map.theatre.toUpperCase()}.MIX/${this.data.name.toLowerCase()}.png`;
   }
 
   public getColor(): string {

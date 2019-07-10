@@ -277,8 +277,8 @@ export abstract class GameMapBaseEntity extends Entity {
  */
 export abstract class GameMapEntity extends GameMapBaseEntity {
   public dimension: Vector = new Vector(24, 24);
-  public readonly data: MIXMapEntityData;
   public readonly player?: Player;
+  protected readonly data: MIXMapEntityData;
   protected properties?: MIXObject;
   protected occupy?: MIXGrid;
   protected overlap?: MIXGrid;
@@ -579,7 +579,7 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
 
     if (matchers.indexOf(prefix) !== -1) { // FIXME
       // TODO: Add other theatres here
-      return `${this.data.theatre.toUpperCase()}.MIX/${this.data.name.toLowerCase()}.png`;
+      return `${this.map.theatre.toUpperCase()}.MIX/${this.data.name.toLowerCase()}.png`;
     }
 
     return `CONQUER.MIX/${this.data.name.toLowerCase()}.png`;

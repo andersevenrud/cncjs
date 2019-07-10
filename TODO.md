@@ -133,7 +133,6 @@
 ## Misc
 
 - [ ] Fix font matrixes
-- [ ] Remove theatre from the data in constructors
 - [ ] Further optimizations
 
 ## Tools

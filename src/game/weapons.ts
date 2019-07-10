@@ -47,8 +47,7 @@ export class ProjectileEntity extends GameMapBaseEntity {
     if (this.bullet.Explosion) {
       const e = new EffectEntity({
         name: this.bullet.Explosion,
-        cell: this.target.getCell(),
-        theatre: this.weapon.map.theatre
+        cell: this.target.getCell()
       }, map);
 
       e.setCenterEntity(this.target);
@@ -63,8 +62,7 @@ export class ProjectileEntity extends GameMapBaseEntity {
       const e = new EffectEntity({
         name: 'SMOKEY',
         player: -1,
-        cell: this.cell,
-        theatre: this.weapon.map.theatre
+        cell: this.cell
       }, this.weapon.map);
 
       e.setPosition(this.getPosition());
@@ -180,8 +178,7 @@ export class Weapon {
 
       const e = new EffectEntity({
         name,
-        cell: this.entity.getCell(),
-        theatre: this.map.theatre
+        cell: this.entity.getCell()
       }, this.map);
 
       e.setCenterEntity(this.entity);

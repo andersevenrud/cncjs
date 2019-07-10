@@ -296,8 +296,7 @@ export class TheatreUI extends UIScene {
       this.scene.map.factory.load(type, {
         name,
         cell,
-        player: this.scene.player.getId(),
-        theatre: this.scene.map.theatre
+        player: this.scene.player.getId()
       });
     }
 
