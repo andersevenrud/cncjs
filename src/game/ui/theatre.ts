@@ -12,6 +12,9 @@ import {
   ACTION_HEIGHT,
   SIDEBAR_WIDTH,
   ACTION_WIDTH,
+  BUTTON_WIDTH,
+  BUTTON_HEIGHT,
+  CONSTRUCTION_HEIGHT,
   UIMinimap,
   UITab,
   UISidebar,
@@ -64,14 +67,20 @@ export class TheatreUI extends UIScene {
     const tabSidebar = new UITab('tab-sidebar', 'Sidebar', new Vector(-0, 0), this);
 
     // Sidebar
+    const cy = RADAR_HEIGHT + ACTION_HEIGHT + 6;
     const tooltip = new UITooltip('tooltip', new Vector(0, 0), this);
     const minimap = new UIMinimap(this.scene.map, this);
     const sidebar = new UISidebar(new Vector(-0, TAB_HEIGHT), this);
     const btnSell = sidebar.addChild(new UIIconButton('sell', 'UPDATEC.MIX/hsell.png', new Vector(49, 16), new Vector(4, RADAR_HEIGHT + 2), this));
     const btnRepair = sidebar.addChild(new UIIconButton('sell', 'UPDATEC.MIX/hrepair.png', new Vector(49, 16), new Vector(4 + ACTION_WIDTH, RADAR_HEIGHT + 2), this));
     const btnMap = sidebar.addChild(new UIIconButton('sell', 'UPDATEC.MIX/hmap.png', new Vector(49, 16), new Vector(8 + ACTION_WIDTH * 2, RADAR_HEIGHT + 2), this));
-    const elStructures = sidebar.addChild(new UIStructureConstruction('structures', new Vector(20,  RADAR_HEIGHT + ACTION_HEIGHT + 6), this));
-    const elFactories = sidebar.addChild(new UIFactoryConstruction('factories', new Vector(90,  RADAR_HEIGHT + ACTION_HEIGHT + 6), this));
+    const elStructures = sidebar.addChild(new UIStructureConstruction('structures', new Vector(20,  cy), this)) as UIStructureConstruction;
+    const elStructuresUp = sidebar.addChild(new UIIconButton('structures-up', 'UPDATEC.MIX/hstripup.png', new Vector(BUTTON_WIDTH, BUTTON_HEIGHT), new Vector(20, cy + CONSTRUCTION_HEIGHT + 2), this)) as UIIconButton;
+    const elStructuresDown = sidebar.addChild(new UIIconButton('structures-down', 'UPDATEC.MIX/hstripdn.png', new Vector(BUTTON_WIDTH, BUTTON_HEIGHT), new Vector(20 + BUTTON_WIDTH, cy + CONSTRUCTION_HEIGHT + 2), this)) as UIIconButton;
+    const elFactories = sidebar.addChild(new UIFactoryConstruction('factories', new Vector(90, cy), this)) as UIFactoryConstruction;
+    const elFactoriesUp = sidebar.addChild(new UIIconButton('factories-up', 'UPDATEC.MIX/hstripup.png', new Vector(BUTTON_WIDTH, BUTTON_HEIGHT), new Vector(90, cy + CONSTRUCTION_HEIGHT + 2), this)) as UIIconButton;
+    const elFactoriesDown = sidebar.addChild(new UIIconButton('factories-down', 'UPDATEC.MIX/hstripdn.png', new Vector(BUTTON_WIDTH, BUTTON_HEIGHT), new Vector(90 + BUTTON_WIDTH, cy + CONSTRUCTION_HEIGHT + 2), this)) as UIIconButton;
+
     sidebar.addChild(new UIPowerBar(new Vector(0,  RADAR_HEIGHT + ACTION_HEIGHT + 2), this));
     sidebar.addChild(new UIRadar(new Vector(0, 0), this));
     sidebar.addChild(minimap);
@@ -106,7 +115,12 @@ export class TheatreUI extends UIScene {
     // Glue
     const onConstruct = this.handleConstructionCallback.bind(this);
     elStructures.on('change', onConstruct);
+    elStructuresUp.on('click', () => elStructures.moveUp());
+    elStructuresDown.on('click', () => elStructures.moveDown());
+
     elFactories.on('change', onConstruct);
+    elFactoriesUp.on('click', () => elFactories.moveUp());
+    elFactoriesDown.on('click', () => elFactories.moveDown());
 
     const onTooltipOver = (root: UIEntity) => (position: Vector, text: string) => {
       const dimension = tooltip.getDimension();

@@ -49,7 +49,7 @@ export const ACTION_HEIGHT = 16;
 export const TAB_WIDTH = 160;
 export const TAB_HEIGHT = 14;
 export const BUTTON_WIDTH = 32;
-export const BUTTON_HEIGHT = 24;
+export const BUTTON_HEIGHT = 27;
 export const THUMB_WIDTH = 64;
 export const THUMB_HEIGHT = 48;
 export const THUMB_COUNT = 4;
@@ -62,6 +62,7 @@ export const LISTVIEW_PADDING = 4;
 export const MINIMAP_WIDTH = 156;
 export const MINIMAP_HEIGHT = 138;
 export const MINIMAP_OFFSET = 4;
+export const CONSTRUCTION_HEIGHT = THUMB_HEIGHT * THUMB_COUNT;
 
 /**
  * Game UI Entity abstraction
@@ -806,14 +807,12 @@ export class UISidebar extends GameUIEntity {
  */
 export abstract class UIConstruction extends GameUIEntity {
   protected offset: number = 0;
-  private strip: Entity = new Entity();
   private names: string[] = [];
   private items: Map<string, UIConstructionItem> = new Map();
   private lastHoverIndex: number = -1;
 
   public async init(): Promise<void> {
-    this.setDimension(new Vector(THUMB_WIDTH, THUMB_HEIGHT * THUMB_COUNT + BUTTON_HEIGHT + 1));
-    this.strip.setDimension(new Vector(THUMB_WIDTH, THUMB_HEIGHT * THUMB_COUNT));
+    this.setDimension(new Vector(THUMB_WIDTH, CONSTRUCTION_HEIGHT));
 
     let index = 0;
     for (const name of this.sprites.keys()) {
@@ -821,8 +820,6 @@ export abstract class UIConstruction extends GameUIEntity {
       index++;
     }
 
-    this.sprites.set('buttonDown', spriteFromName('UPDATEC.MIX/hstripdn.png'));
-    this.sprites.set('buttonUp', spriteFromName('UPDATEC.MIX/hstripup.png'));
     this.sprites.set('pips', spriteFromName('UPDATEC.MIX/hpips.png'));
     this.sprites.set('clock', spriteFromName('UPDATEC.MIX/hclock.png'));
 
@@ -841,80 +838,66 @@ export abstract class UIConstruction extends GameUIEntity {
 
   public onMouseOver(position: Vector): void {
     const index = Math.floor(position.y / THUMB_HEIGHT);
-    if (index < THUMB_COUNT) {
-      if (this.lastHoverIndex !== index) {
-        const found = this.names[index + this.offset];
-        const properties = (this.ui.engine as GameEngine).mix.getProperties(found.toUpperCase());
-        const text = properties ? `\$${properties.Cost}` : '$?';
+    if (this.lastHoverIndex !== index) {
+      const found = this.names[index + this.offset];
+      const properties = (this.ui.engine as GameEngine).mix.getProperties(found.toUpperCase());
+      const text = properties ? `\$${properties.Cost}` : '$?';
 
-        this.ee.emit('mouseover', new Vector(
-          0,
-          (index * THUMB_HEIGHT) + (THUMB_HEIGHT / 2)
-        ), text);
-      }
-      this.lastHoverIndex = index;
-    } else {
-      this.onMouseOut();
+      this.ee.emit('mouseover', new Vector(
+        0,
+        (index * THUMB_HEIGHT) + (THUMB_HEIGHT / 2)
+      ), text);
     }
+    this.lastHoverIndex = index;
   }
 
   public onClick(position: Vector, button: MouseButton): void {
     const thumbnail = Math.floor(position.y / THUMB_HEIGHT);
-    const index = position.x / THUMB_WIDTH;
-
-    if (thumbnail > THUMB_COUNT - 1) {
-      if (index > 0.5) {
-        this.moveDown();
+    const found = this.names[thumbnail + this.offset];
+    if (found) {
+      const busy = this.items.get(found);
+      if (button === 'right') {
+        if (busy) {
+          if (busy.state === 'hold' || busy.state === 'ready') {
+            this.items.delete(found);
+            this.emit('cancel', busy);
+          } else {
+            busy.state = 'hold';
+            this.emit('hold', busy);
+          }
+        }
       } else {
-        this.moveUp();
-      }
-    } else {
-      const found = this.names[thumbnail + this.offset];
-      if (found) {
-        const busy = this.items.get(found);
-        if (button === 'right') {
-          if (busy) {
-            if (busy.state === 'hold' || busy.state === 'ready') {
-              this.items.delete(found);
-              this.emit('cancel', busy);
-            } else {
-              busy.state = 'hold';
-              this.emit('hold', busy);
-            }
+        if (busy) {
+          const progress = busy.cost > 0
+            ? busy.progress / busy.cost
+            : 1;
+
+          if (progress >= 1.0) {
+            this.emit('place', busy);
+
+            // FIXME: Do this when it is actually placed
+            this.items.delete(found);
+          } else if (busy.state === 'hold') {
+            busy.state = 'constructing';
+            this.emit('construct', busy);
+          } else {
+            this.emit('busy', busy);
           }
         } else {
-          if (busy) {
-            const progress = busy.cost > 0
-              ? busy.progress / busy.cost
-              : 1;
+          const properties = (this.ui.engine as GameEngine).mix.getProperties(found.toUpperCase());
 
-            if (progress >= 1.0) {
-              this.emit('place', busy);
+          if (properties) {
+            const cost = properties.Cost || 1;
+            const item = {
+              name: found,
+              state: 'constructing' as UIConstructionState,
+              cost: cost,
+              progress: 0,
+              type: this instanceof UIFactoryConstruction ? 'unit' : 'structure' as UIConstructionType  // FIXME
+            };
 
-              // FIXME: Do this when it is actually placed
-              this.items.delete(found);
-            } else if (busy.state === 'hold') {
-              busy.state = 'constructing';
-              this.emit('construct', busy);
-            } else {
-              this.emit('busy', busy);
-            }
-          } else {
-            const properties = (this.ui.engine as GameEngine).mix.getProperties(found.toUpperCase());
-
-            if (properties) {
-              const cost = properties.Cost || 1;
-              const item = {
-                name: found,
-                state: 'constructing' as UIConstructionState,
-                cost: cost,
-                progress: 0,
-                type: this instanceof UIFactoryConstruction ? 'unit' : 'structure' as UIConstructionType  // FIXME
-              };
-
-              this.items.set(found, item);
-              this.emit('construct', item);
-            }
+            this.items.set(found, item);
+            this.emit('construct', item);
           }
         }
       }
@@ -950,62 +933,45 @@ export abstract class UIConstruction extends GameUIEntity {
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
     if (this.updated) {
-      const sctx = this.strip.getContext();
       const frame = new Vector(0, 0);
-      const up = this.sprites.get('buttonUp') as Sprite;
-      const down = this.sprites.get('buttonDown') as Sprite;
       const clock = this.sprites.get('clock') as Sprite;
       const pip = this.sprites.get('pips') as Sprite;
-      const stripDimension = this.strip.getDimension();
 
       this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
-
-      this.strip.getContext().clearRect(0, 0, stripDimension.x, stripDimension.y);
 
       let index = -this.offset;
       for (let i = 0; i < this.names.length; i++) {
         const sprite = this.sprites.get(this.names[i]) as Sprite;
         const position = new Vector(0, index * THUMB_HEIGHT);
         this.context.clearRect(position.x, position.y, sprite.size.x, sprite.size.y);
-        sprite.render(frame, position, sctx);
+        sprite.render(frame, position, this.context);
 
         const state = this.items.get(this.names[i]);
         if (state) {
           let p = state.progress / state.cost;
           let f = new Vector(0, Math.round(clock.frames * p));
 
-          sctx.globalCompositeOperation = 'destination-out';
-          clock.render(f, new Vector(
-            position.x,
-            position.y
-          ), sctx);
-          sctx.globalCompositeOperation = 'source-over';
+          this.context.globalCompositeOperation = 'destination-out';
+          clock.render(f, new Vector(position.x, position.y), this.context);
+          this.context.globalCompositeOperation = 'source-over';
 
           if (state.state === 'ready') {
             pip.render(new Vector(0, 3), new Vector(
               position.x + (sprite.size.x / 2) - (pip.size.x / 2),
               position.y + (sprite.size.y / 2) - (pip.size.y / 2)
-            ), sctx);
+            ), this.context);
           } else if (state.state === 'hold') {
             pip.render(new Vector(0, 4), new Vector(
               position.x + (sprite.size.x / 2) - (pip.size.x / 2),
               position.y + (sprite.size.y / 2) - (pip.size.y / 2)
-            ), sctx);
+            ), this.context);
           }
         }
 
         index++;
       }
 
-      if (this.offset > 0) {
-        up.render(new Vector(0, 0), new Vector(0, stripDimension.y + 1), this.context);
-      }
-
-      if (this.offset < this.names.length - THUMB_COUNT) {
-        down.render(new Vector(0, 0), new Vector(BUTTON_WIDTH, stripDimension.y + 1), this.context);
-      }
-
-      this.context.drawImage(this.strip.getCanvas(), 0, 0, stripDimension.x, stripDimension.y);
+      this.context.drawImage(this.canvas, 0, 0, this.dimension.x, this.dimension.y);
     }
 
     ctx.drawImage(this.canvas, 0, 0, this.dimension.x, this.dimension.y, this.position.x, this.position.y, this.dimension.x, this.dimension.y);
@@ -1015,11 +981,13 @@ export abstract class UIConstruction extends GameUIEntity {
 
   public moveUp(): void {
     this.offset = Math.max(0, this.offset - 1);
+    this.updated = true;
     console.debug('UIConstruction::moveUp()', this.offset);
   }
 
   public moveDown(): void {
     this.offset = Math.min(this.names.length - THUMB_COUNT, this.offset + 1);
+    this.updated = true;
     console.debug('UIConstruction::moveDown()', this.offset);
   }
 }
