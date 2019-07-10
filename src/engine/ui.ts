@@ -238,6 +238,13 @@ export class UIEntity extends Entity {
   }
 
   /**
+   * Forces update (repaint)
+   */
+  public forceUpdate(): void {
+    this.updated = true;
+  }
+
+  /**
    * Register event
    */
   public on(name: string, cb: ListenerFn): void {
