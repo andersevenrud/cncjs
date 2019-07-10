@@ -75,6 +75,7 @@
     - [x] Building
     - [x] Attacking
     - [ ] Patrol
+    - [ ] Force shot target (CTRL key)
     - [x] Death
     - [ ] Harvesting
     - [ ] Boarding and unboarding vehicles
@@ -90,6 +91,9 @@
     - [ ] Nukes
     - [ ] ION Cannon
     - [ ] Special effects (like for obelisk)
+    - [ ] Area of effect
+    - [ ] Inaccuracy
+    - [ ] Double shots
 - [x] Mechanics
     - [x] Credits
     - [x] Sew together fences
