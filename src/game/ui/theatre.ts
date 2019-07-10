@@ -19,7 +19,6 @@ import {
   UIIconButton,
   UIStructureConstruction,
   UIFactoryConstruction,
-  UIActionsName,
   UIConstructionResponse,
   UIConstructionItem,
   UIPowerBar,
@@ -37,6 +36,7 @@ import { cellFromPoint, isRectangleVisible } from '../physics';
 import { Vector } from 'vector2d';
 
 export const SCROLL_BORDER = 2;
+export type ActionsName = 'sell' | 'repair'
 
 export class TheatreUI extends UIScene {
   public readonly scene: TheatreScene;
@@ -44,10 +44,12 @@ export class TheatreUI extends UIScene {
   private selectionRectangleStart?: Vector;
   private selectionRectangle?: Box;
   private placeConstruction?: string;
-  private currentAction?: UIActionsName;
+  private currentAction?: ActionsName;
   private menuOpen: boolean = false;
   private cursor: MIXCursorType = 'default';
   private mapButton?: UIIconButton;
+  private minimap?: UIMinimap;
+  private sidebar?: UISidebar;
 
   public constructor(scene: TheatreScene) {
     super(scene.engine);
@@ -55,18 +57,15 @@ export class TheatreUI extends UIScene {
   }
 
   public async init(): Promise<void> {
-    const onConstruct = this.handleConstructionCallback.bind(this);
+    // Tabs
     const emitCredits = () => String(this.scene.player.getCredits());
-    const mission = this.scene.engine.mix.mission.get(this.scene.name.toUpperCase()) as MIXMission;
     const tabMenu = new UITab('tab-menu', 'Menu', new Vector(0, 0), this);
+    const tabCredits = new UITab('tab-credits', emitCredits, new Vector(-TAB_WIDTH, 0), this);
     const tabSidebar = new UITab('tab-sidebar', 'Sidebar', new Vector(-0, 0), this);
+
+    // Sidebar
     const tooltip = new UITooltip('tooltip', new Vector(0, 0), this);
     const minimap = new UIMinimap(this.scene.map, this);
-
-    this.elements.push(tabMenu);
-    this.elements.push(new UITab('tab-credits', emitCredits, new Vector(-TAB_WIDTH, 0), this));
-    this.elements.push(tabSidebar);
-
     const sidebar = new UISidebar(new Vector(-0, TAB_HEIGHT), this);
     const btnSell = sidebar.addChild(new UIIconButton('sell', 'UPDATEC.MIX/hsell.png', new Vector(49, 16), new Vector(4, RADAR_HEIGHT + 2), this));
     const btnRepair = sidebar.addChild(new UIIconButton('sell', 'UPDATEC.MIX/hrepair.png', new Vector(49, 16), new Vector(4 + ACTION_WIDTH, RADAR_HEIGHT + 2), this));
@@ -78,6 +77,7 @@ export class TheatreUI extends UIScene {
     sidebar.addChild(minimap);
     sidebar.setVisible(this.sidebarVisible);
 
+    // Game Menu
     const menu = new UIBox('menu', new Vector(420, 230), new Vector(0.5, 0.5), this);
     menu.addChild(new UIText('title', 'Menu', '6point', new Vector(0.5, 6), this));
     const btnLoad = menu.addChild(new UIButton('load-mission', 'Load mission', new Vector(250, 18), new Vector(0.5, 40), this));
@@ -95,6 +95,7 @@ export class TheatreUI extends UIScene {
     restate.addChild(new UIText('title', 'Mission Statement', '6point', new Vector(0.5, 6), this));
     const btnCloseRestate = restate.addChild(new UIButton('close-restate', 'Game Controls', new Vector(250, 18), new Vector(0.5, 136), this));
 
+    const mission = this.scene.engine.mix.mission.get(this.scene.name.toUpperCase()) as MIXMission;
     if (mission) {
       for (let i = 0; i < Object.keys(mission).length; i++) {
         let line: string = (mission as any)[i + 1];
@@ -102,6 +103,8 @@ export class TheatreUI extends UIScene {
       }
     }
 
+    // Glue
+    const onConstruct = this.handleConstructionCallback.bind(this);
     elStructures.on('change', onConstruct);
     elFactories.on('change', onConstruct);
 
@@ -200,6 +203,9 @@ export class TheatreUI extends UIScene {
     menu.setVisible(false);
     tooltip.setVisible(false);
 
+    this.elements.push(tabMenu);
+    this.elements.push(tabCredits);
+    this.elements.push(tabSidebar);
     this.elements.push(sidebar);
     this.elements.push(menu);
     this.elements.push(settings);
@@ -208,6 +214,8 @@ export class TheatreUI extends UIScene {
     this.elements.push(restate);
     this.elements.push(tooltip);
 
+    this.sidebar = sidebar;
+    this.minimap = minimap;
     this.mapButton = btnMap as UIIconButton;
     this.mapButton.setDisabled(true);
 
@@ -361,21 +369,27 @@ export class TheatreUI extends UIScene {
   }
 
   public toggleMinimap(toggle?: boolean): void {
-    const minimap = this.getElementByName('minimap') as UIMinimap;
-    if (typeof toggle === 'undefined') {
-      toggle = !minimap.isVisible();
+    if (!this.minimap) {
+      return;
     }
-    minimap.setVisible(toggle);
+
+    if (typeof toggle === 'undefined') {
+      toggle = !this.minimap.isVisible();
+    }
+    this.minimap.setVisible(toggle);
   }
 
   public toggleSidebar(toggle?: boolean): void {
-    const sidebar = this.getElementByName('sidebar') as UIEntity;
+    if (!this.sidebar) {
+      return;
+    }
+
     if (typeof toggle === 'undefined') {
-      toggle = !sidebar.isVisible();
+      toggle = !this.sidebar.isVisible();
     }
 
     this.sidebarVisible = toggle;
-    sidebar.setVisible(this.sidebarVisible);
+    this.sidebar.setVisible(this.sidebarVisible);
     this.scene.onUIToggle();
     console.debug('TheatreUI::toggleSidebar()', this.sidebarVisible);
   }

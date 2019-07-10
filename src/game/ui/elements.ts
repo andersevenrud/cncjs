@@ -14,7 +14,6 @@ import { getScaledDimensions } from '../physics';
 import { Vector } from 'vector2d';
 
 export type UIConstructionType = 'structure' | 'unit' | 'aircraft';
-export type UIActionsName = 'sell' | 'repair' | 'minimap';
 export type UIConstructionState = 'constructing' | 'hold' | 'ready';
 export type UIConstructionResponse = 'construct' | 'hold' | 'cancel' | 'busy' | 'place' | 'finished' | 'tick';
 export type UIBorderType = 'inset' | 'outset';
