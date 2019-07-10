@@ -11,11 +11,12 @@ import {
   RADAR_HEIGHT,
   ACTION_HEIGHT,
   SIDEBAR_WIDTH,
+  ACTION_WIDTH,
   UIMinimap,
   UITab,
   UISidebar,
   UIRadar,
-  UIActions,
+  UIIconButton,
   UIStructureConstruction,
   UIFactoryConstruction,
   UIActionsName,
@@ -46,6 +47,7 @@ export class TheatreUI extends UIScene {
   private currentAction?: UIActionsName;
   private menuOpen: boolean = false;
   private cursor: MIXCursorType = 'default';
+  private mapButton?: UIIconButton;
 
   public constructor(scene: TheatreScene) {
     super(scene.engine);
@@ -66,7 +68,9 @@ export class TheatreUI extends UIScene {
     this.elements.push(tabSidebar);
 
     const sidebar = new UISidebar(new Vector(-0, TAB_HEIGHT), this);
-    const btnActions = sidebar.addChild(new UIActions(new Vector(4, RADAR_HEIGHT + 2), this));
+    const btnSell = sidebar.addChild(new UIIconButton('sell', 'UPDATEC.MIX/hsell.png', new Vector(49, 16), new Vector(4, RADAR_HEIGHT + 2), this));
+    const btnRepair = sidebar.addChild(new UIIconButton('sell', 'UPDATEC.MIX/hrepair.png', new Vector(49, 16), new Vector(4 + ACTION_WIDTH, RADAR_HEIGHT + 2), this));
+    const btnMap = sidebar.addChild(new UIIconButton('sell', 'UPDATEC.MIX/hmap.png', new Vector(49, 16), new Vector(8 + ACTION_WIDTH * 2, RADAR_HEIGHT + 2), this));
     const elStructures = sidebar.addChild(new UIStructureConstruction('structures', new Vector(20,  RADAR_HEIGHT + ACTION_HEIGHT + 6), this));
     const elFactories = sidebar.addChild(new UIFactoryConstruction('factories', new Vector(90,  RADAR_HEIGHT + ACTION_HEIGHT + 6), this));
     sidebar.addChild(new UIPowerBar(new Vector(0,  RADAR_HEIGHT + ACTION_HEIGHT + 2), this));
@@ -147,13 +151,11 @@ export class TheatreUI extends UIScene {
       this.toggleSidebar();
     });
 
-    btnActions.on('click', (action?: UIActionsName) => {
-      if (action === 'minimap') {
-        if (this.scene.player.hasMinimap()) {
-          minimap.setVisible(!minimap.isVisible());
-        }
-      } else {
-        this.currentAction = action;
+    btnSell.on('click', () => this.currentAction = 'sell');
+    btnRepair.on('click', () => this.currentAction = 'repair');
+    btnMap.on('click', () => {
+      if (this.scene.player.hasMinimap()) {
+        minimap.setVisible(!minimap.isVisible());
       }
     });
 
@@ -206,6 +208,9 @@ export class TheatreUI extends UIScene {
     this.elements.push(restate);
     this.elements.push(tooltip);
 
+    this.mapButton = btnMap as UIIconButton;
+    this.mapButton.setDisabled(true);
+
     await super.init();
   }
 
@@ -234,6 +239,10 @@ export class TheatreUI extends UIScene {
       }
 
       this.updateSelectionRectangle();
+    }
+
+    if (this.mapButton && this.scene.player.hasMinimap()) {
+      this.mapButton.setDisabled(false);
     }
 
     this.updateCursor();

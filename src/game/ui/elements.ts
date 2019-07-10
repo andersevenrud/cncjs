@@ -233,15 +233,19 @@ abstract class UIButtonBase extends GameUIEntity {
   }
 
   public onMouseDown(position: Vector): void {
-    this.active = true;
-    this.emit('mousedown');
-    this.updated = true;
+    if (!this.disabled) {
+      this.active = true;
+      this.emit('mousedown');
+      this.updated = true;
+    }
   }
 
   public onMouseUp(position: Vector): void {
-    this.active = false;
-    this.emit('mouseup');
-    this.updated = true;
+    if (!this.disabled) {
+      this.active = false;
+      this.emit('mouseup');
+      this.updated = true;
+    }
   }
 
   public isActive(): boolean {
@@ -264,7 +268,8 @@ export class UIIconButton extends UIButtonBase {
     if (this.updated) {
       const sprite = this.sprites.get('icon');
       if (sprite) {
-        sprite.render(new Vector(0, this.active ? 1 : 0), new Vector(0, 0), this.context);
+        const f = this.active ? 1 : this.disabled ? 2 : 0;
+        sprite.render(new Vector(0, f), new Vector(0, 0), this.context);
       }
       //this.drawBorder(this.active ? 'inset' : 'outset');
       super.onRender(deltaTime, ctx);
@@ -619,106 +624,6 @@ export class UITab extends GameUIEntity {
 
     ctx.drawImage(this.canvas, this.position.x, this.position.y);
     this.updated = false;
-  }
-}
-
-/**
- * Action buttons
- * TODO: Replace with icon buttons
- */
-export class UIActions extends GameUIEntity {
-  protected dimension: Vector = new Vector(RADAR_WIDTH, ACTION_HEIGHT);
-  public sprites: Map<string, Sprite> = new Map([
-    ['buttonMap', spriteFromName('UPDATEC.MIX/hmap.png')],
-    ['buttonSell', spriteFromName('UPDATEC.MIX/hsell.png')],
-    ['buttonRepair', spriteFromName('UPDATEC.MIX/hrepair.png')]
-  ]);
-
-  private names: string[] = ['sell', 'repair', 'minimap'];
-
-  private indexes: Vector[] = [
-    new Vector(0, 0),
-    new Vector(ACTION_WIDTH + 4, 0),
-    new Vector((ACTION_WIDTH + 4) * 2, 0)
-  ];
-
-  private frames: Vector[] = [
-    new Vector(0, 0),
-    new Vector(0, 0),
-    new Vector(0, 0)
-  ];
-
-  public constructor(position: Vector, ui: TheatreUI) {
-    super('actions', position, ui);
-  }
-
-  public onMouseDown(position: Vector): void {
-    const hitButton = this.getButtonHit(position);
-    if (hitButton !== -1 && this.frames[hitButton].y !== 2) {
-      this.frames[hitButton].setY(1);
-    }
-
-    this.updated = true;
-  }
-
-  public onMouseUp(position: Vector): void {
-    this.frames[0].setY(0);
-    this.frames[1].setY(0);
-
-    if (this.frames[2].y !== 2) {
-      this.frames[2].setY(0);
-    }
-
-    this.updated = true;
-  }
-
-  public onClick(position: Vector): void {
-    const hitButton = this.getButtonHit(position);
-    const hitName = this.names[hitButton];
-    this.emit(hitName as UIActionsName);
-    this.emit('click', hitName as UIActionsName);
-  }
-
-  public onUpdate(deltaTime: number): void {
-    super.onUpdate(deltaTime);
-    const newValue = (this.ui as TheatreUI).scene.player.hasMinimap()
-      ? 0
-      : 2;
-
-    if (this.frames[2].y !== newValue) {
-      this.frames[2].setY(newValue);
-      this.updated = true;
-    }
-  }
-
-  public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
-    if (this.updated) {
-      const sell = this.sprites.get('buttonSell') as Sprite;
-      const repair = this.sprites.get('buttonRepair') as Sprite;
-      const map = this.sprites.get('buttonMap') as Sprite;
-
-      this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
-
-      sell.render(this.frames[0], this.indexes[0], this.context);
-      repair.render(this.frames[1], this.indexes[1], this.context);
-      map.render(this.frames[2], this.indexes[2], this.context);
-    }
-
-    super.onRender(deltaTime, ctx);
-
-    ctx.drawImage(this.canvas, this.position.x, this.position.y);
-    this.updated = false;
-  }
-
-  protected getButtonHit(position: Vector): number {
-    const boxes = this.indexes.map(v => ({
-      x1: v.x,
-      y1: v.y,
-      x2: v.x + ACTION_WIDTH,
-      y2: ACTION_HEIGHT
-    }));
-
-    return boxes.findIndex(box => collidePoint(position, box));
   }
 }
 
