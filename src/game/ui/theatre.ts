@@ -462,7 +462,7 @@ export class TheatreUI extends UIScene {
       } else {
         if (hovering && selected.length > 0 && hovering.isAttackable(selected[0]) && canAttack) {
           return revealed ? 'attack' : 'move';
-        } else if (hovering && hovering.isSelectable()) {
+        } else if (revealed && hovering && hovering.isSelectable()) {
           return selected[0] === hovering &&  hovering.isDeployable()
             ? 'expand'
             : 'select';
