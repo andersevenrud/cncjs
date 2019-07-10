@@ -86,7 +86,7 @@ export class TheatreUI extends UIScene {
 
     const [settings, visuals, sounds] = createGameMenus(this, new Vector(0.5, 0.5), menu);
 
-    const restate = new UIBox('restate', new Vector(560, 170), new Vector(0.5, 0.5), this);
+    const restate = new UIBox('restate', new Vector(600, 170), new Vector(0.5, 0.5), this);
     restate.addChild(new UIText('title', 'Mission Statement', '6point', new Vector(0.5, 6), this));
     const btnCloseRestate = restate.addChild(new UIButton('close-restate', 'Game Controls', new Vector(250, 18), new Vector(0.5, 136), this));
 

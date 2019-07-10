@@ -6,7 +6,7 @@
 import { UIScene } from '../../engine';
 import { MenuScene } from '../scenes/menu';
 import { GameEngine } from '../game';
-import { UIBox, UIButton, UIText, UISlider, UIListView } from './elements';
+import { UIBox, UIButton, UIIconButton, UIText, UISlider, UIListView } from './elements';
 import { Vector } from 'vector2d';
 import packageJson from '../../../package.json';
 
@@ -29,14 +29,14 @@ export const createSoundControlsMenu = (ui: UIScene, position: Vector): UIBox =>
 
   const listViewThemes = settings.addChild(new UIListView('game-controls_themes', new Vector(428, 120), new Vector(18, 100), ui)) as UIListView;
 
-  const buttonStop = settings.addChild(new UIButton('game-controls_sound-stop', 'ST', new Vector(32, 18), new Vector(18, 250), ui));
-  const buttonPlay = settings.addChild(new UIButton('game-controls_sound-play', 'PL', new Vector(32, 18), new Vector(56, 250), ui));
-  settings.addChild(new UIText('label_shuffle', 'Shuffle', '8point', new Vector(104, 254), ui));
-  settings.addChild(new UIButton('game-controls_sound-shuffle', '1', new Vector(32, 18), new Vector(160, 250), ui));
-  settings.addChild(new UIText('label_repeat', 'Repeat', '8point', new Vector(200, 254), ui));
-  settings.addChild(new UIButton('game-controls_sound-repeat', '1', new Vector(32, 18), new Vector(254, 250), ui));
+  const buttonStop = settings.addChild(new UIIconButton('game-controls_sound-stop', 'UPDATEC.MIX/btn-sth.png', new Vector(32, 24), new Vector(18, 250), ui));
+  const buttonPlay = settings.addChild(new UIIconButton('game-controls_sound-play', 'UPDATEC.MIX/btn-plh.png', new Vector(32, 24), new Vector(56, 250), ui));
+  settings.addChild(new UIText('label_shuffle', 'Shuffle', '8point', new Vector(104, 257), ui));
+  settings.addChild(new UIButton('game-controls_sound-shuffle', 'Off', new Vector(32, 24), new Vector(160, 250), ui));
+  settings.addChild(new UIText('label_repeat', 'Repeat', '8point', new Vector(200, 257), ui));
+  settings.addChild(new UIButton('game-controls_sound-repeat', 'On', new Vector(32, 24), new Vector(254, 250), ui));
 
-  settings.addChild(new UIButton('sound-controls_back', 'Options Menu', new Vector(140, 18), new Vector(306, 250), ui));
+  settings.addChild(new UIButton('sound-controls_back', 'Options Menu', new Vector(140, 24), new Vector(306, 250), ui));
 
   buttonStop.on('click', () => {
     engine.sound.pauseMusic();
@@ -78,7 +78,7 @@ export const createVisualControlsMenu = (ui: UIScene, position: Vector): UIBox =
   const settings = new UIBox('visual-controls', new Vector(464, 282), position, ui);
 
   settings.addChild(new UIText('title', 'Visual controls', '6point', new Vector(0.5, 6), ui));
-  settings.addChild(new UIButton('visual-controls_back', 'Options Menu', new Vector(200, 18), new Vector(0.5, 250), ui));
+  settings.addChild(new UIButton('visual-controls_back', 'Options Menu', new Vector(200, 24), new Vector(0.5, 250), ui));
   settings.addChild(new UIText('todo', 'Nothing here yet...', '6point', new Vector(0.5, 0.5), ui));
 
   settings.setDecorations(1);
@@ -92,15 +92,15 @@ export const createGameControlsMenu = (ui: UIScene, position: Vector): UIBox => 
   const scrollSpeed = engine.getScrollSpeed() / 10;
 
   settings.addChild(new UIText('title', 'Game Controls', '6point', new Vector(0.5, 6), ui));
-  settings.addChild(new UIButton('game-controls_visuals', 'Visual Controls', new Vector(250, 18), new Vector(0.5, 180), ui));
-  settings.addChild(new UIButton('game-controls_sound', 'Sound Controls', new Vector(250, 18), new Vector(0.5, 210), ui));
-  settings.addChild(new UIButton('game-controls_back', 'Options Menu', new Vector(200, 18), new Vector(0.5, 250), ui));
+  settings.addChild(new UIButton('game-controls_visuals', 'Visual Controls', new Vector(250, 24), new Vector(0.5, 180), ui));
+  settings.addChild(new UIButton('game-controls_sound', 'Sound Controls', new Vector(250, 24), new Vector(0.5, 210), ui));
+  settings.addChild(new UIButton('game-controls_back', 'Options Menu', new Vector(200, 24), new Vector(0.5, 250), ui));
 
   settings.addChild(new UIText('label_game-speed', 'Game Speed'.toUpperCase(), '6point', new Vector(18, 60), ui));
-  settings.addChild(new UISlider('game-controls_slider_speed', gameSpeed, new Vector(400, 18), new Vector(0.5, 80), ui));
+  settings.addChild(new UISlider('game-controls_slider_speed', gameSpeed, new Vector(400, 24), new Vector(0.5, 80), ui));
 
   settings.addChild(new UIText('label_scroll-speed', 'Scroll Speed'.toUpperCase(), '6point', new Vector(18, 110), ui));
-  const sliderScrollSpeed = settings.addChild(new UISlider('game-controls_scroll_speed', scrollSpeed, new Vector(400, 18), new Vector(0.5, 130), ui));
+  const sliderScrollSpeed = settings.addChild(new UISlider('game-controls_scroll_speed', scrollSpeed, new Vector(400, 24), new Vector(0.5, 130), ui));
 
 
   sliderScrollSpeed.on('change', (speed: number) => {
@@ -159,8 +159,8 @@ export class MainMenuUI extends UIScene {
     menu.addChild(new UIText('title', 'andersevenrud@gmail.com', '6point', new Vector(0.5, 220), this));
     menu.addChild(new UIText('title', `v${packageJson.version}`, '6point', new Vector(0.5, 240), this));
 
-    const btnNew = menu.addChild(new UIButton('new-game', 'Start New Game', new Vector(250, 18), new Vector(25, 80), this));
-    const btnControls = menu.addChild(new UIButton('game-settings', 'Game Controls', new Vector(250, 18), new Vector(25, 112), this));
+    const btnNew = menu.addChild(new UIButton('new-game', 'Start New Game', new Vector(250, 24), new Vector(25, 80), this));
+    const btnControls = menu.addChild(new UIButton('game-settings', 'Game Controls', new Vector(250, 24), new Vector(25, 112), this));
 
     btnNew.on('click', () => {
       this.scene.onNewGame();

@@ -215,24 +215,21 @@ export class UIText extends GameUIEntity {
 }
 
 /**
- * Button
+ * Button base
  */
-export class UIButton extends GameUIEntity {
-  private backgroundPattern: CanvasPattern | null = null;
-  private active: boolean = false;
+abstract class UIButtonBase extends GameUIEntity {
+  protected backgroundPattern: CanvasPattern | null = null;
+  protected active: boolean = false;
 
   public sprites: Map<string, Sprite> = new Map([
     ['background', spriteFromName('UPDATEC.MIX/btexture.png')]
   ]);
 
-  public constructor(name: string, label: string, dimension: Vector, position: Vector, ui: UIScene) {
-    super(name, position, ui);
-    this.position = position;
+  public async init(): Promise<void> {
+    await super.init();
 
-    this.setDimension(dimension);
-
-    const child = new UIText(name + '-label', label, '6point', new Vector(0.5, 0.5), ui);
-    this.addChild(child);
+    const bs = this.sprites.get('background') as Sprite;
+    this.backgroundPattern = bs.createPattern(new Vector(0, 1));
   }
 
   public onMouseDown(position: Vector): void {
@@ -247,11 +244,49 @@ export class UIButton extends GameUIEntity {
     this.updated = true;
   }
 
-  public async init(): Promise<void> {
-    await super.init();
+  public isActive(): boolean {
+    return this.active;
+  }
+}
 
-    const bs = this.sprites.get('background') as Sprite;
-    this.backgroundPattern = bs.createPattern(new Vector(0, 1));
+/**
+ * Icon Button
+ */
+export class UIIconButton extends UIButtonBase {
+  public constructor(name: string, source: string, dimension: Vector, position: Vector, ui: UIScene) {
+    super(name, position, ui);
+    this.sprites.set('icon', spriteFromName(source));
+    this.position = position;
+    this.setDimension(dimension);
+  }
+
+  public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
+    if (this.updated) {
+      const sprite = this.sprites.get('icon');
+      if (sprite) {
+        sprite.render(new Vector(0, this.active ? 1 : 0), new Vector(0, 0), this.context);
+      }
+      //this.drawBorder(this.active ? 'inset' : 'outset');
+      super.onRender(deltaTime, ctx);
+    }
+
+    ctx.drawImage(this.canvas, this.position.x, this.position.y);
+    this.updated = false;
+  }
+}
+
+/**
+ * Button
+ */
+export class UIButton extends UIButtonBase {
+  public constructor(name: string, label: string, dimension: Vector, position: Vector, ui: UIScene) {
+    super(name, position, ui);
+    this.position = position;
+
+    this.setDimension(dimension);
+
+    const child = new UIText(name + '-label', label, '6point', new Vector(0.5, 0.5), ui);
+    this.addChild(child);
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
@@ -266,10 +301,6 @@ export class UIButton extends GameUIEntity {
 
     ctx.drawImage(this.canvas, this.position.x, this.position.y);
     this.updated = false;
-  }
-
-  public isActive(): boolean {
-    return this.active;
   }
 }
 

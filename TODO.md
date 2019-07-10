@@ -47,7 +47,7 @@
     - [x] Menus
     - [x] Construction
     - [x] Construction mask on map
-    - [ ] Button icon support
+    - [x] Button icon support
     - [x] Tooltips
     - [x] Render active unit selection
 - [x] Rendering
