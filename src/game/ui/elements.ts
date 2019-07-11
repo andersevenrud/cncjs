@@ -673,8 +673,6 @@ export class UIPowerBar extends GameUIEntity {
 
     if (this.updated) {
       this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
-      this.context.fillStyle = '#ffffff';
-      this.context.fillRect(0, 0, this.dimension.x, this.dimension.y);
 
       const bar = this.sprites.get('bar') as Sprite;
       const indicator = this.sprites.get('indicator') as Sprite;

@@ -9,7 +9,7 @@ import { GameEngine } from './game';
 import { Player } from './player';
 import { EventEmitter } from 'eventemitter3';
 
-export type ConstructionType = 'structure' | 'unit' | 'aircraft';
+export type ConstructionType = 'structure' | 'unit' | 'aircraft' | 'infantry'; // FIXME: Should be in MIX
 export type ConstructionState = 'constructing' | 'hold' | 'ready' | undefined;
 export type ConstructionResponse = 'construct' | 'hold' | 'cancel' | 'busy' | 'place' | 'finished' | 'tick';
 
