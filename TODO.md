@@ -32,7 +32,7 @@
     - [x] Team selection
     - [x] Movies
     - [ ] Scores (in progress)
-    - [ ] Level Selection
+    - [ ] Level Selection (in progress)
     - [x] Theatre
 - [x] Data
     - [x] MIX Data interfaces

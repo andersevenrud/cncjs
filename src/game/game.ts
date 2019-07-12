@@ -13,12 +13,14 @@ import {
   EngineSceneFn
 } from '../engine';
 import { MenuScene } from './scenes/menu';
+import { MapSelectionScene } from './scenes/map';
 import { TeamScene } from './scenes/team';
 import { MovieScene } from './scenes/movie';
 import { TheatreScene } from './scenes/theatre';
 import { ScoreScene } from './scenes/score';
 import { LoadingScene } from './scenes/loading';
 import { Cursor } from './cursor';
+import { Player } from './player';
 import { MIX, MIXPlayerName } from './mix';
 
 export interface GameEngineConfig {
@@ -113,6 +115,8 @@ export class GameEngine extends Engine {
           await this.pushMovieScene(debugMovie);
         } else if (debugScene === 'score') {
           await this.pushScoreScene();
+        } else if (debugScene === 'map') {
+          await this.pushMapSelectionScene();
         } else {
           await this.pushMenuScene();
         }
@@ -153,6 +157,12 @@ export class GameEngine extends Engine {
     this.pushScene(() => new ScoreScene(this), skip);
   }
 
+  public async pushMapSelectionScene(): Promise<void> {
+    const player = this.scene instanceof TheatreScene ? this.scene.player : new Player(0, 'GoodGuy', 'gdi');
+    const lastMapName = this.scene instanceof TheatreScene ? this.scene.name : 'scg01ea';
+    this.pushScene(() => new MapSelectionScene(lastMapName, player, this));
+  }
+
   public setScrollSpeed(speed: number): void {
     this.gameConfig.scrollSpeed = speed;
   }
@@ -185,6 +195,8 @@ export class GameEngine extends Engine {
         this.pushMovieScene('banner', true);
       } else if (this.keyboard.wasClicked('F5')) {
         this.pushScoreScene(true);
+      } else if (this.keyboard.wasClicked('F6')) {
+        this.pushMapSelectionScene();
       } else if (this.keyboard.wasClicked('F12')) {
         this.setDebug(!this.getDebug());
       }

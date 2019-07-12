@@ -67,11 +67,11 @@ export class Player {
     return this.id;
   }
 
-  public getName(): string {
+  public getName(): MIXPlayerName {
     return this.name;
   }
 
-  public getTeam(): string {
+  public getTeam(): MIXTeamName {
     return this.team;
   }
 
