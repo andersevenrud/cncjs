@@ -66,7 +66,7 @@ export class FOW extends Entity {
     const dimension = this.map.getMapDimension();
     for (let y = 0; y < dimension.y; y++) {
       for (let x = 0; x < dimension.x; x++) {
-        if (this.grid[y][x] === 1) {
+        if (this.grid[y] && this.grid[y][x] === 1) {
           const px = x * CELL_SIZE;
           const py = y * CELL_SIZE;
 
