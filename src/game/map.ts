@@ -73,7 +73,6 @@ export class GameMapMask extends Entity {
     const h = this.dimension.y / CELL_SIZE;
 
     this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
-    this.context.fillRect(0, 0, this.dimension.x, this.dimension.y);
 
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
