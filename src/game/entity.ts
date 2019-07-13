@@ -46,6 +46,7 @@ export abstract class GameMapBaseEntity extends Entity {
   protected repairing: boolean = false;
   protected direction: number = 0;
   protected directions: number = 32;
+  protected turretDirection: number = -1;
   protected animation: string = '';
   protected health: number = 100;
   protected hitPoints: number = 100;

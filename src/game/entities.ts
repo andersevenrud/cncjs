@@ -591,6 +591,10 @@ export class UnitEntity extends DynamicEntity {
     if (this.wakeAnimation) {
       this.wakeAnimation.onUpdate();
     }
+
+    if (this.properties.HasTurret) {
+      this.turretDirection = this.direction;
+    }
   }
 
   public onRender(deltaTime: number): void {
@@ -617,8 +621,8 @@ export class UnitEntity extends DynamicEntity {
     const frame = new Vector(this.frameOffset.x, Math.round(this.direction));
     this.sprite.render(frame, position, context);
 
-    if (this.properties.HasTurret) {
-      const turretFrame = frame.clone().add(new Vector(0, this.sprite.frames / 2)) as Vector;
+    if (this.turretDirection !== -1) {
+      const turretFrame = new Vector(this.frameOffset.x, Math.round(this.turretDirection) + this.sprite.frames / 2);
       this.sprite.render(turretFrame, position, context);
     }
   }
