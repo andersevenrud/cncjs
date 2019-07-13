@@ -57,6 +57,7 @@ export abstract class GameMapBaseEntity extends Entity {
 
     this.map = map;
     this.engine = map.engine;
+    this.turretDirection = this.direction;
   }
 
   public destroy(): void {
@@ -102,6 +103,10 @@ export abstract class GameMapBaseEntity extends Entity {
   public attack(target: GameMapBaseEntity, report: boolean = false): void {
   }
 
+  public move(position: Vector, report: boolean = false): void {
+    this.moveTo(position, report);
+  }
+
   public sell(): void {
   }
 
@@ -111,7 +116,7 @@ export abstract class GameMapBaseEntity extends Entity {
   public deploy(): void {
   }
 
-  public moveTo(position: Vector, report: boolean = false): boolean {
+  protected moveTo(position: Vector, report: boolean = false): boolean {
     return false;
   }
 

@@ -80,7 +80,8 @@
     - [ ] Harvesting
     - [ ] Boarding and unboarding vehicles
     - [x] Damage indication
-    - [ ] Turrets
+    - [x] Turrets
+    - [ ] Tower turrets
     - [x] Infantry random idle animations
     - [ ] Aircraft
     - [x] Boats

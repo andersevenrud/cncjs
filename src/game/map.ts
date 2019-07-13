@@ -550,7 +550,7 @@ export class GameMap extends Entity {
 
   public moveSelectedEntities(to: Vector): void {
     const selected = this.getSelectedEntities();
-    selected.forEach((e, i) => e.moveTo(to, i === 0));
+    selected.forEach((e, i) => e.move(to, i === 0));
   }
 
   public unselectEntities(): void {

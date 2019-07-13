@@ -25,7 +25,7 @@ import { Vector } from 'vector2d';
 
 const DAMAGE_SUFFIX = ['', '-Damaged', '-Destroyed'];
 const SPEED_DIVIDER = 20;
-const TURNSPEED_DIVIDER = 10;
+const TURNSPEED_DIVIDER = 8;
 
 /**
  * Bib underlay entity
@@ -117,44 +117,32 @@ export class DynamicEntity extends GameMapEntity {
     return false;
   }
 
-  protected clearMovement(clearTarget: boolean = true): void {
-    this.targetDirection = -1;
-    this.targetPosition = undefined;
-    this.currentPath = [];
-    this.attacking = false;
-
-    if (clearTarget) {
-      this.targetEntity = undefined;
-    }
-  }
-
-  public moveTo(position: Vector, report: boolean = false, force: boolean = false): boolean {
+  protected moveTo(position: Vector, report: boolean = false, force: boolean = false): boolean {
     const src = this.cell;
     const dst = position;
     const path = this.map.createPath(src, dst, force);
 
-    this.clearMovement();
+    this.targetDirection = -1;
+    this.targetPosition = undefined;
     this.currentPath = path;
+    this.attacking = false;
 
     if (report && this.reportMove) {
       this.playSfx(this.reportMove);
     }
 
-    console.log('DynamicEntity::moveTo()', { path, src, dst });
+    console.log('DynamicEntity::moveTo()', { path, src, dst }, this);
 
     return path.length > 0;
   }
 
-  public attack(target: GameMapEntity, report: boolean = false) {
-    const sight = this.getWeaponSight();
-    const distance = target.getCell()
-      .distance(this.getCell());
+  public move(position: Vector, report: boolean = false): void {
+    this.targetEntity = undefined;
+    this.moveTo(position, report);
+  }
 
-    const canReach = distance <= sight;
-    if (canReach || this.moveTo(target.getCell(), false, true)) {
-      this.attacking = false;
-      this.targetEntity = target;
-    }
+  public attack(target: GameMapEntity, report: boolean = false) {
+    this.targetEntity = target;
 
     if (report && this.reportAttack) {
       this.playSfx(this.reportAttack);
@@ -195,7 +183,6 @@ export class DynamicEntity extends GameMapEntity {
   }
 
   public onUpdate(deltaTime: number): void {
-    // FIXME: Streamline this shit
     super.onUpdate(deltaTime);
 
     if (this.dying) {
@@ -210,72 +197,73 @@ export class DynamicEntity extends GameMapEntity {
       this.secondaryWeapon.onUpdate(deltaTime);
     }
 
-    if (this.targetDirection !== -1) {
-      const speed = this.getRotationSpeed() / TURNSPEED_DIVIDER;
-      this.direction = getNewDirection(this.direction, this.targetDirection, speed, this.directions);
+    if (this.targetEntity) {
+      if (this.targetEntity.isDestroyed()) {
+        this.targetEntity = undefined;
+      }
+    }
+
+    const rotationSpeed = this.getRotationSpeed() / TURNSPEED_DIVIDER;
+    const rotateTurret = this.properties!.HasTurret && !this.properties!.NoTurretLock;
+
+    this.attacking = false;
+
+    if (this.targetEntity) {
+      const targetCell = this.targetEntity.getCell();
+      const direction = getDirection(targetCell, this.cell, this.directions);
+      const distance = Math.floor(targetCell.distance(this.cell)); // FIXME: Rounding off makes this less accurate
+
+      const turretReached = Math.round(this.turretDirection) === direction;
+      if (rotateTurret && !turretReached) {
+        this.turretDirection = getNewDirection(this.turretDirection, direction, rotationSpeed * 2, this.directions);
+      } else if (distance <= this.getWeaponSight()) {
+        if (!this.canRotate()) {
+          this.direction = direction;
+        }
+
+        if (!rotateTurret) {
+          this.turretDirection = this.direction;
+        }
+
+        this.targetPosition = undefined;
+        this.attacking = true;
+        this.currentPath = [];
+      } else if (this.currentPath.length === 0) {
+        this.moveTo(targetCell);
+      }
+    }
+
+    if (this.attacking) {
+      this.primaryWeapon!.fire(this.targetEntity!);
+    } else if (this.targetDirection !== -1) {
+      this.direction = getNewDirection(this.direction, this.targetDirection, rotationSpeed, this.directions);
 
       if (Math.round(this.direction) === this.targetDirection) {
         this.targetDirection = -1;
       }
-      return;
-    }
-
-    if (this.targetEntity) {
-      if (this.targetEntity.isDestroyed()) {
-        this.targetEntity = undefined;
-        return;
-      }
-
-      const targetCell = this.targetEntity.getCell();
-      const distance = targetCell.distance(this.getCell());
-
-      if (this.canRotate()) {
-        const direction = getDirection(targetCell, this.cell, this.directions);
-        if (Math.round(this.direction) !== direction) {
-          this.targetDirection = direction;
-          return;
-        }
-      }
-
-      if (distance <= this.getWeaponSight()) {
-        this.primaryWeapon!.fire(this.targetEntity);
-
-        this.clearMovement(false);
-        this.attacking = true;
-        return;
-      }
-    }
-
-    this.attacking = false;
-
-    if (this.targetPosition) {
-      const speed = this.getMovementSpeed() / SPEED_DIVIDER;
-      const direction = getDirection(this.targetPosition, this.position, this.directions);
-      const angleRadians = (direction / this.directions) * 2 * Math.PI;
-      const vel = new Vector(speed * Math.sin(angleRadians), speed * Math.cos(angleRadians));
-      const distance = this.targetPosition.distance(this.position);
-
-      if (distance < speed) {
-        this.targetPosition = undefined;
-        this.targetDirection = -1;
-      } else {
+    } else if (this.targetPosition) {
+      const vel = this.getMovementVelocity();
+      if (vel) {
         this.position.subtract(vel);
         this.cell = cellFromPoint(this.position);
-        return;
+      } else {
+        this.targetPosition = undefined;
+        this.targetDirection = -1;
       }
     } else {
-      this.targetDirection = -1;
-    }
+      if (this.currentPath.length > 0) {
+        const destination = this.currentPath.shift() as Vector;
+        this.targetPosition = destination.clone().mulS(CELL_SIZE) as Vector;
 
-    if (this.currentPath.length > 0) {
-      const destination = this.currentPath.shift() as Vector;
-      this.targetPosition = destination.clone().mulS(CELL_SIZE) as Vector;
-
-      const direction = getDirection(this.targetPosition, this.position, this.directions);
-      if (this.canRotate()) {
-        this.targetDirection = direction;
+        const direction = getDirection(this.targetPosition, this.position, this.directions);
+        if (this.canRotate()) {
+          this.targetDirection = direction;
+        } else {
+          this.direction = direction;
+          this.targetDirection = -1;
+        }
       } else {
-        this.direction = direction;
+        this.targetDirection = -1;
       }
     }
   }
@@ -306,6 +294,16 @@ export class DynamicEntity extends GameMapEntity {
 
   public getSight(): number {
     return this.properties!.Sight as number;
+  }
+
+  public getMovementVelocity(): Vector | undefined {
+    const speed = this.getMovementSpeed() / SPEED_DIVIDER;
+    const direction = getDirection(this.targetPosition!, this.position, this.directions);
+    const angleRadians = (direction / this.directions) * 2 * Math.PI;
+    const vel = new Vector(speed * Math.sin(angleRadians), speed * Math.cos(angleRadians));
+    const distance = this.targetPosition!.distance(this.position);
+
+    return distance > speed ? vel : undefined;
   }
 }
 
@@ -591,10 +589,6 @@ export class UnitEntity extends DynamicEntity {
     if (this.wakeAnimation) {
       this.wakeAnimation.onUpdate();
     }
-
-    if (this.properties.HasTurret) {
-      this.turretDirection = this.direction;
-    }
   }
 
   public onRender(deltaTime: number): void {
@@ -621,8 +615,11 @@ export class UnitEntity extends DynamicEntity {
     const frame = new Vector(this.frameOffset.x, Math.round(this.direction));
     this.sprite.render(frame, position, context);
 
-    if (this.turretDirection !== -1) {
-      const turretFrame = new Vector(this.frameOffset.x, Math.round(this.turretDirection) + this.sprite.frames / 2);
+    if (this.properties.HasTurret) {
+      const turretFrame = new Vector(
+        this.frameOffset.x,
+        Math.round(this.turretDirection) + this.sprite.frames / 2
+      );
       this.sprite.render(turretFrame, position, context);
     }
   }
@@ -708,7 +705,11 @@ export class InfantryEntity extends DynamicEntity {
 
   public die(): boolean {
     if (super.die(false)) {
-      this.clearMovement();
+      this.targetDirection = -1;
+      this.targetPosition = undefined;
+      this.currentPath = [];
+      this.attacking = false;
+      this.targetEntity = undefined;
 
       // FIXME
       const animation = this.animations.get('Die1') as Animation;
