@@ -89,7 +89,6 @@ export class ConstructionQueue extends EventEmitter {
       if (item.state !== 'constructing') {
         this.emit('construct', item);
         this.engine.playArchiveSfx('SPEECH.MIX/bldging1.wav', 'gui', {}, 'eva');
-
         item.state = 'constructing';
       } else {
         this.engine.playArchiveSfx('SPEECH.MIX/bldg1.wav', 'gui', {}, 'eva');

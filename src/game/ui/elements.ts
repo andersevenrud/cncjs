@@ -859,7 +859,7 @@ export class UIConstruction extends GameUIEntity {
           // FIXME: Should happen when structure is placed
           this.queue.reset(index);
           this.emit('place', found);
-        } else if (found.state === undefined) {
+        } else {
           this.queue.build(index);
         }
       }
@@ -877,9 +877,7 @@ export class UIConstruction extends GameUIEntity {
     super.onUpdate(deltaTime);
 
     // FIXME: Check length of items > 0
-    if (this.ui.engine.frames % 2 === 0) {
-      this.updated = true;
-    }
+    this.updated = true;
   }
 
   public onRender(deltaTime: number, ctx: CanvasRenderingContext2D): void {
