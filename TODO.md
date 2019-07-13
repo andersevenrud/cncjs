@@ -110,6 +110,8 @@
     - [x] Minimap availability
     - [ ] Destruction of certain entities spawns infantry or civilians
     - [ ] Squashing of infantry when units drive over
+    - [ ] Tiberium spread
+    - [ ] Tiberium trees
 - [x] Sounds
     - [x] Unit reporting
     - [x] Effects

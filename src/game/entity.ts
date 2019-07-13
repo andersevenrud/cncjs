@@ -287,6 +287,10 @@ export abstract class GameMapBaseEntity extends Entity {
   public isWall(): boolean {
     return false;
   }
+
+  public isTiberium(): boolean {
+    return false;
+  }
 }
 
 /**
@@ -638,5 +642,9 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
 
   public isWall(): boolean {
     return wallNames.indexOf(this.data.name) !== -1;
+  }
+
+  public isTiberium(): boolean {
+    return this.data.name.substr(0, 2) === 'TI';
   }
 }

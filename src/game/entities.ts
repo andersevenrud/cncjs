@@ -813,7 +813,7 @@ export class SmudgeEntity extends GameMapEntity {
  * Terrain Entity
  */
 export class TerrainEntity extends GameMapEntity {
-  protected zIndex: number = 2;
+  protected zIndex: number = this.isTiberiumTree() ? 5 : 2;
   protected dimension: Vector = new Vector(16, 16);
   protected properties: MIXTerrain = this.engine.mix.terrain.get(this.data.name) as MIXTerrain;
   protected occupy?: MIXGrid = {
@@ -845,21 +845,34 @@ export class TerrainEntity extends GameMapEntity {
   public getColor(): string {
     return '#002200';
   }
+
+  private isTiberiumTree(): boolean {
+    return this.data.name.substr(0, 5) === 'SPLIT';
+  }
 }
 
 /**
  * Overlay Entity
  */
 export class OverlayEntity extends GameMapEntity {
+  protected tiberiumLeft = 11;
   protected zIndex: number = 4;
-  protected occupy: MIXGrid = this.data.name.substr(0, 2) !== 'TI'
-    ? { name: '', grid: [['x']] }
-    : { name: '', grid: [] };
+  protected occupy: MIXGrid = this.isTiberium()
+    ? { name: '', grid: [] }
+    : { name: '', grid: [['x']] };
 
   public toJson(): any {
     return {
       ...super.toJson(),
       type: 'overlay'
+    }
+  }
+
+  public onUpdate(deltaTime: number): void {
+    super.onUpdate(deltaTime);
+
+    if (this.isTiberium()) {
+      this.frameOffset.setY(this.tiberiumLeft);
     }
   }
 
@@ -870,12 +883,12 @@ export class OverlayEntity extends GameMapEntity {
   }
 
   public getColor(): string {
-    return this.data.name.substr(0, 2) === 'TI' ? '#004400' : '#ffffff';
+    return this.isTiberium() ? '#004400' : '#ffffff';
   }
 }
 
 export class EffectEntity extends GameMapEntity {
-  protected zIndex: number = 5;
+  protected zIndex: number = 10;
   protected centerEntity?: Entity;
 
   public toJson(): any {
