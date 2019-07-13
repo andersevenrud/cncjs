@@ -274,6 +274,10 @@ export abstract class GameMapBaseEntity extends Entity {
   public isDestroyed(): boolean {
     return this.destroyed;
   }
+
+  public isWall(): boolean {
+    return false;
+  }
 }
 
 /**
@@ -364,20 +368,18 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
   }
 
   public updateWall(): void {
-    if (this.sprite) {
-      if (wallNames.indexOf(this.data.name) !== -1) {
-        const lastFrameIndex = this.frameOffset.y;
+    if (this.sprite && this.isWall()) {
+      const lastFrameIndex = this.frameOffset.y;
 
-        const y = (true ? 0 : 16) + // FIXME
-           this.getSimilarEntity(new Vector(0, -1), 1) + // top
-           this.getSimilarEntity(new Vector(0, 1), 4) + // bottom
-           this.getSimilarEntity(new Vector(-1, 0), 8) + // left
-           this.getSimilarEntity(new Vector(1, 0), 2); // right
+      const y = (true ? 0 : 16) + // FIXME
+         this.getSimilarEntity(new Vector(0, -1), 1) + // top
+         this.getSimilarEntity(new Vector(0, 1), 4) + // bottom
+         this.getSimilarEntity(new Vector(-1, 0), 8) + // left
+         this.getSimilarEntity(new Vector(1, 0), 2); // right
 
-        if (y != lastFrameIndex) {
-          this.direction = y;
-          this.frameOffset.setY(y);
-        }
+      if (y != lastFrameIndex) {
+        this.direction = y;
+        this.frameOffset.setY(y);
       }
     }
   }
@@ -620,5 +622,9 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
 
   public isPlayer(): boolean {
     return this.player ? this.player.isSessionPlayer() : false;
+  }
+
+  public isWall(): boolean {
+    return wallNames.indexOf(this.data.name) !== -1;
   }
 }
