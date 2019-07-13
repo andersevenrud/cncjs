@@ -574,10 +574,9 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
 
   public getSpriteName(): string {
     const prefix = this.data.name.replace(/\d+/, '');
-    const matchers = ['T' ,'V', 'TI', 'TC'];
+    const matchers = ['T' ,'V', 'TI', 'TC', 'SPLIT'];
 
     if (matchers.indexOf(prefix) !== -1) { // FIXME
-      // TODO: Add other theatres here
       return `${this.map.theatre.toUpperCase()}.MIX/${this.data.name.toLowerCase()}.png`;
     }
 

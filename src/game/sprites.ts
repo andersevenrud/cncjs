@@ -345,7 +345,9 @@ const temperateTiles: any[] = [
   ['sh8.png', 24, 24, 9],
   ['sh9.png', 24, 24, 9],
   ['w1.png', 24, 24, 1],
-  ['w2.png', 24, 24, 4]
+  ['w2.png', 24, 24, 4],
+  ['split2.png', 48, 48, 55],
+  ['split3.png', 48, 48, 55]
 ];
 
 const temperateMap: any[] = [
@@ -564,7 +566,9 @@ const temperateMap: any[] = [
   [true, false, false, 'SH60'],
   [true, false, false, 'SH61'],
   [true, false, false, 'SH62'],
-  [true, false, false, 'SH63']
+  [true, false, false, 'SH63'],
+  [true, true, true, 'SPLIT2'],
+  [true, true, true, 'SPLIT3']
 ];
 
 const filterTemperateMap = (index: number, pack: string) => {
@@ -639,8 +643,6 @@ export const spriteMap: any[] = [
   ['CONQUER.MIX/smoke_m.png', 23, 23, 91],
   ['CONQUER.MIX/smokey.png', 19, 17, 7],
   ['CONQUER.MIX/smokland.png', 42, 31, 92],
-  ['CONQUER.MIX/split2.png', 48, 48, 55],
-  ['CONQUER.MIX/split3.png', 48, 48, 55],
   ['CONQUER.MIX/trans.png', 24, 24, 4],
   ['CONQUER.MIX/veh-hit1.png', 30, 17, 17],
   ['CONQUER.MIX/veh-hit2.png', 21, 17, 22],
