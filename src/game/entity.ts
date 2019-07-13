@@ -260,6 +260,10 @@ export abstract class GameMapBaseEntity extends Entity {
     return false;
   }
 
+  public isCivilian(): boolean {
+    return false;
+  }
+
   public isDeployable(): boolean {
     return false;
   }
@@ -627,6 +631,10 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
 
   public isPlayer(): boolean {
     return this.player ? this.player.isSessionPlayer() : false;
+  }
+
+  public isCivilian(): boolean {
+    return !this.player || this.player.getName() === 'Neutral';
   }
 
   public isWall(): boolean {

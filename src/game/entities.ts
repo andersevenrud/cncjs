@@ -365,7 +365,9 @@ export class StructureEntity extends GameMapEntity {
     await this.engine.loadArchiveSprite(this.repairSprite);
     this.repairAnimation = new Animation('repair-animation', new Vector(0, 2), 2, 0.05);
 
-    await this.initMake();
+    if (!this.isCivilian()) {
+      await this.initMake();
+    }
 
     if (this.map.isCreated()) {
       this.playSfx('constru2');
