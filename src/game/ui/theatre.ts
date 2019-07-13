@@ -300,7 +300,7 @@ export class TheatreUI extends UIScene {
       if (isRectangleVisible(this.selectionRectangle)) {
         ctx.lineWidth = 1;
         ctx.strokeStyle = '#ffffff';
-        ctx.strokeRect(x1, y1, w, h);
+        ctx.strokeRect(x1 - 0.5, y1 - 0.5, w, h);
       }
     }
 

@@ -84,19 +84,19 @@ export class GameUIEntity extends UIEntity {
 
     context.strokeStyle = topBorder;
     context.beginPath();
-    context.moveTo(dimension.x, 0);
-    context.lineTo(0, 0);
-    context.moveTo(0, 0);
-    context.lineTo(0, dimension.y);
+    context.moveTo(dimension.x - 0.5, 0.5);
+    context.lineTo(0.5, 0.5);
+    context.moveTo(0.5, 0.5);
+    context.lineTo(0.5, dimension.y - 0.5);
     context.closePath();
     context.stroke();
 
     context.strokeStyle = bottomBorder;
     context.beginPath();
-    context.moveTo(0, this.dimension.y);
-    context.lineTo(dimension.x, dimension.y);
-    context.moveTo(dimension.x, this.dimension.y);
-    context.lineTo(dimension.x, 0);
+    context.moveTo(0.5, this.dimension.y - 0.5);
+    context.lineTo(dimension.x - 0.5, dimension.y - 0.5);
+    context.moveTo(dimension.x - 0.5, this.dimension.y - 0.5);
+    context.lineTo(dimension.x - 0.5, 0.5);
     context.closePath();
     context.stroke();
   }
@@ -427,7 +427,7 @@ export class UIListView extends GameUIEntity {
 
     const p = LISTVIEW_PADDING;
     this.list = new UIListViewList(name + '-list', new Vector(p, p), ui);
-    this.slider = new UISlider(name + 'slider', 0, new Vector(18, this.dimension.y - 2), new Vector(dimension.x - 19, 1), ui);
+    this.slider = new UISlider(name + 'slider', 0, new Vector(18, this.dimension.y), new Vector(dimension.x - 18, 0), ui);
     this.slider.setOrientation('vertical');
     this.addChild(this.list);
     this.addChild(this.slider);
