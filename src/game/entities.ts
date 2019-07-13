@@ -831,6 +831,7 @@ export class TerrainEntity extends GameMapEntity {
   public onRender(deltaTime: number): void {
     const context = this.map.objects.getContext();
     this.renderSprite(deltaTime, context);
+    super.onRender(deltaTime);
   }
 
   public getColor(): string {
@@ -857,6 +858,7 @@ export class OverlayEntity extends GameMapEntity {
   public onRender(deltaTime: number): void {
     const context = this.map.overlay.getContext();
     this.renderSprite(deltaTime, context);
+    super.onRender(deltaTime);
   }
 
   public getColor(): string {
@@ -915,6 +917,7 @@ export class EffectEntity extends GameMapEntity {
   public onRender(deltaTime: number): void {
     const context = this.map.overlay.getContext();
     this.renderSprite(deltaTime, context);
+    super.onRender(deltaTime);
   }
 
   public setCenterEntity(entity?: Entity) {

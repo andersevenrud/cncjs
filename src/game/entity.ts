@@ -379,10 +379,6 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
   }
 
   protected renderDebug(deltaTime: number, context: CanvasRenderingContext2D): void {
-    context.strokeStyle = '#00ff00';
-    context.fillStyle = 'rgba(0, 255, 0, 0.1)';
-    context.fillRect(this.position.x, this.position.y, this.dimension.x, this.dimension.y);
-
     const x = Math.trunc(this.position.x);
     const y = Math.trunc(this.position.y);
     const length = Math.max(this.dimension.x, this.dimension.y);
@@ -392,9 +388,12 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
     const x2 = x1 + Math.cos(Math.PI * angle / 180) * length;
     const y2 = y1 + Math.sin(Math.PI * angle / 180) * length;
 
+    context.strokeStyle = this.isPlayer() ? 'rgba(0, 255, 0, 0.3)' : `rgba(255, 255, 0, 0.3)`;
+    context.strokeRect(this.position.x + 0.5, this.position.y + 0.5, this.dimension.x, this.dimension.y);
+
     context.beginPath();
-    context.moveTo(x1, y1);
-    context.lineTo(x2, y2);
+    context.moveTo(x1 + 0.5, y1 + 0.5);
+    context.lineTo(x2 + 0.5, y2 + 0.5);
     context.stroke();
   }
 
@@ -422,19 +421,6 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
   }
 
   protected renderSelectionRectangle(deltaTime: number, context: CanvasRenderingContext2D): void {
-    /*
-    const x = Math.trunc(this.position.x);
-    const y = Math.trunc(this.position.y);
-
-    context.lineWidth = 1;
-    context.strokeStyle = '#ffffff';
-    context.strokeRect(
-      x + 1,
-      y + 1,
-      this.dimension.x - 2,
-      this.dimension.y - 2
-    );
-    */
     this.map.selection.render(this, context);
   }
 
@@ -452,10 +438,8 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
 
         const ocontext = this.map.overlay.getContext();
 
-        // FIXME: Maybe instead only re-render top half ?
-        // FIXME: The -1 is a temporary workaround because of some confusion
-        // with overlapping and rendering order
-        for (let y = 0; y < h - 1; y++) {
+        // FIXME: Maybe instead only re-render complete rows ? (like top half)
+        for (let y = 0; y < h; y++) {
           for (let x = 0; x < w; x++) {
             let v = this.overlap.grid[y][x];
             if (v === 'x') {

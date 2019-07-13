@@ -458,7 +458,7 @@ export class GameMap extends Entity {
     }
 
     if (this.engine.getDebug()) {
-      context.fillStyle = 'rgba(255, 0, 0, 0.2)';
+      context.fillStyle = 'rgba(255, 0, 0, 0.1)';
       for (let y = 0; y < this.mapDimension.y; y++) {
         for (let x = 0; x < this.mapDimension.x; x++) {
           if (!this.grid.isWalkableAt(x, y)) {
