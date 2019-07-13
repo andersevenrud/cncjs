@@ -520,6 +520,7 @@ export class GameMap extends Entity {
 
       await entity.init();
       this.entities.push(entity);
+      this.entities.forEach(e => e.updateWall());
 
       this.entities.sort(sortByZindex);
     } catch (e) {
@@ -533,6 +534,7 @@ export class GameMap extends Entity {
     const index = this.entities.findIndex(e => e === entity);
     if (index !== -1) {
       this.entities.splice(index, 1);
+      this.entities.forEach(e => e.updateWall());
     }
   }
 

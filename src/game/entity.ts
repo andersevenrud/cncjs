@@ -117,6 +117,9 @@ export abstract class GameMapBaseEntity extends Entity {
   public takeDamage(value: number): void {
   }
 
+  public updateWall(): void {
+  }
+
   public setCell(cell: Vector, updatePosition: boolean = false): void {
     this.cell = cell;
 
@@ -359,7 +362,7 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
     }
   }
 
-  protected updateWall(): void {
+  public updateWall(): void {
     if (this.sprite) {
       if (wallNames.indexOf(this.data.name) !== -1) {
         const lastFrameIndex = this.frameOffset.y;
