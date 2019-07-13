@@ -4,6 +4,8 @@
  * @license MIT
  */
 
+import EventEmitter from 'eventemitter3';
+
 /**
  * Throttles a function
  */
@@ -88,3 +90,42 @@ export const requestLoadFile = (): Promise<string> => new Promise((resolve, reje
 
   input.click();
 });
+
+/**
+ * Fetch arraybuffer via XHR API
+ */
+export const fetchArrayBufferXHR = (url: string, bus?: EventEmitter): Promise<ArrayBuffer> =>
+  new Promise((resolve, reject): void => {
+    const xhr = new XMLHttpRequest();
+    xhr.onload = (): void => resolve(xhr.response);
+    xhr.onerror = reject;
+    xhr.onabort = reject;
+
+    if (bus) {
+      xhr.onprogress = (ev: any): void => {
+        bus.emit('progress', ev.loaded, ev.total);
+      };
+    }
+
+    xhr.responseType = 'arraybuffer';
+    xhr.open('GET', url, true);
+    xhr.send();
+  });
+
+/**
+ * Fetch arraybuffer via Fetch API
+ */
+export const fetchArrayBuffer = (url: string): Promise<ArrayBuffer> => fetch(url)
+  .then((response: Response): Promise<ArrayBuffer> => response.arrayBuffer());
+
+/**
+ * Fetches an image via HTTP
+ */
+export const fetchImage = (url: string): Promise<HTMLImageElement> =>
+  new Promise((resolve, reject): void => {
+    const image = new Image();
+    image.onload = (): void => resolve(image);
+    image.onerror = (error: any): void => reject(error);
+    image.src = url;
+  });
+

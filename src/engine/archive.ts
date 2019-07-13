@@ -5,7 +5,7 @@
  */
 import JSZip, { OutputType } from 'jszip';
 import EventEmitter from 'eventemitter3';
-import { fetchArrayBufferXHR } from './io';
+import { fetchArrayBufferXHR } from './utils';
 
 /**
  * Data archive output type

@@ -3,7 +3,8 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import { IODevice, CachedLoader, fetchArrayBuffer } from './io';
+import { IODevice, CachedLoader } from './io';
+import { fetchArrayBuffer } from './utils';
 import { DataArchive } from './archive';
 import { MusicPlaylist, MusicTrack } from './playlist';
 import { Vector } from 'vector2d';
@@ -313,6 +314,7 @@ export class SoundOutput extends IODevice {
   private playMusic(track: MusicTrack): void {
     console.info('SoundOutput::playMusic()', track);
 
+    // FIXME: This does not always work first time. Maybe due to a not-ready state
     this.musicElement.pause();
     this.musicElement.currentTime = 0;
     this.musicElement.src = track.source;

@@ -4,7 +4,8 @@
  * @license MIT
  */
 import { DataArchive } from './archive';
-import { CachedLoader, fetchImage } from './io';
+import { CachedLoader } from './io';
+import { fetchImage } from './utils';
 
 /**
  * Image Loader class interface
