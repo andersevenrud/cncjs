@@ -594,13 +594,13 @@ export class UnitEntity extends DynamicEntity {
   }
 
   public onRender(deltaTime: number): void {
-    const context = this.map.objects.getContext();
     super.onRender(deltaTime);
 
     if (!this.sprite) {
       return;
     }
 
+    const context = this.map.objects.getContext();
     const position = this.getTruncatedPosition();
 
     if (this.wakeSprite) {
@@ -616,6 +616,11 @@ export class UnitEntity extends DynamicEntity {
 
     const frame = new Vector(this.frameOffset.x, Math.round(this.direction));
     this.sprite.render(frame, position, context);
+
+    if (this.properties.HasTurret) {
+      const turretFrame = frame.clone().add(new Vector(0, this.sprite.frames / 2)) as Vector;
+      this.sprite.render(turretFrame, position, context);
+    }
   }
 
   public getRotationSpeed(): number {
