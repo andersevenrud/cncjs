@@ -718,10 +718,6 @@ export class InfantryEntity extends DynamicEntity {
           (row + 1) < 2 ? -dy : dy
         );
 
-        if (this.isPlayer()) {
-          console.log(subcell, [row, col], v.toArray());
-        }
-
         this.position.add(v);
       }
     }

@@ -458,7 +458,7 @@ export class GameMap extends Entity {
 
     if (this.engine.getDebug()) {
       context.fillStyle = 'rgba(255, 0, 0, 0.1)';
-      context.strokeStyle = 'rgba(255, 200, 255, 0.1)';
+      context.strokeStyle = 'rgba(255, 200, 255, 0.05)';
       context.lineWidth = 1;
 
       for (let y = 0; y < this.mapDimension.y; y++) {
