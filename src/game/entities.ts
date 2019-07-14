@@ -521,7 +521,7 @@ export class StructureEntity extends GameMapEntity {
  * Unit Entity
  */
 export class UnitEntity extends DynamicEntity {
-  protected dimension: Vector = new Vector(16, 16);
+  protected dimension: Vector = new Vector(24, 24);
   protected wakeSprite?: Sprite;
   protected wakeAnimation?: Animation;
   protected properties: MIXUnit = this.engine.mix.units.get(this.data.name) as MIXUnit;
@@ -690,8 +690,30 @@ export class InfantryEntity extends DynamicEntity {
       this.reportAttack = this.reportMove;
     }
 
-    if (this.data!.subcell! > 0) {
-      this.position.add(subcells[this.data!.subcell! - 1]);
+    const subcell = this.data!.subcell!;
+    if (subcell >= 0) {
+      const center = this.getDimension();
+      center.subtract(new Vector(CELL_SIZE / 2, CELL_SIZE / 2));
+      this.position.add(center);
+
+      if (subcell !== 0) {
+        const row = Math.floor((subcell - 1) / 2);
+        const col = (subcell - 1) % 2;
+
+        const dx = this.dimension.x / 2;
+        const dy = this.dimension.y / 2;
+
+        const v = new Vector(
+          ((col + 1) %  2) === 1 ? -dx : dx,
+          (row + 1) < 2 ? -dy : dy
+        );
+
+        if (this.isPlayer()) {
+          console.log(subcell, [row, col], v.toArray());
+        }
+
+        this.position.add(v);
+      }
     }
 
     const animations = this.engine.mix.infantryAnimations.get(`Sequence_${this.data.name}`) as MIXInfantryAnimation;
