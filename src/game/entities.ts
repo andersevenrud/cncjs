@@ -537,17 +537,27 @@ export class UnitEntity extends DynamicEntity {
   public async init(): Promise<void> {
     await super.init();
 
-    if (this.sprite) {
-      this.dimension = this.sprite.size.clone() as Vector;
+    if (!this.sprite) {
+      return;
     }
 
     if (this.data.name === 'BOAT') { // FIXME
+      // FIXME
+      this.dimension = this.sprite.size.clone() as Vector;
+
       this.wakeSprite = spriteFromName('CONQUER.MIX/wake.png');
 
       const half = this.wakeSprite.frames / 2;
       this.wakeAnimation = new Animation('Idle', new Vector(0, 0), half, 0.2);
 
       await this.engine.loadArchiveSprite(this.wakeSprite);
+    } else {
+      if (this.sprite.size.x > CELL_SIZE) {
+        this.offset.setX((this.sprite.size.x / 2) - (CELL_SIZE / 2));
+      }
+      if (this.sprite.size.y > CELL_SIZE) {
+        this.offset.setY((this.sprite.size.y / 2) - (CELL_SIZE / 2));
+      }
     }
   }
 
@@ -601,7 +611,7 @@ export class UnitEntity extends DynamicEntity {
     }
 
     const context = this.map.objects.getContext();
-    const position = this.getTruncatedPosition();
+    const position = this.getTruncatedPosition(this.offset);
 
     if (this.wakeSprite) {
       const o = new Vector(0, this.direction === 8 ? this.wakeSprite.frames / 2 : 0);
