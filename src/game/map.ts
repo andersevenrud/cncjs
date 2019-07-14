@@ -458,11 +458,17 @@ export class GameMap extends Entity {
 
     if (this.engine.getDebug()) {
       context.fillStyle = 'rgba(255, 0, 0, 0.1)';
+      context.strokeStyle = 'rgba(255, 200, 255, 0.1)';
+      context.lineWidth = 1;
+
       for (let y = 0; y < this.mapDimension.y; y++) {
         for (let x = 0; x < this.mapDimension.x; x++) {
-          if (!this.grid.isWalkableAt(x, y)) {
-            const px = CELL_SIZE * x - this.position.x + dx;
-            const py = CELL_SIZE * y - this.position.y + dy;
+          const px = CELL_SIZE * x - this.position.x + dx;
+          const py = CELL_SIZE * y - this.position.y + dy;
+
+          if (this.grid.isWalkableAt(x, y)) {
+            context.strokeRect(px + 0.5, py + 0.5, CELL_SIZE, CELL_SIZE);
+          } else {
             context.fillRect(px, py, CELL_SIZE, CELL_SIZE);
           }
         }
