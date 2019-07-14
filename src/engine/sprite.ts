@@ -57,7 +57,7 @@ export class Sprite {
    * Convert to string (for debugging)
    */
   public static toString(): string {
-    return `${this.cache.size} (${this.patterns.size}p ${this.cacheCount}f)`;
+    return `${this.cache.size} images ${this.patterns.size} patterns ${this.cacheCount} frames`;
   }
 
   /**

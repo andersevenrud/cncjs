@@ -35,7 +35,7 @@ export class MusicPlaylist extends EventEmitter {
    */
   public toString(): string {
     const status = this.isPaused ? 'paused' : 'playing';
-    const name = String(this.current ? this.current.title : undefined);
+    const name = String(this.current ? this.current.name || this.current.source : undefined);
     const opts = [
       this.shuffle ? 'shuffle' : '',
       this.loop ? 'loop' : ''

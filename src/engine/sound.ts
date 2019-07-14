@@ -180,12 +180,11 @@ export class SoundOutput extends IODevice {
    * Convert to string (for debugging)
    */
   public toString(): string {
-    const status = `${this.context.state} ${this.context.sampleRate}hz ${this.context.currentTime.toFixed(1)}s`;
-    const volumes = `Volume: ${this.mainGainNode.gain.value.toFixed(1)} / ${this.sfxGainNode.gain.value.toFixed(1)} / ${this.musicGainNode.gain.value.toFixed(1)}`;
-    const music = `Music: ${this.playlist.toString()}`;
-    const sfx = `SFX: ${this.sfxNodes.length} active`;
+    const status = `${this.context.state} ${this.context.sampleRate}hz`;
+    const volumes = `V: [${this.mainGainNode.gain.value.toFixed(1)}, ${this.sfxGainNode.gain.value.toFixed(1)}, ${this.musicGainNode.gain.value.toFixed(1)}]`;
+    const playback = `${this.sfxNodes.length} fx | music ${this.playlist.toString()}`;
 
-    return `${status}\n - ${volumes}\n - ${music}\n - ${sfx}`;
+    return `${status} ${volumes} | ${this.context.currentTime.toFixed(1)}s\nPlayback: ${playback}`;
   }
 
   /**

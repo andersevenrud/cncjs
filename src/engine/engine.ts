@@ -117,7 +117,7 @@ export abstract class Engine implements Core {
     const rate = this.configuration.updateRate.toFixed(3);
     const time = this.time.toFixed(1);
 
-    return `${fps}/${fpsNow}FPS ${delta}ms ${time}s (${rate}hz)`;
+    return `${fps} (${fpsNow})fps ${delta}ms (${rate}hz) | ${time}s | ${this.frames}f@${this.ticks}t`;
   }
 
   /**
