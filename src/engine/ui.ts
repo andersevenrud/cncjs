@@ -38,6 +38,7 @@ export class UIScene extends Entity {
   protected lastDownElement?: UIEntity;
   protected lastOverElement?: UIEntity;
   protected inited: boolean = false;
+  protected disabled: boolean = false;
 
   public constructor(engine: Core) {
     super();
@@ -69,60 +70,62 @@ export class UIScene extends Entity {
       return;
     }
 
-    const { mouse } = this.engine;
-    const position = this.getRealMousePosition();
+    if (!this.disabled) {
+      const { mouse } = this.engine;
+      const position = this.getRealMousePosition();
 
-    const button = mouse.wasClicked('left')
-      ? 'left'
-      : mouse.wasClicked('right') ? 'right' : undefined;
+      const button = mouse.wasClicked('left')
+        ? 'left'
+        : mouse.wasClicked('right') ? 'right' : undefined;
 
-    const hit = this.getCollidingEntity(position);
+      const hit = this.getCollidingEntity(position);
 
-    if (!hit || this.lastOverElement !== hit.element) {
-      if (this.lastOverElement) {
-        this.lastOverElement.onMouseOut();
-      }
-      this.lastOverElement = undefined;
-    }
-
-    if (hit) {
-      if (this.lastOverElement && this.lastOverElement !== hit.element) {
-        this.lastOverElement.onMouseOut();
+      if (!hit || this.lastOverElement !== hit.element) {
+        if (this.lastOverElement) {
+          this.lastOverElement.onMouseOut();
+        }
+        this.lastOverElement = undefined;
       }
 
-      this.lastOverElement = hit.element;
-      this.lastOverElement.onMouseOver(hit.position);
-    } else {
-      if (this.lastOverElement) {
-        this.lastOverElement.onMouseOut();
-      }
-      this.lastOverElement = undefined;
-    }
-
-    if (button) {
       if (hit) {
-        hit.element.onClick(hit.position, button);
-        this.onClick(hit);
-        this.updated = true;
-      }
-    } else if (mouse.isPressed('left')) {
-      if (hit) {
-        if (this.lastDownElement && this.lastDownElement !== hit.element) {
-          this.lastDownElement.onMouseUp(hit.position);
+        if (this.lastOverElement && this.lastOverElement !== hit.element) {
+          this.lastOverElement.onMouseOut();
         }
 
-        if (this.lastDownElement !== hit.element) {
-          hit.element.onMouseDown(hit.position);
+        this.lastOverElement = hit.element;
+        this.lastOverElement.onMouseOver(hit.position);
+      } else {
+        if (this.lastOverElement) {
+          this.lastOverElement.onMouseOut();
+        }
+        this.lastOverElement = undefined;
+      }
+
+      if (button) {
+        if (hit) {
+          hit.element.onClick(hit.position, button);
+          this.onClick(hit);
           this.updated = true;
         }
+      } else if (mouse.isPressed('left')) {
+        if (hit) {
+          if (this.lastDownElement && this.lastDownElement !== hit.element) {
+            this.lastDownElement.onMouseUp(hit.position);
+          }
 
-        this.lastDownElement = hit.element;
-      }
-    } else {
-      if (this.lastDownElement) {
-        this.lastDownElement.onMouseUp(position);
-        this.lastDownElement = undefined;
-        this.updated = true;
+          if (this.lastDownElement !== hit.element) {
+            hit.element.onMouseDown(hit.position);
+            this.updated = true;
+          }
+
+          this.lastDownElement = hit.element;
+        }
+      } else {
+        if (this.lastDownElement) {
+          this.lastDownElement.onMouseUp(position);
+          this.lastDownElement = undefined;
+          this.updated = true;
+        }
       }
     }
 
@@ -191,6 +194,20 @@ export class UIScene extends Entity {
    */
   public setScale(scaled?: UISceneScale): void {
     this.scaled = scaled;
+  }
+
+  /**
+   * Sets if disabled
+   */
+  public setDisabled(d: boolean): void {
+    this.disabled = d;
+  }
+
+  /**
+   * Gets if disabled
+   */
+  public isDisabled(): boolean {
+    return this.disabled;
   }
 
   /**
@@ -420,6 +437,13 @@ export class UIEntity extends Entity {
   }
 
   /**
+   * Disable input
+   */
+  public setDisabled(disabled: boolean): void {
+    this.disabled = disabled;
+  }
+
+  /**
    * Sets parent UI Entity
    */
   public setParent(parent: UIEntity): void {
@@ -439,13 +463,6 @@ export class UIEntity extends Entity {
    */
   public setClickable(c: boolean): void {
     this.clickable = c;
-  }
-
-  /**
-   * Sets if disabled
-   */
-  public setDisabled(d: boolean): void {
-    this.disabled = d;
   }
 
   /**

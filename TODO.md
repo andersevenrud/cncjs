@@ -136,8 +136,6 @@
 ## Misc
 
 - [ ] Fix font matrixes
-- [ ] Further optimizations
-- [ ] Don't allow UI events when selection rectangle was used (UI Elements can only accept clicks within their own region)
 
 ## Tools
 
