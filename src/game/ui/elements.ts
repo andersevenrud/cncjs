@@ -820,10 +820,7 @@ export class UIConstruction extends GameUIEntity {
     await super.init();
 
     this.on('placed', item => {
-      const foundIndex = this.queue.getItemIndex(item);
-      if (foundIndex !== -1) {
-        this.queue.reset(foundIndex);
-      }
+      this.queue.reset(item);
     });
   }
 
@@ -840,7 +837,8 @@ export class UIConstruction extends GameUIEntity {
   public onMouseOver(position: Vector): void {
     const index = Math.floor(position.y / THUMB_HEIGHT);
     if (this.lastHoverIndex !== index) {
-      const item = this.queue.getItem(index);
+      const available = this.queue.getAvailable();
+      const item = available[index];
       if (item) {
         const text = `\$${item.cost}`;
 
@@ -857,19 +855,20 @@ export class UIConstruction extends GameUIEntity {
   public onClick(position: Vector, button: MouseButton): void {
     const thumbnail = Math.floor(position.y / THUMB_HEIGHT);
     const index = thumbnail + this.offset;
-    const found = this.queue.getItem(index);
+    const available = this.queue.getAvailable();
+    const found = available[index];
     if (found) {
       if (button === 'right') {
         if (found.state === 'hold' || found.state === 'ready') {
-          this.queue.cancel(index);
+          this.queue.cancel(found);
         } else {
-          this.queue.hold(index);
+          this.queue.hold(found);
         }
       } else {
         if (found.state === 'ready') {
           this.emit('place', found);
         } else {
-          this.queue.build(index);
+          this.queue.build(found);
         }
       }
     }

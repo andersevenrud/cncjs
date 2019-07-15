@@ -25,6 +25,20 @@ export interface MIXMapEntityData {
   trigger?: string;
 }
 
+export interface MIXMapInfoData {
+  CarryOverCap: number;
+  CarryOverMoney: number;
+  Intro: string;
+  BuildLevel: number;
+  Theme: string;
+  Percent: number;
+  Player: MIXPlayerName;
+  Win: string;
+  Lose: string;
+  Brief: string;
+  Action: string;
+}
+
 export interface MIXSaveGameEntityData extends MIXMapEntityData {
   cell: any;
   type: string;
@@ -61,6 +75,7 @@ export interface MIXMapData {
   height: number;
   theatre: string;
   offset: Vector;
+  info: MIXMapInfoData;
   waypoints: MIXMapWaypoint[];
   terrain: MIXMapEntityData[];
   tiles: MIXMapTileData[][];
@@ -92,6 +107,9 @@ export interface MIXObject {
   HasTurret?: boolean;
   NoTurretLock?: boolean;
   FiresTwice?: boolean;
+  Prerequisites: string[];
+  TechLevel: number;
+  BuildLevel: number;
 }
 
 export type MIXCursorMap = {
@@ -100,7 +118,6 @@ export type MIXCursorMap = {
 
 export interface MIXAircraft extends MIXObject {
   TurningSpeed: number;
-  BuildLevel: number;
   HitPoints: number;
   Ammo: number;
   Buildable: boolean;
@@ -110,9 +127,7 @@ export interface MIXAircraft extends MIXObject {
   HasRotorBlades: boolean;
   Airplane: boolean;
   IsTransport: boolean;
-  Prerequisites: string[];
   NameID: number;
-  TechLevel: number;
 }
 
 export interface MIXAnimation {
@@ -190,7 +205,6 @@ export interface MIXInfantryAnimation {
 }
 
 export interface MIXInfantry extends MIXObject {
-  BuildLevel: number;
   HitPoints: number;
   SequenceInfo: string;
   Ammo: number;
@@ -199,9 +213,7 @@ export interface MIXInfantry extends MIXObject {
   HideTrueName: boolean;
   IsCivilian: boolean;
   FemaleCiv: boolean;
-  Prerequisites: string;
   NameID: number;
-  TechLevel: number;
 }
 
 export interface MIXLand {
@@ -248,7 +260,6 @@ export interface MIXStructure extends MIXObject {
   PowerDrain: number;
   PowerProduction: number;
   TiberiumStorage: number;
-  BuildLevel: number;
   StartFacing: number;
   Factory: string;
   Buildable: boolean;
@@ -262,8 +273,6 @@ export interface MIXStructure extends MIXObject {
   HideTrueName: boolean;
   HasBib: boolean;
   Sensors: boolean;
-  Prerequisites: string;
-  TechLevel: number;
   NameID: number;
   ExitInfo: number;
 }
@@ -302,7 +311,6 @@ export interface MIXTileSet {
 export interface MIXUnit extends MIXObject {
   TurnSpeed: number;
   MovementType: number;
-  BuildLevel: number;
   Ammo: number;
   CycleGraphics: boolean;
   Cloaked: boolean;
@@ -319,8 +327,6 @@ export interface MIXUnit extends MIXObject {
   IsTransport: boolean;
   ShownName: boolean;
   IsDinosaur: boolean;
-  Prerequisites: boolean;
-  TechLevel: number;
   NameID: number;
   DeathAnimation: string;
 }
@@ -985,6 +991,7 @@ export class MIX extends EventEmitter {
     const units = Object.values(ini.UNITS).map(mapUnits(theatre, offset));
     const structures = Object.values(ini.STRUCTURES).map(mapStructures(theatre, offset));
     const waypoints = this.parseWaypoints(ini.Waypoints || ini.WAYPOINTS, offset); // FIXME
+    const info = ini.BASIC;
 
     const terrain = Object.keys(ini.TERRAIN)
       .map((key: any) => {
@@ -1013,7 +1020,7 @@ export class MIX extends EventEmitter {
         };
       });
 
-    return { theatre, width, height, offset, terrain, tiles, infantry, units, smudge, structures, overlays, waypoints };
+    return { info, theatre, width, height, offset, terrain, tiles, infantry, units, smudge, structures, overlays, waypoints };
   }
 
   public getProperties(name: string): MIXObject | undefined {

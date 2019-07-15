@@ -71,11 +71,11 @@ export class TheatreScene extends Scene {
     await this.map.init();
     await this.ui.init();
 
-    playlist.play('aoi');
     this.loaded = true;
-    this.ui.toggleSidebar(this.player.getTechLevel() > 0);
+    this.ui.toggleSidebar(this.player.canConstruct());
     this.ui.toggleMinimap(this.player.hasMinimap());
 
+    playlist.play('aoi');
     console.debug(this);
   }
 

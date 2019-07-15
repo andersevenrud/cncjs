@@ -7,7 +7,7 @@ import { Entity, Sprite, MousePosition, Box, collidePoint, collideAABB } from '.
 import { Grid, AStarFinder, DiagonalMovement } from 'pathfinding';
 import { TheatreScene } from './scenes/theatre';
 import { SmudgeEntity, TerrainEntity, InfantryEntity, EffectEntity, UnitEntity, OverlayEntity, StructureEntity } from './entities';
-import { MIXMapData, MIXMapEntityData, MIXSaveGame, wallNames, parseDimensions } from './mix';
+import { MIXMapInfoData, MIXMapData, MIXMapEntityData, MIXSaveGame, wallNames, parseDimensions } from './mix';
 import { GameMapBaseEntity } from './entity';
 import { GameEngine } from './game';
 import { spriteFromName } from './sprites';
@@ -228,6 +228,7 @@ export class GameMap extends Entity {
   protected mapDimension: Vector = new Vector(64, 64);
   protected fowVisible: boolean = true;
   protected created: boolean = false;
+  protected data?: MIXMapInfoData;
   protected mask?: GameMapMask;
 
   public grid: Grid = new Grid(64, 64);
@@ -273,6 +274,7 @@ export class GameMap extends Entity {
     this.theatre = data.theatre;
     this.mapDimension = new Vector(data.width, data.height);
     this.grid = new Grid(data.width, data.height);
+    this.data = data.info;
 
     const wx = CELL_SIZE * this.mapDimension.x;
     const wy = CELL_SIZE * this.mapDimension.y;
@@ -513,6 +515,9 @@ export class GameMap extends Entity {
         return;
       }
 
+      await entity.init();
+      this.entities.push(entity);
+
       // FIXME: Handle this correctly
       if (entity.player) {
         if (['HQ', 'EYE'].indexOf(entity.getName()) !== -1) {
@@ -520,11 +525,9 @@ export class GameMap extends Entity {
           this.scene.ui.toggleMinimap(true);
         }
 
-        entity.player.setTechLevel(1);
+        const es = this.getEntities().filter(e => e.isPlayer());
+        entity.player.update(es);
       }
-
-      await entity.init();
-      this.entities.push(entity);
 
       if (entity.isWall()) {
         this.entities
@@ -550,6 +553,11 @@ export class GameMap extends Entity {
       }
 
       this.entities.splice(index, 1);
+    }
+
+    if (entity.player) {
+      const es = this.getEntities().filter(e => e.isPlayer());
+      entity.player.update(es);
     }
   }
 
@@ -625,6 +633,10 @@ export class GameMap extends Entity {
 
   public getMapDimension(): Vector {
     return this.mapDimension;
+  }
+
+  public getData(): MIXMapInfoData | undefined {
+    return this.data;
   }
 
   public isFowVisible(): boolean {

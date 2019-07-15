@@ -5,18 +5,24 @@
  */
 
 import { defaultTeamMap, MIXPlayerName, MIXTeamName } from './mix';
+import { GameMapBaseEntity } from './entity';
+import { StructureEntity } from './entities';
+import EventEmitter from 'eventemitter3';
 
-export class Player {
+export class Player extends EventEmitter {
   protected id: number = 0;
   protected credits: number = 0;
   protected power: [number, number] = [0, 0]; // Avail / Used
   protected name: MIXPlayerName = 'GoodGuy';
   protected team: MIXTeamName = 'gdi';
   protected minimap: boolean = true; // TODO: Add a debug mode for this
-  protected techLevel: number = 0;
+  protected structures: Set<string> = new Set();
   protected sessionPlayer: boolean = false;
+  protected hasFactory: boolean = false;
 
   public constructor(id: number, name: MIXPlayerName, team?: MIXTeamName) {
+    super();
+
     this.id = id;
     this.name = name;
 
@@ -29,6 +35,24 @@ export class Player {
 
   public toString(): string {
     return `${this.id} ${this.name}/${this.team} C:${this.credits} P:${this.power.join('/')}`;
+  }
+
+  public update(entities: GameMapBaseEntity[]): void {
+    this.structures.clear();
+
+    for (let i = 0; i < entities.length; i++) {
+      if (entities[i] instanceof StructureEntity) {
+        let name = entities[i].getName();
+        this.structures.add(name);
+
+        // FIXME: Set to false when destroyed
+        if (name === 'FACT') {
+          this.hasFactory = true;
+        }
+      }
+    }
+
+    this.emit('entities-updated');
   }
 
   public addCredits(credits: number): void {
@@ -49,10 +73,6 @@ export class Player {
 
   public setPower(power: [number, number]) {
     this.power = power;
-  }
-
-  public setTechLevel(tl: number) {
-    this.techLevel = tl;
   }
 
   public setMinimap(mm: boolean) {
@@ -79,15 +99,37 @@ export class Player {
     return this.credits;
   }
 
-  public getTechLevel(): number {
-    return this.techLevel;
+  public getStructures(): string[] {
+    return Array.from(this.structures.values());
   }
 
   public isSessionPlayer(): boolean {
     return this.sessionPlayer;
   }
 
+  public hasPrequisite(names: string[]): boolean {
+    if (!this.structures.size) {
+      return false;
+    }
+
+    const snames = this.getStructures();
+    return names
+      .every((n: string) => snames.indexOf(n) !== -1);
+  }
+
   public hasMinimap(): boolean {
     return this.minimap;
+  }
+
+  public canConstruct(): boolean {
+    return this.hasFactory;
+  }
+
+  public canConstructUnit(): boolean {
+    return ['HAND', 'WEAP'].some(n => this.getStructures().indexOf(n) !== -1);
+  }
+
+  public canConstructInfantry(): boolean {
+    return ['HAND', 'PYLE'].some(n => this.getStructures().indexOf(n) !== -1);
   }
 }

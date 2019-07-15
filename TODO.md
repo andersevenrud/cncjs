@@ -95,11 +95,14 @@
     - [ ] Area of effect
     - [ ] Inaccuracy
     - [x] Double shots
+    - [ ] Arcing
+    - [ ] Curving
+    - [ ] Heatseeker fuel
 - [x] Mechanics
     - [x] Credits
     - [x] Sew together fences
     - [x] Player abstraction
-    - [ ] Tech tree
+    - [x] Tech tree
     - [ ] Apply correct timings to animations and actions
     - [x] Selling
     - [x] Repairing

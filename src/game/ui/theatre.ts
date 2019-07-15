@@ -86,6 +86,11 @@ export class TheatreUI extends UIScene {
 
   public async init(): Promise<void> {
     const theatre = this.scene.map.theatre;
+    const data = this.scene.map.getData();
+    if (data) {
+      this.structureConstruction.setBuildLevel(data.BuildLevel);
+      this.factoryConstruction.setBuildLevel(data.BuildLevel);
+    }
 
     // Tabs
     const emitCredits = () => String(this.scene.player.getCredits());

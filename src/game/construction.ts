@@ -14,6 +14,7 @@ export type ConstructionState = 'constructing' | 'hold' | 'ready' | undefined;
 export type ConstructionResponse = 'construct' | 'hold' | 'cancel' | 'busy' | 'place' | 'finished' | 'tick';
 
 export interface ConstructionObject {
+  index: number;
   name: string;
   type: ConstructionType;
   state: ConstructionState;
@@ -27,24 +28,30 @@ export class ConstructionQueue extends EventEmitter {
   protected readonly engine: GameEngine;
   protected readonly player: Player;
   protected objects: ConstructionObject[] = [];
+  protected techLevel: number = -1;
+  protected buildLevel: number = -1;
 
   public constructor(names: string[], player: Player, engine: GameEngine) {
     super();
     this.player = player;
     this.engine = engine;
 
-    this.objects = names.map(name => name.toUpperCase()).map(name => {
-      const properties = engine.mix.getProperties(name);
-      return {
-        name,
-        type: engine.mix.getType(name) as ConstructionType,
-        cost: properties ? properties.Cost : 1, // FIXME
-        properties,
-        available: true,
-        progress: 0,
-        state: undefined
-      };
-    });
+    this.objects = names.map(name => name.toUpperCase())
+      .map((name, index) => {
+        const properties = engine.mix.getProperties(name);
+        return {
+          index,
+          name,
+          type: engine.mix.getType(name) as ConstructionType,
+          cost: properties ? properties.Cost : 1, // FIXME
+          properties,
+          available: !properties, // FIXME
+          progress: 0,
+          state: undefined
+        };
+      });
+
+    this.player.on('entities-updated', () => this.updateAvailable());
   }
 
   public onUpdate(deltaTime: number) {
@@ -77,20 +84,44 @@ export class ConstructionQueue extends EventEmitter {
   }
 
   public updateAvailable(): void {
-    // TODO
+    for (let i = 0; i < this.objects.length; i++) {
+      let o = this.objects[i];
+      if (o.properties) {
+        if (!this.player.canConstruct()) {
+          // FIXME
+          o.available = false;
+        }
+
+        if (this.techLevel !== -1) {
+          o.available = (o.properties.TechLevel || 0) <= this.techLevel;
+        }
+
+        if (this.buildLevel !== -1) {
+          o.available = (o.properties.BuildLevel || 0) <= this.buildLevel;
+        }
+
+        if (o.available && o.properties.Prerequisites.length > 0) {
+          o.available = this.player.hasPrequisite(o.properties.Prerequisites);
+        }
+
+        if (o.available && o.type === 'unit') {
+          o.available = this.player.canConstructUnit();
+        } else if (o.available && o.type === 'infantry') {
+          o.available = this.player.canConstructInfantry();
+        }
+      }
+    }
   }
 
-  public reset(index: number) {
-    const item = this.objects[index];
-    if (item && item.available) {
+  public reset(item: ConstructionObject) {
+    if (item.available) {
       item.state = undefined;
       item.progress = 0;
     }
   }
 
-  public build(index: number) {
-    const item = this.objects[index];
-    if (item && item.available) {
+  public build(item: ConstructionObject) {
+    if (item.available) {
       if (item.state !== 'constructing') {
         this.emit('construct', item);
         this.engine.playArchiveSfx('SPEECH.MIX/bldging1.wav', 'gui', {}, 'eva');
@@ -101,9 +132,8 @@ export class ConstructionQueue extends EventEmitter {
     }
   }
 
-  public cancel(index: number) {
-    const item = this.objects[index];
-    if (item && item.available) {
+  public cancel(item: ConstructionObject) {
+    if (item.available) {
       if (item.state !== undefined) {
         this.emit('cancel', item);
         this.engine.playArchiveSfx('SPEECH.MIX/cancel1.wav', 'gui', {}, 'eva');
@@ -115,9 +145,8 @@ export class ConstructionQueue extends EventEmitter {
     }
   }
 
-  public hold(index: number) {
-    const item = this.objects[index];
-    if (item && item.available) {
+  public hold(item: ConstructionObject) {
+    if (item.available) {
       if (item.state === 'constructing') {
         this.emit('hold', item);
         this.engine.playArchiveSfx('SPEECH.MIX/onhold1.wav', 'gui', {}, 'eva');
@@ -127,16 +156,16 @@ export class ConstructionQueue extends EventEmitter {
     }
   }
 
-  public getItemIndex(item: ConstructionObject): number {
-    return this.objects.findIndex(i => i === item);
-  }
-
-  public getItem(index: number): ConstructionObject | undefined {
-    return this.objects[index];
-  }
-
   public getAvailable(): ConstructionObject[] {
     return this.objects.filter(o => o.available);
+  }
+
+  public setTechLevel(l: number): void {
+    this.techLevel = l;
+  }
+
+  public setBuildLevel(l: number): void {
+    this.buildLevel = l;
   }
 
   public getAvailableCount(): number {
