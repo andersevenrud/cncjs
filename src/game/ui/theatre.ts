@@ -400,6 +400,12 @@ export class TheatreUI extends UIScene {
     const active = this.engine.mouse.isPressed('left');
     const position = this.engine.mouse.getVector();
 
+    if (this.selectionRectangle && isRectangleVisible(this.selectionRectangle)) {
+      this.setDisabled(true);
+    } else {
+      this.setDisabled(false);
+    }
+
     if (active) {
       if (!this.selectionRectangleStart) {
         this.selectionRectangleStart = position;
