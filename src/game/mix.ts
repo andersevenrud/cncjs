@@ -509,6 +509,72 @@ export const soundMap: MIXMapEntitySounds = {
   'YO1': 1
 };
 
+export const buildableStructures: string[] = [
+  'nuke',
+  'nuk2',
+  'pyle',
+  'hand',
+  'afld',
+  'atwr',
+  'wood',
+  'sbag',
+  'brik',
+  'barb',
+  'cycl',
+  'eye',
+  'fix',
+  'gtwr',
+  'gun',
+  'hpad',
+  'hq',
+  'obli',
+  'proc',
+  'sam',
+  'silo',
+  'tmpl',
+  'weap'
+];
+
+export const buildableInfantry: string[] = [
+  'e1',
+  'e2',
+  'e3',
+  'e4',
+  'e5',
+  'e6',
+  'rmbo'
+];
+
+export const buildableUnits: string[] = [
+  'apc',
+  'arty',
+  'bggy',
+  'bike',
+  'ftnk',
+  'harv',
+  'heli',
+  'a10',
+  'htnk',
+  'jeep',
+  'ltnk',
+  'mcv',
+  'msam',
+  'mlrs',
+  'mtnk',
+  'orca',
+  'stnk',
+  'tran',
+  'mcv',
+  'boat',
+  'lst'
+];
+
+export const usableSpecials: string[] = [
+  'ion',
+  'bomb',
+  'atom'
+];
+
 export const cursorMap: MIXCursorMap = {
   default: { index: 0, x: 0, y: 0, count: 1 },
   //defaults: { index: 86, x: 0, y: 0, count: 1 },

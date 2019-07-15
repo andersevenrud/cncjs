@@ -5,49 +5,13 @@
  */
 import { Sprite } from '../engine';
 import { Vector } from 'vector2d';
+import { buildableStructures, buildableInfantry, buildableUnits, usableSpecials } from './mix';
 
-const thumbnails: any[] = [
-  ['afldicnh.png', 64, 48, 1],
-  ['apcicnh.png', 64, 48, 1],
-  ['artyicnh.png', 64, 48, 1],
-  ['atwricnh.png', 64, 48, 1],
-  ['bggyicnh.png', 64, 48, 1],
-  ['bikeicnh.png', 64, 48, 1],
-  ['brikicnh.png', 64, 48, 1],
-  ['cyclicnh.png', 64, 48, 1],
-  ['e1icnh.png', 64, 48, 1],
-  ['e2icnh.png', 64, 48, 1],
-  ['e3icnh.png', 64, 48, 1],
-  ['e4icnh.png', 64, 48, 1],
-  ['e6icnh.png', 64, 48, 1],
-  ['eyeicnh.png', 64, 48, 1],
-  ['fixicnh.png', 64, 48, 1],
-  ['ftnkicnh.png', 64, 48, 1],
-  ['gtwricnh.png', 64, 48, 1],
-  ['gunicnh.png', 64, 48, 1],
-  ['handicnh.png', 64, 48, 1],
-  ['harvicnh.png', 64, 48, 1],
-  ['heliicnh.png', 64, 48, 1],
-  ['hpadicnh.png', 64, 48, 1],
-  ['hqicnh.png', 64, 48, 1],
-  ['htnkicnh.png', 64, 48, 1],
-  ['jeepicnh.png', 64, 48, 1],
-  ['ltnkicnh.png', 64, 48, 1],
-  ['mcvicnh.png', 64, 48, 1],
-  ['msamicnh.png', 64, 48, 1],
-  ['mtnkicnh.png', 64, 48, 1],
-  ['nuk2icnh.png', 64, 48, 1],
-  ['nukeicnh.png', 64, 48, 1],
-  ['obliicnh.png', 64, 48, 1],
-  ['orcaicnh.png', 64, 48, 1],
-  ['procicnh.png', 64, 48, 1],
-  ['pyleicnh.png', 64, 48, 1],
-  ['samicnh.png', 64, 48, 1],
-  ['sbagicnh.png', 64, 48, 1],
-  ['siloicnh.png', 64, 48, 1],
-  ['stnkicnh.png', 64, 48, 1],
-  ['tmplicnh.png', 64, 48, 1],
-  ['weapicnh.png', 64, 48, 1],
+const thumbnails: string[] = [
+  ...buildableStructures,
+  ...buildableUnits,
+  ...buildableInfantry,
+  ...usableSpecials
 ];
 
 const temperateOverlays: any[] = [
@@ -721,9 +685,9 @@ export const spriteMap: any[] = [
   ['s_africa.png', 320, 200, 59],
 
   // Thumbnails
-  ...thumbnails.map(([name, x, y, z]) => ([`TEMPICNH.MIX/${name}`, x, y, z])),
-  ...thumbnails.map(([name, x, y, z]) => ([`DESEICNH.MIX/${name}`, x, y, z])),
-  ...thumbnails.map(([name, x, y, z]) => ([`WINTICNH.MIX/${name}`, x, y, z])),
+  ...thumbnails.map(name => ([`TEMPICNH.MIX/${name}icnh.png`, 64, 48, 1])),
+  ...thumbnails.map(name => ([`DESEICNH.MIX/${name}icnh.png`, 64, 48, 1])),
+  ...thumbnails.map(name => ([`WINTICNH.MIX/${name}icnh.png`, 64, 48, 1])),
 
   // Overlays
   ['CONQUER.MIX/conc.png', 24, 24, 14],

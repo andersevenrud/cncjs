@@ -68,7 +68,11 @@ export class GameUIEntity extends UIEntity {
 
   public async init(): Promise<void> {
     for (const sprite of this.sprites.values()) {
-      await (this.ui.engine as GameEngine).loadArchiveSprite(sprite);
+      try {
+        await (this.ui.engine as GameEngine).loadArchiveSprite(sprite);
+      } catch (e) {
+        console.warn('GameUIEntity#init', sprite, e);
+      }
     }
 
     await super.init();
@@ -831,7 +835,7 @@ export class UIConstruction extends GameUIEntity {
     if (this.lastHoverIndex !== index) {
       const item = this.queue.getItem(index);
       if (item) {
-        const text = `\$${item.properties.Cost}`;
+        const text = `\$${item.cost}`;
 
         this.ee.emit('mouseover', new Vector(
           0,
@@ -899,7 +903,7 @@ export class UIConstruction extends GameUIEntity {
         sprite.render(frame, position, this.context);
 
         if (typeof item.state !== 'undefined') {
-          let p = item.progress / item.properties.Cost;
+          let p = item.progress / item.cost;
           let f = new Vector(0, Math.round(clock.frames * p));
 
           this.context.globalCompositeOperation = 'destination-out';

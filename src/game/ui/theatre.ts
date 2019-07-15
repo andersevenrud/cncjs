@@ -3,8 +3,17 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import { Box, UIEntity, UIScene, MousePosition, collideAABB, collidePoint, capitalize, requestLoadFile, requestSaveFile } from '../../engine';
-import { TheatreScene } from '../scenes/theatre';
+import {
+  Box,
+  UIEntity,
+  UIScene,
+  MousePosition,
+  collideAABB,
+  collidePoint,
+  capitalize,
+  requestLoadFile,
+  requestSaveFile
+} from '../../engine';
 import {
   TAB_WIDTH,
   TAB_HEIGHT,
@@ -27,7 +36,15 @@ import {
   UIText,
   UIBox
 } from './elements';
-import { MIXMission, MIXCursorType } from '../mix';
+import {
+  buildableStructures,
+  buildableInfantry,
+  buildableUnits,
+  usableSpecials,
+  MIXMission,
+  MIXCursorType
+} from '../mix';
+import { TheatreScene } from '../scenes/theatre';
 import { createGameMenus } from './mainmenu';
 import { GameEngine } from '../game';
 import { GameMapBaseEntity } from '../entity';
@@ -59,8 +76,8 @@ export class TheatreUI extends UIScene {
     this.scene = scene;
 
     // FIXME
-    const structures = ['nuke', 'nuk2', 'pyle', 'hand', 'afld', 'atwr', 'brik', 'cycl', 'eye', 'fix', 'gtwr', 'gun', 'hpad', 'hq', 'obli', 'proc', 'sam', 'sbag', 'silo', 'tmpl', 'weap'];
-    const factories = ['e1', 'e2', 'e3', 'e4', 'e6', 'apc', 'arty', 'bggy', 'bike', 'ftnk', 'harv', 'heli', 'htnk', 'jeep', 'ltnk', 'mcv', 'msam', 'mtnk', 'orca', 'stnk'];
+    const structures = [...buildableStructures];
+    const factories = [...buildableInfantry, ...buildableUnits, ...usableSpecials];
 
     this.structureConstruction = new ConstructionQueue(structures, this.scene.player, this.scene.engine);
     this.factoryConstruction = new ConstructionQueue(factories, this.scene.player, this.scene.engine);

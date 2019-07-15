@@ -18,7 +18,8 @@ export interface ConstructionObject {
   type: ConstructionType;
   state: ConstructionState;
   progress: number;
-  properties: MIXObject;
+  cost: number;
+  properties?: MIXObject;
   available: boolean;
 }
 
@@ -32,10 +33,12 @@ export class ConstructionQueue extends EventEmitter {
     this.player = player;
     this.engine = engine;
 
+    const properties = engine.mix.getProperties(name);
     this.objects = names.map(name => name.toUpperCase()).map(name => ({
       name,
       type: engine.mix.getType(name) as ConstructionType,
-      properties: engine.mix.getProperties(name) as MIXObject,
+      cost: properties ? properties.Cost : 1, // FIXME
+      properties,
       available: true,
       progress: 0,
       state: undefined
@@ -45,7 +48,7 @@ export class ConstructionQueue extends EventEmitter {
   public onUpdate(deltaTime: number) {
     for (let i = 0; i < this.objects.length; i++) {
       const item = this.objects[i];
-      const done = item.progress >= item.properties.Cost;
+      const done = item.progress >= item.cost;
 
       if (!item.available) {
         continue;
@@ -62,7 +65,7 @@ export class ConstructionQueue extends EventEmitter {
           }
         } else {
           // FIXME: Rule
-          item.progress = Math.min(item.properties.Cost, item.progress + 1.0);
+          item.progress = Math.min(item.cost, item.progress + 1.0);
           this.emit('tick', item);;
           this.engine.playArchiveSfx('SOUNDS.MIX/clock1.wav', 'gui', { volume: 0.2, block: true });
           this.player.subScredits(1.0); // FIXME
