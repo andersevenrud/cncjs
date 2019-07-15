@@ -70,6 +70,7 @@ export class TheatreUI extends UIScene {
   private sidebar?: UISidebar;
   private structureConstruction: ConstructionQueue;
   private factoryConstruction: ConstructionQueue;
+  private constructionCallback?: Function;
 
   public constructor(scene: TheatreScene) {
     super(scene.engine);
@@ -139,18 +140,20 @@ export class TheatreUI extends UIScene {
     }
 
     // Glue
-    const onConstruct = (item: any) => {
+    const onConstruct = (parent: UIConstruction) => (item: any) => {
       const name = item.name.toUpperCase();
       this.placeConstruction = name;
       const mask = new GameMapMask(name, this.scene.map);
       this.scene.map.setMask(mask);
+
+      this.constructionCallback = () => parent.emit('placed', item);
     };
 
-    elStructures.on('place', onConstruct);
+    elStructures.on('place', onConstruct(elStructures));
     elStructuresUp.on('click', () => elStructures.moveUp());
     elStructuresDown.on('click', () => elStructures.moveDown());
 
-    elFactories.on('place', onConstruct);
+    elFactories.on('place', onConstruct(elFactories));
     elFactoriesUp.on('click', () => elFactories.moveUp());
     elFactoriesDown.on('click', () => elFactories.moveDown());
 
@@ -287,6 +290,7 @@ export class TheatreUI extends UIScene {
         } else if (mouse.wasClicked('right')) {
           this.currentAction = undefined;
           this.placeConstruction = undefined;
+          this.constructionCallback = undefined;
           this.scene.map.setMask(undefined);
           this.scene.map.unselectEntities();
         }
@@ -335,6 +339,10 @@ export class TheatreUI extends UIScene {
         cell,
         player: this.scene.player.getId()
       });
+    }
+
+    if (this.constructionCallback) {
+      this.constructionCallback();
     }
 
     this.placeConstruction = undefined;

@@ -278,7 +278,7 @@ export class UIEntity extends Entity {
   /**
    * Emit event
    */
-  protected emit(name: string, ...args: any[]): void {
+  public emit(name: string, ...args: any[]): void {
     this.ee.emit(name, ...args);
   }
 

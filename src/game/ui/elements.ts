@@ -818,9 +818,16 @@ export class UIConstruction extends GameUIEntity {
     this.sprites.set('pips', spriteFromName('UPDATEC.MIX/hpips.png'));
     this.sprites.set('clock', spriteFromName('UPDATEC.MIX/hclock.png'));
     await super.init();
+
+    this.on('placed', item => {
+      const foundIndex = this.queue.getItemIndex(item);
+      if (foundIndex !== -1) {
+        this.queue.reset(foundIndex);
+      }
+    });
   }
 
-  protected emit(name: string, ...args: any[]): void {
+  public emit(name: string, ...args: any[]): void {
     this.ee.emit(name, ...args);
     this.ee.emit('change', name, ...args);
   }
@@ -860,8 +867,6 @@ export class UIConstruction extends GameUIEntity {
         }
       } else {
         if (found.state === 'ready') {
-          // FIXME: Should happen when structure is placed
-          this.queue.reset(index);
           this.emit('place', found);
         } else {
           this.queue.build(index);

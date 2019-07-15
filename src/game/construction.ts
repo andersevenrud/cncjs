@@ -33,16 +33,18 @@ export class ConstructionQueue extends EventEmitter {
     this.player = player;
     this.engine = engine;
 
-    const properties = engine.mix.getProperties(name);
-    this.objects = names.map(name => name.toUpperCase()).map(name => ({
-      name,
-      type: engine.mix.getType(name) as ConstructionType,
-      cost: properties ? properties.Cost : 1, // FIXME
-      properties,
-      available: true,
-      progress: 0,
-      state: undefined
-    }));
+    this.objects = names.map(name => name.toUpperCase()).map(name => {
+      const properties = engine.mix.getProperties(name);
+      return {
+        name,
+        type: engine.mix.getType(name) as ConstructionType,
+        cost: properties ? properties.Cost : 1, // FIXME
+        properties,
+        available: true,
+        progress: 0,
+        state: undefined
+      };
+    });
   }
 
   public onUpdate(deltaTime: number) {
@@ -123,6 +125,10 @@ export class ConstructionQueue extends EventEmitter {
         item.state = 'hold';
       }
     }
+  }
+
+  public getItemIndex(item: ConstructionObject): number {
+    return this.objects.findIndex(i => i === item);
   }
 
   public getItem(index: number): ConstructionObject | undefined {
