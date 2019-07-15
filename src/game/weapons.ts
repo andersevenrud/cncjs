@@ -5,7 +5,7 @@
  */
 import { Sprite, randomBetweenInteger }  from '../engine';
 import { GameMap } from './map';
-import { GameMapBaseEntity, GameMapEntity } from './entity';
+import { GameMapBaseEntity } from './entity';
 import { MIXWeapon, MIXBullet, MIXWarhead, irrelevantBulletImages } from './mix';
 import { cellFromPoint, getDirection, CELL_SIZE } from './physics';
 import { spriteFromName } from './sprites';
@@ -18,12 +18,12 @@ export class ProjectileEntity extends GameMapBaseEntity {
   protected readonly bulletName: string;
   protected readonly bullet: MIXBullet;
   protected readonly warhead: MIXWarhead;
-  protected readonly target: GameMapEntity;
+  protected readonly target: GameMapBaseEntity;
   protected readonly weapon: Weapon;
   protected direction: number = 0;
   protected trailTick: number = 0;
 
-  public constructor(name: string, target: GameMapEntity, weapon: Weapon) {
+  public constructor(name: string, target: GameMapBaseEntity, weapon: Weapon) {
     super(weapon.map);
 
     this.target = target;
@@ -127,13 +127,13 @@ export class ProjectileEntity extends GameMapBaseEntity {
 export class Weapon {
   public readonly weapon: MIXWeapon;
   public readonly map: GameMap;
-  public readonly entity: GameMapEntity;
+  public readonly entity: GameMapBaseEntity;
   public readonly sprite?: Sprite;
   public readonly trailSprite?: Sprite;
   private tick: number = 0;
   private rof: number = 0;
 
-  public constructor(name: string, map: GameMap, entity: GameMapEntity) {
+  public constructor(name: string, map: GameMap, entity: GameMapBaseEntity) {
     this.map = map;
     this.weapon = map.engine.mix.weapons.get(name) as MIXWeapon;
     this.entity = entity;
@@ -161,7 +161,7 @@ export class Weapon {
     }
   }
 
-  protected fireProjectile(target: GameMapEntity): void {
+  protected fireProjectile(target: GameMapBaseEntity): void {
     const p = new ProjectileEntity(this.weapon.Projectile, target, this);
     this.map.addEntity(p);
     if (this.weapon.Report) {
@@ -171,9 +171,9 @@ export class Weapon {
     this.createMuzzleFlash();
   }
 
-  public fire(target: GameMapEntity): void {
+  public fire(target: GameMapBaseEntity): void {
     const fire = this.tick === 0;
-    const fireTwice = this.tick === Math.round(this.rof / 4) && this.entity.properties!.FiresTwice;
+    const fireTwice = this.tick === Math.round(this.rof / 4) && this.entity.canFireTwice();
     if (fire || fireTwice) {
       this.fireProjectile(target);
     }

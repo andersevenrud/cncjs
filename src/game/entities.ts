@@ -4,7 +4,7 @@
  * @license MIT
  */
 import { Box, Animation, Sprite, Entity, randomBetweenInteger }  from '../engine';
-import { GameMapEntity, GameMapEntityAnimation } from './entity';
+import { GameMapBaseEntity, GameMapEntityAnimation } from './entity';
 import {
   MIXGrid,
   MIXAnimation,
@@ -14,18 +14,32 @@ import {
   MIXStructure,
   MIXInfantryAnimation,
   MIXStructureAnimation,
-  infantryIdleAnimations
+  MIXMapEntityData,
+  MIXObject,
+  infantryIdleAnimations,
+  wallNames,
+  healthBarColors
 } from './mix';
-import { cellFromPoint, getDirection, CELL_SIZE, getNewDirection } from './physics';
+import { cellFromPoint, getDirection, getNewDirection, CELL_SIZE } from './physics';
 import { spriteFromName } from './sprites';
 import { parseDimensions } from './mix';
-import { Weapon } from './weapons';
 import { GameEngine } from './game';
+import { GameMap } from './map';
+import { Weapon } from './weapons';
+import { Player } from './player';
 import { Vector } from 'vector2d';
 
 const DAMAGE_SUFFIX = ['', '-Damaged', '-Destroyed'];
+const HEALT_BAR_HEIGHT = 6;
 const SPEED_DIVIDER = 20;
 const TURNSPEED_DIVIDER = 8;
+
+export type GameMapEntityTargetAction = 'attack' | 'patrol';
+
+export interface GameMapEntityTarget {
+  entity: GameMapEntity;
+  action: GameMapEntityTargetAction;
+}
 
 /**
  * Bib underlay entity
@@ -91,9 +105,25 @@ export class BibEntity extends Entity {
 }
 
 /**
- * Dynamic entity
+ * Map Entity
  */
-export class DynamicEntity extends GameMapEntity {
+export abstract class GameMapEntity extends GameMapBaseEntity {
+  public readonly player?: Player;
+  public readonly properties?: MIXObject;
+  protected dimension: Vector = new Vector(24, 24);
+  protected readonly data: MIXMapEntityData;
+  protected occupy?: MIXGrid;
+  protected overlap?: MIXGrid;
+  protected sprite?: Sprite;
+  protected frame: Vector = new Vector(0, 0);
+  protected frameOffset: Vector = new Vector(0, 0);
+  protected animations: Map<string, GameMapEntityAnimation> = new Map();
+  protected reportLoss?: boolean;
+  protected reportSelect?: string;
+  protected reportMove?: string;
+  protected reportAttack?: string;
+  protected reportConstruct?: string;
+  protected reportDestroy?: string;
   protected targetDirection: number = -1;
   protected targetPosition?: Vector;
   protected targetEntity?: GameMapEntity;
@@ -101,90 +131,104 @@ export class DynamicEntity extends GameMapEntity {
   protected primaryWeapon?: Weapon;
   protected secondaryWeapon?: Weapon;
   protected attacking: boolean = false;
-  protected reportSelect?: string = 'AWAIT1';
-  protected reportMove?: string = 'ACKNO';
-  protected reportAttack?: string = 'ACKNO';
 
-  public die(destroy: boolean = true): boolean {
-    if (super.die(destroy)) {
-      if (this.isPlayer()) {
-        this.engine.playArchiveSfx('SPEECH.MIX/unitlost.wav', 'gui', { block: true });
-      }
+  public constructor(data: MIXMapEntityData, map: GameMap) {
+    super(map);
+    this.data = data;
+    this.direction = this.data.direction || 0;
+    this.health = parseInt(String(data.health!), 10) || 1; // FIXME
+    this.player = typeof data.player === 'number'
+      ? map.getPlayerById(data.player)
+      : undefined;
 
-      return true;
-    }
-
-    return false;
+    this.setCell(data.cell, true);
   }
 
-  protected moveTo(position: Vector, report: boolean = false, force: boolean = false): boolean {
-    const src = this.cell;
-    const dst = position;
-    const path = this.map.createPath(src, dst, force);
-
-    this.targetDirection = -1;
-    this.targetPosition = undefined;
-    this.currentPath = path;
-    this.attacking = false;
-
-    if (report && this.reportMove) {
-      this.playSfx(this.reportMove);
-    }
-
-    console.log('DynamicEntity::moveTo()', { path, src, dst }, this);
-
-    return path.length > 0;
+  public destroy(): void {
+    this.toggleWalkableTiles(true);
+    super.destroy();
   }
 
-  public move(position: Vector, report: boolean = false): void {
-    this.targetEntity = undefined;
-    this.moveTo(position, report);
+  public toString(): string {
+    const s = this.getDamageState();
+    return `${this.data.player}:${this.data.name} ${this.health}/${this.hitPoints}H@${s} ${this.getTruncatedPosition().toString()}@${this.cell.toString()}x${this.direction.toFixed(1)} (t:${this.turretDirection.toFixed(1)}) | ${this.animation || '<null>'}@${this.frame.toString()} ${this.zIndex}z`;
   }
 
-  public attack(target: GameMapEntity, report: boolean = false) {
-    this.targetEntity = target;
-
-    if (report && this.reportAttack) {
-      this.playSfx(this.reportAttack);
+  public toJson(): any {
+    return {
+      ...this.data,
+      ...super.toJson(),
+      health: this.health,
+      direction: this.direction
     }
   }
 
   public async init(): Promise<void> {
-    await super.init();
+    if (this.properties) {
+      this.hitPoints = this.properties.HitPoints;
+      if (this.data.health) {
+        this.health = Math.min(this.hitPoints, this.health);
+      } else {
+        this.health = this.hitPoints;
+      }
 
-    this.hitPoints = this.properties!.HitPoints;
-    if (this.data.health) {
-      this.health = Math.min(this.hitPoints, this.health);
-    } else {
-      this.health = this.hitPoints;
-    }
+      if (this.properties.PrimaryWeapon) {
+        this.primaryWeapon = new Weapon(this.properties.PrimaryWeapon, this.map, this);
+        try {
+          await this.primaryWeapon.init();
+        } catch (e) {
+          console.warn('PrimaryWeapon exception', e);
+        }
+      }
 
-    if (this.properties!.PrimaryWeapon) {
-      this.primaryWeapon = new Weapon(this.properties!.PrimaryWeapon, this.map, this);
-      try {
-        await this.primaryWeapon.init();
-      } catch (e) {
-        console.warn('PrimaryWeapon exception', e);
+      if (this.properties.SecondaryWeapon) {
+        this.secondaryWeapon = new Weapon(this.properties.SecondaryWeapon, this.map, this);
+        try {
+          await this.secondaryWeapon.init();
+        } catch (e) {
+          console.warn('SecondaryWeapon exception', e);
+        }
       }
     }
 
-    if (this.properties!.SecondaryWeapon) {
-      this.secondaryWeapon = new Weapon(this.properties!.SecondaryWeapon, this.map, this);
-      try {
-        await this.secondaryWeapon.init();
-      } catch (e) {
-        console.warn('SecondaryWeapon exception', e);
+    try {
+      this.sprite = spriteFromName(this.getSpriteName());
+      await this.engine.loadArchiveSprite(this.sprite);
+    } catch (e) {
+      console.error('GameMapEntity::init()', 'Failed to load sprite', this.getSpriteName(), e);
+    }
+
+    if (this.properties) {
+      if (this.properties.OccupyList) {
+        this.occupy = this.engine.mix.grids.get(this.properties.OccupyList);
+      }
+      if (this.properties.OverlapList) {
+        this.overlap = this.engine.mix.grids.get(this.properties.OverlapList);
       }
     }
-  }
 
-  public onRender(deltaTime: number) {
-    super.onRender(deltaTime);
+    if (typeof this.data.player === 'number') {
+      const xoff = this.getSpritePlayerIndex();
+      this.frameOffset.setX(xoff);
+    }
+
+    this.toggleWalkableTiles(false);
   }
 
   public onUpdate(deltaTime: number): void {
-    super.onUpdate(deltaTime);
+    const animation = this.animations.get(this.animation);
 
+    if (animation) {
+      animation.onUpdate();
+      this.frame = animation.getFrameIndex(this.frameOffset);
+    } else {
+      this.frame = this.frameOffset;
+    }
+
+    this.tick(deltaTime);
+  }
+
+  protected tick(deltaTime: number): void {
     if (this.dying) {
       return;
     }
@@ -269,16 +313,285 @@ export class DynamicEntity extends GameMapEntity {
     }
   }
 
-  public isMovable(): boolean {
+  public updateWall(): void {
+    if (this.sprite && this.isWall()) {
+      const lastFrameIndex = this.frameOffset.y;
+
+      const y = (true ? 0 : 16) + // FIXME
+         this.getSimilarEntity(new Vector(0, -1), 1) + // top
+         this.getSimilarEntity(new Vector(0, 1), 4) + // bottom
+         this.getSimilarEntity(new Vector(-1, 0), 8) + // left
+         this.getSimilarEntity(new Vector(1, 0), 2); // right
+
+      if (y != lastFrameIndex) {
+        this.direction = y;
+        this.frameOffset.setY(y);
+      }
+    }
+  }
+
+  protected renderDebug(deltaTime: number, context: CanvasRenderingContext2D): void {
+    const x = Math.trunc(this.position.x);
+    const y = Math.trunc(this.position.y);
+    const length = Math.max(this.dimension.x, this.dimension.y);
+    const angle = (270 - (360 * this.direction / this.directions)) % 360;
+    const x1 = x + (this.dimension.x / 2);
+    const y1 = y + (this.dimension.y / 2);
+    const x2 = x1 + Math.cos(Math.PI * angle / 180) * length;
+    const y2 = y1 + Math.sin(Math.PI * angle / 180) * length;
+
+    context.strokeStyle = this.isPlayer() ? 'rgba(0, 255, 0, 0.3)' : `rgba(255, 255, 0, 0.3)`;
+    context.strokeRect(this.position.x + 0.5, this.position.y + 0.5, this.dimension.x, this.dimension.y);
+
+    context.beginPath();
+    context.moveTo(x1 + 0.5, y1 + 0.5);
+    context.lineTo(x2 + 0.5, y2 + 0.5);
+    context.stroke();
+  }
+
+  protected renderHealthBar(deltaTime: number, context: CanvasRenderingContext2D): void {
+    const c = healthBarColors[this.getDamageState()];
+    const x = Math.trunc(this.position.x);
+    const y = Math.trunc(this.position.y);
+
+    context.fillStyle = '#000000';
+    context.fillRect(
+      x,
+      y - HEALT_BAR_HEIGHT - 2,
+      this.dimension.x,
+      HEALT_BAR_HEIGHT
+    );
+
+    context.fillStyle = c;
+
+    context.fillRect(
+      x + 1,
+      y - HEALT_BAR_HEIGHT - 1,
+      Math.round(this.dimension.x * (this.health / this.hitPoints)) - 2,
+      HEALT_BAR_HEIGHT - 2
+    );
+  }
+
+  protected renderSelectionRectangle(deltaTime: number, context: CanvasRenderingContext2D): void {
+    this.map.selection.render(this, context);
+  }
+
+  protected renderSprite(deltaTime: number, context: CanvasRenderingContext2D, sprite?: Sprite, frame?: Vector): void {
+    const s = sprite || this.sprite;
+    const f = frame || this.frame;
+    if (s) {
+      const position = this.getTruncatedPosition(this.offset);
+      const canvas = s.render(f, position, context);
+
+      // FIXME: optimize
+      if (this.overlap) {
+        const h = this.overlap.grid.length;
+        const w = h > 0 ? this.overlap.grid[0].length : 0;
+
+        const ocontext = this.map.overlay.getContext();
+
+        // FIXME: Maybe instead only re-render complete rows ? (like top half)
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            let v = this.overlap.grid[y][x];
+            if (v === 'x') {
+              ocontext.drawImage(
+                canvas,
+                x * CELL_SIZE,
+                y * CELL_SIZE,
+                CELL_SIZE,
+                CELL_SIZE,
+                this.position.x + (x * CELL_SIZE),
+                this.position.y + (y * CELL_SIZE),
+                CELL_SIZE,
+                CELL_SIZE,
+              );
+            }
+          }
+        }
+      }
+    }
+  }
+
+  public onRender(deltaTime: number): void {
+    const context = this.map.overlay.getContext();
+    if (this.engine.getDebug()) {
+      this.renderDebug(deltaTime, context);
+    }
+
+    if (this.isSelected()) {
+      this.renderHealthBar(deltaTime, context);
+      this.renderSelectionRectangle(deltaTime, context);
+    }
+  }
+
+  public die(destroy: boolean = true): boolean {
+    if (this.dying) {
+      return false;
+    }
+
+    this.dying = true;
+
+    if (this.reportLoss) {
+      if (this.isPlayer()) {
+        this.engine.playArchiveSfx('SPEECH.MIX/unitlost.wav', 'gui', { block: true });
+      }
+    }
+
+    if (this.reportDestroy) {
+      this.playSfx(this.reportDestroy);
+    }
+
+    if (destroy) {
+      this.destroy();
+    }
+
     return true;
+  }
+
+  public attack(target: GameMapEntity, report: boolean = false) {
+    this.targetEntity = target;
+
+    if (report && this.reportAttack) {
+      this.playSfx(this.reportAttack);
+    }
+  }
+
+  public move(position: Vector, report: boolean = false): void {
+    this.targetEntity = undefined;
+    this.moveTo(position, report);
+  }
+
+  protected moveTo(position: Vector, report: boolean = false, force: boolean = false): boolean {
+    const src = this.cell;
+    const dst = position;
+    const path = this.map.createPath(src, dst, force);
+
+    this.targetDirection = -1;
+    this.targetPosition = undefined;
+    this.currentPath = path;
+    this.attacking = false;
+
+    if (report && this.reportMove) {
+      this.playSfx(this.reportMove);
+    }
+
+    console.log('GameMapEntity::moveTo()', { path, src, dst }, this);
+
+    return path.length > 0;
+  }
+
+  protected toggleWalkableTiles(t: boolean): void {
+    if (!this.occupy) {
+      return;
+    }
+
+    const h = this.occupy.grid.length;
+    const w = h > 0 ? this.occupy.grid[0].length : 0;
+
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        let v = this.occupy.grid[y][x];
+        if (v === 'x') {
+          this.map.grid.setWalkableAt(this.cell.x + x, this.cell.y + y, t);
+        }
+      }
+    }
+  }
+
+  public takeDamage(value: number): void {
+    if (this.health > 0) {
+      this.health = Math.max(0, this.health - value);
+
+      console.debug('GameMapEntity::takeDamage()', value, this.health);
+      if (this.health <= 0) {
+        this.die();
+      }
+    }
+  }
+
+  public isDestroyed(): boolean {
+    return this.destroyed || this.dying;
   }
 
   public isMoving(): boolean {
     return !!this.targetPosition || this.targetDirection !== -1;
   }
 
-  public canAttack(): boolean {
-    return !!this.primaryWeapon || !!this.secondaryWeapon;
+  public setSelected(selected: boolean, report: boolean = true): void {
+    if (!this.isSelectable()) {
+      return;
+    }
+
+    this.selected = selected;
+
+    if (this.selected) {
+      if (report && this.reportSelect) {
+        this.playSfx(this.reportSelect);
+      }
+    }
+  }
+
+  protected getSimilarEntity(offset: Vector, value: number): number {
+    const cell = this.cell.clone().add(offset) as Vector;
+    const finder = (e: GameMapEntity): boolean => e.data
+      ? e.data.name === this.data.name
+      : false; // FIXME: Projectiles
+
+    const found = this.map.getEntitiesFromCell(cell, finder);
+
+    return found.length > 0 ? value : 0;
+  }
+
+  public getSpritePlayerIndex(): number {
+    if (this.data.player! < 2) {
+      return Math.max(0, this.data.player!);
+    }
+
+    return 0;
+  }
+
+  public getSpriteName(): string {
+    const prefix = this.data.name.replace(/\d+/, '');
+    const matchers = ['T' ,'V', 'TI', 'TC', 'SPLIT'];
+
+    if (matchers.indexOf(prefix) !== -1) { // FIXME
+      return `${this.map.theatre.toUpperCase()}.MIX/${this.data.name.toLowerCase()}.png`;
+    }
+
+    return `CONQUER.MIX/${this.data.name.toLowerCase()}.png`;
+  }
+
+  public getDamageState(): number {
+    // TODO: Rules
+    const value = Math.max(this.health / this.hitPoints, 0);
+    if (value <= 0.25) {
+      return 2;
+    } else if (value <= 0.50) {
+      return 1;
+    }
+    return 0;
+  }
+
+  public getArmor(): number {
+    return this.properties!.Armor || 0;
+  }
+
+  public getColor(): string {
+    // FIXME
+    return this.isPlayer()
+      ? '#00ff00'
+      : '#ff0000';
+  }
+
+  public getPlayerId(): number {
+    return typeof this.data.player === 'number'
+      ? this.data.player
+      : super.getPlayerId();
+  }
+
+  public getName(): string {
+    return this.data.name;
   }
 
   public getMovementSpeed(): number {
@@ -305,6 +618,39 @@ export class DynamicEntity extends GameMapEntity {
     const distance = this.targetPosition!.distance(this.position);
 
     return distance > speed ? vel : undefined;
+  }
+
+  public canReveal(): boolean {
+    // FIXME: Neutral ?
+    return this.isPlayer();
+  }
+
+  public canAttack(): boolean {
+    return !!this.primaryWeapon || !!this.secondaryWeapon;
+  }
+
+  public isAttackable(source: GameMapEntity): boolean {
+    if (!this.isSelectable()) {
+      return false;
+    }
+
+    return this.isPlayer() ? false : source.data.player != this.data.player;
+  }
+
+  public isPlayer(): boolean {
+    return this.player ? this.player.isSessionPlayer() : false;
+  }
+
+  public isCivilian(): boolean {
+    return !this.player || this.player.getName() === 'Neutral';
+  }
+
+  public isWall(): boolean {
+    return wallNames.indexOf(this.data.name) !== -1;
+  }
+
+  public isTiberium(): boolean {
+    return this.data.name.substr(0, 2) === 'TI';
   }
 }
 
@@ -521,11 +867,14 @@ export class StructureEntity extends GameMapEntity {
 /**
  * Unit Entity
  */
-export class UnitEntity extends DynamicEntity {
+export class UnitEntity extends GameMapEntity {
   public readonly properties: MIXUnit = this.engine.mix.units.get(this.data.name) as MIXUnit;
   protected dimension: Vector = new Vector(24, 24);
   protected wakeSprite?: Sprite;
   protected wakeAnimation?: Animation;
+  protected reportSelect?: string = 'AWAIT1';
+  protected reportMove?: string = 'ACKNO';
+  protected reportAttack?: string = 'ACKNO';
   protected zIndex: number = 3;
 
   public toJson(): any {
@@ -654,6 +1003,10 @@ export class UnitEntity extends DynamicEntity {
     return !this.properties!.CantTurn;
   }
 
+  public canFireTwice(): boolean {
+    return !!this.properties!.FiresTwice;
+  }
+
   public isDeployable(): boolean {
     return this.isPlayer() && this.data.name === 'MCV';
   }
@@ -670,7 +1023,7 @@ export class UnitEntity extends DynamicEntity {
 /**
  * Infantry Entity
  */
-export class InfantryEntity extends DynamicEntity {
+export class InfantryEntity extends GameMapEntity {
   public readonly properties: MIXInfantry = this.engine.mix.infantry.get(this.data.name) as MIXInfantry;
   protected dimension: Vector = new Vector(16, 16);
   protected directions: number = 8;
@@ -678,6 +1031,9 @@ export class InfantryEntity extends DynamicEntity {
   protected idleTimer: number = 100;
   protected idleAnimation: string = 'Ready';
   protected reportDestroy?: string = 'nuyell1'; // FIXME: Should be handled by projectile
+  protected reportSelect?: string = 'AWAIT1';
+  protected reportMove?: string = 'ACKNO';
+  protected reportAttack?: string = 'ACKNO';
   protected zIndex: number = 2;
 
   public toJson(): any {
@@ -812,6 +1168,10 @@ export class InfantryEntity extends DynamicEntity {
   }
 
   public isSelectable(): boolean {
+    return true;
+  }
+
+  public isMovable(): boolean {
     return true;
   }
 }
