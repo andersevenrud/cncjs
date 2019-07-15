@@ -204,7 +204,7 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
         this.attacking = true;
         this.currentPath = [];
       } else if (this.currentPath.length === 0) {
-        this.moveTo(targetCell);
+        this.moveTo(targetCell, false, true);
       }
     }
 
