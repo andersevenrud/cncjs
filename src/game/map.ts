@@ -6,9 +6,15 @@
 import { Entity, Sprite, MousePosition, Box, collidePoint, collideAABB } from '../engine';
 import { Grid, AStarFinder, DiagonalMovement } from 'pathfinding';
 import { TheatreScene } from './scenes/theatre';
-import { SmudgeEntity, TerrainEntity, InfantryEntity, EffectEntity, UnitEntity, OverlayEntity, StructureEntity } from './entities';
+import { SmudgeEntity } from './entities/smudge';
+import { TerrainEntity } from './entities/terrain';
+import { InfantryEntity } from './entities/infantry';
+import { EffectEntity } from './entities/effect';
+import { UnitEntity } from './entities/unit';
+import { StructureEntity } from './entities/structure';
+import { OverlayEntity } from './entities/overlay';
+import { GameMapBaseEntity } from './entities/base';
 import { MIXPlayerName, MIXMapInfoData, MIXMapData, MIXMapEntityData, MIXSaveGame, wallNames, parseDimensions, playerMap } from './mix';
-import { GameMapBaseEntity } from './entity';
 import { GameEngine } from './game';
 import { spriteFromName } from './sprites';
 import { cellFromPoint, pointFromCell, CELL_SIZE } from './physics';
@@ -204,10 +210,13 @@ export class GameMapEntityFactory {
     this.map = map;
   }
 
-  public async load(type: string, data: MIXMapEntityData): Promise<void> {
+  public async load(type: string, data: MIXMapEntityData, cb?: Function): Promise<void> {
     const Class: any = GameMapEntityFactory.entityMap[this.getRealType(type, data)];
     if (Class) {
       const entity = new Class(data, this.map);
+      if (cb) {
+        cb(entity);
+      }
       return this.map.addEntity(entity);
     } else {
       console.warn('Invalid', type, data);
@@ -270,7 +279,7 @@ export class GameMap extends Entity {
     const current = point.toString();
     const entities = this.entities.filter(e => e.isSelected()).map(e => ` - ${e.toString()}`).join('\n');
     const player = this.player.toString();
-    return `${this.name} ${size}${pos} ${current}${dimension}\nEntities: ${this.visibleEntities}/${this.entities.length}\n${entities}\nPlayer: ${player}`;
+    return `${this.name} ${size}${pos} ${current}${dimension}\nEntities: ${this.visibleEntities}/${this.entities.length}\nPlayer: ${player}\n${entities}`;
   }
 
   public toJson(): any {

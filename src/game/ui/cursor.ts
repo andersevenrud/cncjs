@@ -3,10 +3,10 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import { Sprite, Entity, Animation } from '../engine';
-import { spriteFromName } from './sprites';
-import { GameEngine } from './game';
-import { cursorMap, MIXCursor, MIXCursorType } from './mix';
+import { Sprite, Entity, Animation } from '../../engine';
+import { spriteFromName } from '../sprites';
+import { GameEngine } from '../game';
+import { cursorMap, MIXCursor, MIXCursorType } from '../mix';
 import { Vector } from 'vector2d';
 
 const animations: any = Object.keys(cursorMap)

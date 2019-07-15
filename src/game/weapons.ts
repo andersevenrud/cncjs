@@ -5,11 +5,10 @@
  */
 import { Sprite, randomBetweenInteger }  from '../engine';
 import { GameMap } from './map';
-import { GameMapBaseEntity } from './entity';
+import { GameMapBaseEntity } from './entities/base';
 import { MIXWeapon, MIXBullet, MIXWarhead, irrelevantBulletImages } from './mix';
 import { cellFromPoint, getDirection, CELL_SIZE } from './physics';
 import { spriteFromName } from './sprites';
-import { EffectEntity } from './entities';
 import { Vector } from 'vector2d';
 
 const directions = ['N', 'NW', 'W', 'SW', 'S', 'SE', 'E', 'NE'];
@@ -45,13 +44,10 @@ export class ProjectileEntity extends GameMapBaseEntity {
 
     const map = this.weapon.map;
     if (this.bullet.Explosion) {
-      const e = new EffectEntity({
+      this.map.factory.load('effect', {
         name: this.bullet.Explosion,
         cell: this.target.getCell()
-      }, map);
-
-      e.setCenterEntity(this.target);
-      map.addEntity(e);
+      }, (effect: any) => effect.setCenterEntity(this));
     }
 
     this.weapon.map.removeEntity(this);
@@ -59,16 +55,14 @@ export class ProjectileEntity extends GameMapBaseEntity {
 
   private createTrail(): void {
     if (this.weapon.trailSprite && !this.destroyed) {
-      const e = new EffectEntity({
+      this.map.factory.load('effect', {
         name: 'SMOKEY',
         player: -1,
         cell: this.cell
-      }, this.weapon.map);
-
-      e.setPosition(this.getPosition());
-      e.setCenterEntity(this);
-
-      this.weapon.map.addEntity(e);
+      }, (effect: any) => {
+        effect.setPosition(this.getPosition());
+        effect.setCenterEntity(this);
+      });
     }
   }
 
@@ -184,13 +178,10 @@ export class Weapon {
       const dir = directions[this.entity.getDirection()];
       const name = this.weapon.MuzzleFlash.replace('-N', `-${dir}`);
 
-      const e = new EffectEntity({
+      this.map.factory.load('effect', {
         name,
         cell: this.entity.getCell()
-      }, this.map);
-
-      e.setCenterEntity(this.entity);
-      this.map.addEntity(e);
+      }, (effect: any) => effect.setCenterEntity(this));
     }
   }
 

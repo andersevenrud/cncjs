@@ -3,25 +3,14 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import { Animation, Entity, Box, Sprite, randomBetweenInteger } from '../engine';
-import { Player } from './player';
-import { GameEngine } from './game';
-import { GameMap } from './map';
-import { pointFromCell, cellFromPoint, CELL_SIZE } from './physics';
-import { soundMap } from './mix';
+
+import { Entity, Box, randomBetweenInteger } from '../../engine';
+import { Player } from '../player';
+import { GameEngine } from '../game';
+import { GameMap } from '../map';
+import { cellFromPoint, pointFromCell, CELL_SIZE } from '../physics';
+import { soundMap } from '../mix';
 import { Vector } from 'vector2d';
-
-/**
- * Map Entity Animation
- */
-export class GameMapEntityAnimation extends Animation {
-  public multiplier: number = 1;
-
-  public constructor(name: string, offset: Vector, count: number, speed: number, multiplier: number = 1) {
-    super(name, offset, count, speed);
-    this.multiplier = multiplier;
-  }
-}
 
 export abstract class GameMapBaseEntity extends Entity {
   public readonly map: GameMap;
@@ -283,6 +272,10 @@ export abstract class GameMapBaseEntity extends Entity {
   }
 
   public isWall(): boolean {
+    return false;
+  }
+
+  public isStructure(): boolean {
     return false;
   }
 

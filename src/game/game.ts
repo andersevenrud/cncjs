@@ -19,7 +19,7 @@ import { MovieScene } from './scenes/movie';
 import { TheatreScene } from './scenes/theatre';
 import { ScoreScene } from './scenes/score';
 import { LoadingScene } from './scenes/loading';
-import { Cursor } from './cursor';
+import { Cursor } from './ui/cursor';
 import { Player } from './player';
 import { MIX, MIXPlayerName } from './mix';
 

@@ -5,8 +5,7 @@
  */
 
 import { defaultTeamMap, MIXPlayerName, MIXTeamName } from './mix';
-import { GameMapBaseEntity } from './entity';
-import { StructureEntity } from './entities';
+import { GameMapBaseEntity } from './entities/base';
 import EventEmitter from 'eventemitter3';
 
 export class Player extends EventEmitter {
@@ -39,7 +38,7 @@ export class Player extends EventEmitter {
     this.structures.clear();
 
     for (let i = 0; i < entities.length; i++) {
-      if (entities[i] instanceof StructureEntity) {
+      if (entities[i].isStructure()) {
         let name = entities[i].getName();
         this.structures.add(name);
       }

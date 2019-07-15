@@ -4,9 +4,9 @@
  * @license MIT
  */
 
-import { MIXObject } from './mix';
-import { GameEngine } from './game';
-import { Player } from './player';
+import { MIXObject } from '../mix';
+import { GameEngine } from '../game';
+import { Player } from '../player';
 import { EventEmitter } from 'eventemitter3';
 
 export type ConstructionType = 'structure' | 'unit' | 'aircraft' | 'infantry'; // FIXME: Should be in MIX

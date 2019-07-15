@@ -47,9 +47,9 @@ import {
 import { TheatreScene } from '../scenes/theatre';
 import { createGameMenus } from './mainmenu';
 import { GameEngine } from '../game';
-import { GameMapBaseEntity } from '../entity';
+import { GameMapBaseEntity } from '../entities/base';
 import { GameMapMask } from '../map';
-import { ConstructionQueue } from '../construction';
+import { ConstructionQueue } from './construction';
 import { cellFromPoint, isRectangleVisible } from '../physics';
 import { Vector } from 'vector2d';
 

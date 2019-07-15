@@ -10,7 +10,7 @@ import { GameEngine } from '../game';
 import { TheatreUI } from './theatre';
 import { spriteFromName } from '../sprites';
 import { MIXFont, fontMap } from '../mix';
-import { ConstructionQueue } from '../construction';
+import { ConstructionQueue } from './construction';
 import { getScaledDimensions } from '../physics';
 import { Vector } from 'vector2d';
 
