@@ -7,13 +7,21 @@ import { Entity, Sprite, MousePosition, Box, collidePoint, collideAABB } from '.
 import { Grid, AStarFinder, DiagonalMovement } from 'pathfinding';
 import { TheatreScene } from './scenes/theatre';
 import { SmudgeEntity, TerrainEntity, InfantryEntity, EffectEntity, UnitEntity, OverlayEntity, StructureEntity } from './entities';
-import { MIXMapInfoData, MIXMapData, MIXMapEntityData, MIXSaveGame, wallNames, parseDimensions } from './mix';
+import { MIXPlayerName, MIXMapInfoData, MIXMapData, MIXMapEntityData, MIXSaveGame, wallNames, parseDimensions, playerMap } from './mix';
 import { GameMapBaseEntity } from './entity';
 import { GameEngine } from './game';
 import { spriteFromName } from './sprites';
 import { cellFromPoint, pointFromCell, CELL_SIZE } from './physics';
+import { Player } from './player';
 import { FOW } from './fow';
 import { Vector } from 'vector2d';
+
+type PlayerMap = [MIXPlayerName, Player];
+
+const players: PlayerMap[] = playerMap
+  .map((name: string, index: number): any => {
+    return [name, new Player(index, name as MIXPlayerName)];
+  });
 
 export const sortByZindex = (a: GameMapBaseEntity, b: GameMapBaseEntity) => {
   const x = a.getZindex();
@@ -230,6 +238,8 @@ export class GameMap extends Entity {
   protected created: boolean = false;
   protected data?: MIXMapInfoData;
   protected mask?: GameMapMask;
+  public readonly player: Player;
+  private players: Map<MIXPlayerName, Player> = new Map(players);
 
   public grid: Grid = new Grid(64, 64);
   public theatre: string = 'temperat';
@@ -242,11 +252,13 @@ export class GameMap extends Entity {
   public readonly factory: GameMapEntityFactory = new GameMapEntityFactory(this);
   public readonly selection: GameMapEntitySelection = new GameMapEntitySelection(this);
 
-  public constructor(name: string, engine: GameEngine, scene: TheatreScene) {
+  public constructor(name: string, player: MIXPlayerName, engine: GameEngine, scene: TheatreScene) {
     super();
     this.name = name;
     this.engine = engine;
     this.scene = scene;
+    this.player = this.players.get(player) as Player;
+    this.player.setSessionPlayer(true);
   }
 
   public toString(): string {
@@ -257,7 +269,8 @@ export class GameMap extends Entity {
     const pos = this.position.toString();
     const current = point.toString();
     const entities = this.entities.filter(e => e.isSelected()).map(e => ` - ${e.toString()}`).join('\n');
-    return `${this.name} ${size}${pos} ${current}${dimension}\nEntities: ${this.visibleEntities}/${this.entities.length}\n${entities}`;
+    const player = this.player.toString();
+    return `${this.name} ${size}${pos} ${current}${dimension}\nEntities: ${this.visibleEntities}/${this.entities.length}\n${entities}\nPlayer: ${player}`;
   }
 
   public toJson(): any {
@@ -414,7 +427,7 @@ export class GameMap extends Entity {
       e.onUpdate(deltaTime);
     });
 
-    this.scene.player.setPower(power);
+    this.player.setPower(power);
 
     this.fow.onUpdate(deltaTime);
   }
@@ -637,6 +650,16 @@ export class GameMap extends Entity {
 
   public getData(): MIXMapInfoData | undefined {
     return this.data;
+  }
+
+  public getPlayerById(id: number): Player | undefined {
+    for (let p of this.players.values()) {
+      if (p.getId() === id) {
+        return p;
+      }
+    }
+
+    return undefined;
   }
 
   public isFowVisible(): boolean {

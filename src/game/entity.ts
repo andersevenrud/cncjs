@@ -318,8 +318,8 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
     this.data = data;
     this.direction = this.data.direction || 0;
     this.health = parseInt(String(data.health!), 10) || 1; // FIXME
-    this.player = typeof data.player === 'number' // FIXME: Pass as argument
-      ? map.scene.getPlayerById(data.player)
+    this.player = typeof data.player === 'number'
+      ? map.getPlayerById(data.player)
       : undefined;
 
     this.setCell(data.cell, true);

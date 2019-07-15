@@ -87,10 +87,6 @@ export class ConstructionQueue extends EventEmitter {
     for (let i = 0; i < this.objects.length; i++) {
       let o = this.objects[i];
       if (o.properties) {
-        if (!this.player.canConstruct()) {
-          // FIXME
-          o.available = false;
-        }
 
         if (this.techLevel !== -1) {
           o.available = (o.properties.TechLevel || 0) <= this.techLevel;
@@ -108,6 +104,8 @@ export class ConstructionQueue extends EventEmitter {
           o.available = this.player.canConstructUnit();
         } else if (o.available && o.type === 'infantry') {
           o.available = this.player.canConstructInfantry();
+        } else if (o.available && o.type === 'structure') {
+          o.available = this.player.canConstructStructure();
         }
       }
     }

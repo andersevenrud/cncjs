@@ -18,7 +18,6 @@ export class Player extends EventEmitter {
   protected minimap: boolean = true; // TODO: Add a debug mode for this
   protected structures: Set<string> = new Set();
   protected sessionPlayer: boolean = false;
-  protected hasFactory: boolean = false;
 
   public constructor(id: number, name: MIXPlayerName, team?: MIXTeamName) {
     super();
@@ -44,11 +43,6 @@ export class Player extends EventEmitter {
       if (entities[i] instanceof StructureEntity) {
         let name = entities[i].getName();
         this.structures.add(name);
-
-        // FIXME: Set to false when destroyed
-        if (name === 'FACT') {
-          this.hasFactory = true;
-        }
       }
     }
 
@@ -122,7 +116,13 @@ export class Player extends EventEmitter {
   }
 
   public canConstruct(): boolean {
-    return this.hasFactory;
+    return this.canConstructStructure() ||
+      this.canConstructUnit() ||
+      this.canConstructInfantry();
+  }
+
+  public canConstructStructure(): boolean {
+    return this.getStructures().indexOf('FACT') !== -1;
   }
 
   public canConstructUnit(): boolean {

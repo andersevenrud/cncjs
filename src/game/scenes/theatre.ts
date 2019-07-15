@@ -6,17 +6,10 @@
 import { Box, MusicTrack, Scene } from '../../engine';
 import { GameEngine } from '../game';
 import { GameMap } from '../map';
-import { Player } from '../player';
 import { TheatreUI } from '../ui/theatre';
-import { playerMap, MIXPlayerName, MIXTheme } from '../mix';
+import { MIXPlayerName, MIXTheme } from '../mix';
 import { cellFromPoint } from '../physics';
 import { Vector } from 'vector2d';
-
-type PlayerMap = [MIXPlayerName, Player];
-
-const players: PlayerMap[] = playerMap.map((name, index): any => {
-  return [name, new Player(index, name)];
-});
 
 /**
  * Theatre Scene
@@ -27,9 +20,6 @@ export class TheatreScene extends Scene {
   public readonly ui: TheatreUI;
   public readonly viewport: Box = { x1: 0, x2: 800, y1: 0, y2: 600 };
   public readonly name: string;
-  public readonly playerName: MIXPlayerName;
-  public readonly player: Player;
-  private players: Map<MIXPlayerName, Player> = new Map(players);
   private loaded: boolean = false;
 
   public constructor(name: string, player: MIXPlayerName, engine: GameEngine) {
@@ -37,17 +27,13 @@ export class TheatreScene extends Scene {
 
     this.engine = engine;
     this.name = name;
-    this.playerName = player;
-    this.map = new GameMap(this.name, this.engine as GameEngine, this);
-    this.player = this.players.get(player) as Player;
-    this.player.setSessionPlayer(true);
+    this.map = new GameMap(this.name, player, this.engine as GameEngine, this);
     this.ui = new TheatreUI(this);
   }
 
   public toString(): string {
     const map = this.map.toString();
-    const player = this.player.toString();
-    return `Theatre\nPlayer: ${player}\nMap: ${map}`;
+    return `Theatre\nMap: ${map}`;
   }
 
   public async init(): Promise<void> {
@@ -72,8 +58,6 @@ export class TheatreScene extends Scene {
     await this.ui.init();
 
     this.loaded = true;
-    this.ui.toggleSidebar(this.player.canConstruct());
-    this.ui.toggleMinimap(this.player.hasMinimap());
 
     playlist.play('aoi');
     console.debug(this);
@@ -158,16 +142,6 @@ export class TheatreScene extends Scene {
     );
 
     this.engine.sound.setContextPosition(center);
-  }
-
-  public getPlayerById(id: number): Player | undefined {
-    for (let p of this.players.values()) {
-      if (p.getId() === id) {
-        return p;
-      }
-    }
-
-    return undefined;
   }
 
   public getScaledViewport(): Box {

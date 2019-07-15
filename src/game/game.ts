@@ -158,7 +158,7 @@ export class GameEngine extends Engine {
   }
 
   public async pushMapSelectionScene(): Promise<void> {
-    const player = this.scene instanceof TheatreScene ? this.scene.player : new Player(0, 'GoodGuy', 'gdi');
+    const player = this.scene instanceof TheatreScene ? this.scene.map.player : new Player(0, 'GoodGuy', 'gdi');
     const lastMapName = this.scene instanceof TheatreScene ? this.scene.name : 'scg01ea';
     this.pushScene(() => new MapSelectionScene(lastMapName, player, this));
   }

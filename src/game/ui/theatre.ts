@@ -68,32 +68,33 @@ export class TheatreUI extends UIScene {
   private mapButton?: UIIconButton;
   private minimap?: UIMinimap;
   private sidebar?: UISidebar;
-  private structureConstruction: ConstructionQueue;
-  private factoryConstruction: ConstructionQueue;
   private constructionCallback?: Function;
 
   public constructor(scene: TheatreScene) {
     super(scene.engine);
     this.scene = scene;
-
-    // FIXME
-    const structures = [...buildableStructures];
-    const factories = [...buildableInfantry, ...buildableUnits, ...usableSpecials];
-
-    this.structureConstruction = new ConstructionQueue(structures, this.scene.player, this.scene.engine);
-    this.factoryConstruction = new ConstructionQueue(factories, this.scene.player, this.scene.engine);
   }
 
   public async init(): Promise<void> {
     const theatre = this.scene.map.theatre;
+    const player = this.scene.map.player;
     const data = this.scene.map.getData();
+    const structures = [...buildableStructures];
+    const factories = [...buildableInfantry, ...buildableUnits, ...usableSpecials];
+
+    const structureConstruction = new ConstructionQueue(structures, player, this.scene.engine);
+    const factoryConstruction = new ConstructionQueue(factories, player, this.scene.engine);
+
     if (data) {
-      this.structureConstruction.setBuildLevel(data.BuildLevel);
-      this.factoryConstruction.setBuildLevel(data.BuildLevel);
+      structureConstruction.setBuildLevel(data.BuildLevel);
+      structureConstruction.updateAvailable();
+
+      factoryConstruction.setBuildLevel(data.BuildLevel);
+      factoryConstruction.updateAvailable();
     }
 
     // Tabs
-    const emitCredits = () => String(this.scene.player.getCredits());
+    const emitCredits = () => String(player.getCredits());
     const tabMenu = new UITab('tab-menu', 'Menu', new Vector(0, 0), this);
     const tabCredits = new UITab('tab-credits', emitCredits, new Vector(-TAB_WIDTH, 0), this);
     const tabSidebar = new UITab('tab-sidebar', 'Sidebar', new Vector(-0, 0), this);
@@ -106,10 +107,10 @@ export class TheatreUI extends UIScene {
     const btnSell = sidebar.addChild(new UIIconButton('sell', 'UPDATEC.MIX/hsell.png', new Vector(49, 16), new Vector(4, RADAR_HEIGHT + 2), this));
     const btnRepair = sidebar.addChild(new UIIconButton('sell', 'UPDATEC.MIX/hrepair.png', new Vector(49, 16), new Vector(4 + ACTION_WIDTH, RADAR_HEIGHT + 2), this));
     const btnMap = sidebar.addChild(new UIIconButton('sell', 'UPDATEC.MIX/hmap.png', new Vector(49, 16), new Vector(8 + ACTION_WIDTH * 2, RADAR_HEIGHT + 2), this));
-    const elStructures = sidebar.addChild(new UIConstruction('structures', theatre, this.structureConstruction, new Vector(20,  cy), this)) as UIConstruction;
+    const elStructures = sidebar.addChild(new UIConstruction('structures', theatre, structureConstruction, new Vector(20,  cy), this)) as UIConstruction;
     const elStructuresUp = sidebar.addChild(new UIIconButton('structures-up', 'UPDATEC.MIX/hstripup.png', new Vector(BUTTON_WIDTH, BUTTON_HEIGHT), new Vector(20, cy + CONSTRUCTION_HEIGHT + 2), this)) as UIIconButton;
     const elStructuresDown = sidebar.addChild(new UIIconButton('structures-down', 'UPDATEC.MIX/hstripdn.png', new Vector(BUTTON_WIDTH, BUTTON_HEIGHT), new Vector(20 + BUTTON_WIDTH, cy + CONSTRUCTION_HEIGHT + 2), this)) as UIIconButton;
-    const elFactories = sidebar.addChild(new UIConstruction('factories', theatre, this.factoryConstruction, new Vector(90, cy), this)) as UIConstruction;
+    const elFactories = sidebar.addChild(new UIConstruction('factories', theatre, factoryConstruction, new Vector(90, cy), this)) as UIConstruction;
     const elFactoriesUp = sidebar.addChild(new UIIconButton('factories-up', 'UPDATEC.MIX/hstripup.png', new Vector(BUTTON_WIDTH, BUTTON_HEIGHT), new Vector(90, cy + CONSTRUCTION_HEIGHT + 2), this)) as UIIconButton;
     const elFactoriesDown = sidebar.addChild(new UIIconButton('factories-down', 'UPDATEC.MIX/hstripdn.png', new Vector(BUTTON_WIDTH, BUTTON_HEIGHT), new Vector(90 + BUTTON_WIDTH, cy + CONSTRUCTION_HEIGHT + 2), this)) as UIIconButton;
 
@@ -211,7 +212,7 @@ export class TheatreUI extends UIScene {
     btnSell.on('click', () => this.currentAction = 'sell');
     btnRepair.on('click', () => this.currentAction = 'repair');
     btnMap.on('click', () => {
-      if (this.scene.player.hasMinimap()) {
+      if (player.hasMinimap()) {
         minimap.setVisible(!minimap.isVisible());
       }
     });
@@ -272,6 +273,8 @@ export class TheatreUI extends UIScene {
     this.minimap = minimap;
     this.mapButton = btnMap as UIIconButton;
     this.mapButton.setDisabled(true);
+    this.toggleSidebar(player.canConstruct());
+    this.toggleMinimap(player.hasMinimap());
 
     await super.init();
   }
@@ -304,7 +307,7 @@ export class TheatreUI extends UIScene {
       this.updateSelectionRectangle();
     }
 
-    if (this.mapButton && this.scene.player.hasMinimap()) {
+    if (this.mapButton && this.scene.map.player.hasMinimap()) {
       this.mapButton.setDisabled(false);
     }
 
@@ -337,7 +340,7 @@ export class TheatreUI extends UIScene {
   private handleConstructionPlot(cell: Vector) {
     const name = this.placeConstruction as string;
     const type = this.scene.engine.mix.getType(name);
-    const player = this.scene.player.getId();
+    const player = this.scene.map.player.getId();
 
     if (name === 'ION') {
       this.scene.map.factory.load('effect', { name: 'IONSFX', cell, player });
