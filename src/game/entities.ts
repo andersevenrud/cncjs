@@ -211,18 +211,19 @@ export class DynamicEntity extends GameMapEntity {
     if (this.targetEntity) {
       const targetCell = this.targetEntity.getCell();
       const direction = getDirection(targetCell, this.cell, this.directions);
+      const turretDirection = getDirection(targetCell, this.cell, this.turretDirections);
       const distance = Math.floor(targetCell.distance(this.cell)); // FIXME: Rounding off makes this less accurate
 
-      const turretReached = Math.round(this.turretDirection) === direction;
+      const turretReached = Math.round(this.turretDirection) === turretDirection;
       if (rotateTurret && !turretReached) {
-        this.turretDirection = getNewDirection(this.turretDirection, direction, rotationSpeed * 2, this.directions);
+        this.turretDirection = getNewDirection(this.turretDirection, turretDirection, rotationSpeed * 4, this.turretDirections);
       } else if (distance <= this.getWeaponSight()) {
         if (!this.canRotate()) {
           this.direction = direction;
         }
 
         if (!rotateTurret) {
-          this.turretDirection = this.direction;
+          this.turretDirection = turretDirection;
         }
 
         this.targetPosition = undefined;
@@ -544,6 +545,8 @@ export class UnitEntity extends DynamicEntity {
     if (this.data.name === 'BOAT') { // FIXME
       // FIXME
       this.dimension = this.sprite.size.clone() as Vector;
+      this.directions = 2;
+      this.direction = this.direction > 16 ? 1 : 0;
 
       this.wakeSprite = spriteFromName('CONQUER.MIX/wake.png');
 
@@ -614,7 +617,7 @@ export class UnitEntity extends DynamicEntity {
     const position = this.getTruncatedPosition(this.offset);
 
     if (this.wakeSprite) {
-      const o = new Vector(0, this.direction === 8 ? this.wakeSprite.frames / 2 : 0);
+      const o = new Vector(0, this.direction === 0 ? this.wakeSprite.frames / 2 : 0);
       const f = this.wakeAnimation!.getFrameIndex(o);
       const p = position.clone().add(new Vector(
         -this.dimension.x / 2,
@@ -624,15 +627,22 @@ export class UnitEntity extends DynamicEntity {
       this.wakeSprite.render(f, p, context);
     }
 
-    const frame = new Vector(this.frameOffset.x, Math.round(this.direction));
-    this.sprite.render(frame, position, context);
+    if (this.data.name === 'BOAT') {
+      const spriteOffset = (this.sprite.frames / 2) * this.direction;
+      const turretOffset = Math.round(this.turretDirection);
+      const frame = new Vector(this.frameOffset.x, spriteOffset + turretOffset);
+      this.sprite.render(frame, position, context);
+    } else {
+      const frame = new Vector(this.frameOffset.x, Math.round(this.direction));
+      this.sprite.render(frame, position, context);
 
-    if (this.properties.HasTurret) {
-      const turretFrame = new Vector(
-        this.frameOffset.x,
-        Math.round(this.turretDirection) + this.sprite.frames / 2
-      );
-      this.sprite.render(turretFrame, position, context);
+      if (this.properties.HasTurret) {
+        const turretFrame = new Vector(
+          this.frameOffset.x,
+          Math.round(this.turretDirection) + this.sprite.frames / 2
+        );
+        this.sprite.render(turretFrame, position, context);
+      }
     }
   }
 
@@ -650,6 +660,10 @@ export class UnitEntity extends DynamicEntity {
 
   public isSelectable(): boolean {
     return true;
+  }
+
+  public isMovable(): boolean {
+    return this.data.name !== 'BOAT'; // FIXME
   }
 }
 

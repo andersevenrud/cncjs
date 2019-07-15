@@ -46,6 +46,7 @@ export abstract class GameMapBaseEntity extends Entity {
   protected repairing: boolean = false;
   protected direction: number = 0;
   protected directions: number = 32;
+  protected turretDirections: number = 32;
   protected turretDirection: number = -1;
   protected animation: string = '';
   protected health: number = 100;
@@ -332,7 +333,7 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
 
   public toString(): string {
     const s = this.getDamageState();
-    return `${this.data.player}:${this.data.name} ${this.health}/${this.hitPoints}H@${s} ${this.getTruncatedPosition().toString()}@${this.cell.toString()}x${this.direction.toFixed(1)} | ${this.animation || '<null>'}@${this.frame.toString()} ${this.zIndex}z`;
+    return `${this.data.player}:${this.data.name} ${this.health}/${this.hitPoints}H@${s} ${this.getTruncatedPosition().toString()}@${this.cell.toString()}x${this.direction.toFixed(1)} (t:${this.turretDirection.toFixed(1)}) | ${this.animation || '<null>'}@${this.frame.toString()} ${this.zIndex}z`;
   }
 
   public toJson(): any {
