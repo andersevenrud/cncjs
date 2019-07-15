@@ -464,10 +464,7 @@ export abstract class GameMapEntity extends GameMapBaseEntity {
 
   protected getSimilarEntity(offset: Vector, value: number): number {
     const cell = this.cell.clone().add(offset) as Vector;
-    const finder = (e: GameMapEntity): boolean => e.data
-      ? e.data.name === this.data.name
-      : false; // FIXME: Projectiles
-
+    const finder = (e: GameMapEntity): boolean => e.getName() === this.data.name;
     const found = this.map.getEntitiesFromCell(cell, finder);
 
     return found.length > 0 ? value : 0;
