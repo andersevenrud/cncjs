@@ -15,7 +15,6 @@ export class Player extends EventEmitter {
   protected power: [number, number] = [0, 0]; // Avail / Used
   protected name: MIXPlayerName = 'GoodGuy';
   protected team: MIXTeamName = 'gdi';
-  protected minimap: boolean = true; // TODO: Add a debug mode for this
   protected structures: Set<string> = new Set();
   protected sessionPlayer: boolean = false;
 
@@ -69,10 +68,6 @@ export class Player extends EventEmitter {
     this.power = power;
   }
 
-  public setMinimap(mm: boolean) {
-    this.minimap = mm;
-  }
-
   public setSessionPlayer(sess: boolean) {
     this.sessionPlayer = sess;
   }
@@ -112,7 +107,7 @@ export class Player extends EventEmitter {
   }
 
   public hasMinimap(): boolean {
-    return this.minimap;
+    return ['HQ', 'EYE'].some(n => this.getStructures().indexOf(n) !== -1);
   }
 
   public canConstruct(): boolean {

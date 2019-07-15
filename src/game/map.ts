@@ -531,14 +531,10 @@ export class GameMap extends Entity {
       await entity.init();
       this.entities.push(entity);
 
-      // FIXME: Handle this correctly
       if (entity.player) {
-        if (['HQ', 'EYE'].indexOf(entity.getName()) !== -1) {
-          entity.player.setMinimap(true);
-          this.scene.ui.toggleMinimap(true);
-        }
+        const es = this.getEntities()
+          .filter(e => e.isPlayer());
 
-        const es = this.getEntities().filter(e => e.isPlayer());
         entity.player.update(es);
       }
 
