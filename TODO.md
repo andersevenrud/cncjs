@@ -94,7 +94,7 @@
     - [ ] Special effects (like for obelisk)
     - [ ] Area of effect
     - [ ] Inaccuracy
-    - [ ] Double shots
+    - [x] Double shots
 - [x] Mechanics
     - [x] Credits
     - [x] Sew together fences

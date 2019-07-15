@@ -131,11 +131,13 @@ export class Weapon {
   public readonly sprite?: Sprite;
   public readonly trailSprite?: Sprite;
   private tick: number = 0;
+  private rof: number = 0;
 
   public constructor(name: string, map: GameMap, entity: GameMapEntity) {
     this.map = map;
     this.weapon = map.engine.mix.weapons.get(name) as MIXWeapon;
     this.entity = entity;
+    this.rof = this.weapon.ROF;
 
     const bullet = map.engine.mix.bullets.get(this.weapon.Projectile) as MIXBullet;
 
@@ -159,15 +161,21 @@ export class Weapon {
     }
   }
 
-  public fire(target: GameMapEntity): void {
-    if (this.tick === 0) {
-      const p = new ProjectileEntity(this.weapon.Projectile, target, this);
-      this.map.addEntity(p);
-      if (this.weapon.Report) {
-        this.entity.playSfx(this.weapon.Report.toLowerCase());
-      }
+  protected fireProjectile(target: GameMapEntity): void {
+    const p = new ProjectileEntity(this.weapon.Projectile, target, this);
+    this.map.addEntity(p);
+    if (this.weapon.Report) {
+      this.entity.playSfx(this.weapon.Report.toLowerCase());
+    }
 
-      this.createMuzzleFlash();
+    this.createMuzzleFlash();
+  }
+
+  public fire(target: GameMapEntity): void {
+    const fire = this.tick === 0;
+    const fireTwice = this.tick === Math.round(this.rof / 4) && this.entity.properties!.FiresTwice;
+    if (fire || fireTwice) {
+      this.fireProjectile(target);
     }
   }
 
@@ -187,6 +195,6 @@ export class Weapon {
   }
 
   public onUpdate(deltaTime: number) {
-    this.tick = (this.tick + 1) % this.weapon.ROF;
+    this.tick = (this.tick + 1) % this.rof;
   }
 }

@@ -311,10 +311,10 @@ export class DynamicEntity extends GameMapEntity {
  * Structure Entity
  */
 export class StructureEntity extends GameMapEntity {
+  public readonly properties: MIXStructure = this.engine.mix.structures.get(this.data.name) as MIXStructure;
   protected zIndex: number = 1;
   protected directions: number = 8;
   protected dimension: Vector = new Vector(24, 24);
-  protected properties: MIXStructure = this.engine.mix.structures.get(this.data.name) as MIXStructure;
   protected animation: string = 'Idle';
   protected bibOffset: number = 0;
   protected bib?: BibEntity;
@@ -521,10 +521,10 @@ export class StructureEntity extends GameMapEntity {
  * Unit Entity
  */
 export class UnitEntity extends DynamicEntity {
+  public readonly properties: MIXUnit = this.engine.mix.units.get(this.data.name) as MIXUnit;
   protected dimension: Vector = new Vector(24, 24);
   protected wakeSprite?: Sprite;
   protected wakeAnimation?: Animation;
-  protected properties: MIXUnit = this.engine.mix.units.get(this.data.name) as MIXUnit;
   protected zIndex: number = 3;
 
   public toJson(): any {
@@ -657,9 +657,9 @@ export class UnitEntity extends DynamicEntity {
  * Infantry Entity
  */
 export class InfantryEntity extends DynamicEntity {
+  public readonly properties: MIXInfantry = this.engine.mix.infantry.get(this.data.name) as MIXInfantry;
   protected dimension: Vector = new Vector(16, 16);
   protected directions: number = 8;
-  protected properties: MIXInfantry = this.engine.mix.infantry.get(this.data.name) as MIXInfantry;
   protected animation: string = 'Ready';
   protected idleTimer: number = 100;
   protected idleAnimation: string = 'Ready';
@@ -841,9 +841,9 @@ export class SmudgeEntity extends GameMapEntity {
  * Terrain Entity
  */
 export class TerrainEntity extends GameMapEntity {
+  public readonly properties: MIXTerrain = this.engine.mix.terrain.get(this.data.name) as MIXTerrain;
   protected zIndex: number = this.isTiberiumTree() ? 5 : 2;
   protected dimension: Vector = new Vector(16, 16);
-  protected properties: MIXTerrain = this.engine.mix.terrain.get(this.data.name) as MIXTerrain;
   protected occupy?: MIXGrid = {
     name: '',
     grid: [['x']]

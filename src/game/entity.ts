@@ -298,9 +298,9 @@ export abstract class GameMapBaseEntity extends Entity {
  */
 export abstract class GameMapEntity extends GameMapBaseEntity {
   public readonly player?: Player;
+  public readonly properties?: MIXObject;
   protected dimension: Vector = new Vector(24, 24);
   protected readonly data: MIXMapEntityData;
-  protected properties?: MIXObject;
   protected occupy?: MIXGrid;
   protected overlap?: MIXGrid;
   protected sprite?: Sprite;

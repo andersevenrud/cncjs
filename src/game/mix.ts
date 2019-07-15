@@ -91,6 +91,7 @@ export interface MIXObject {
   OccupyList?: string;
   HasTurret?: boolean;
   NoTurretLock?: boolean;
+  FiresTwice?: boolean;
 }
 
 export type MIXCursorMap = {
@@ -252,7 +253,6 @@ export interface MIXStructure extends MIXObject {
   Factory: string;
   Buildable: boolean;
   Repairable: boolean;
-  FiresTwice: boolean;
   TheaterSensitive: boolean;
   Invulnerable: boolean;
   Selectable: boolean;
@@ -312,7 +312,6 @@ export interface MIXUnit extends MIXObject {
   AutoRotatingTurret: boolean;
   IsCrewed: boolean;
   Buildable: boolean;
-  FiresTwice: boolean;
   Invulnerable: boolean;
   Harvests: boolean;
   Crusher: boolean;
