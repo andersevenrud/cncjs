@@ -943,7 +943,18 @@ export class EffectEntity extends GameMapEntity {
       this.animation = name;
 
       this.dimension = this.sprite.size.clone() as Vector;
-      this.offset = new Vector(this.sprite.size.x / 2, this.sprite.size.y / 2);
+      if (['IONSFX'].indexOf(this.data.name) !== -1) {
+        this.offset = new Vector(this.sprite.size.x / 2, this.sprite.size.y);
+      } else {
+        this.offset = new Vector(this.sprite.size.x / 2, this.sprite.size.y / 2);
+      }
+
+      if (['IONSFX', 'ATOMSFX'].indexOf(this.data.name) !== -1) {
+        this.offset.subtract(new Vector(
+          CELL_SIZE / 2,
+          CELL_SIZE / 2
+        ));
+      }
 
       if (this.centerEntity) {
         const dimension = this.centerEntity.getDimension().divS(2);

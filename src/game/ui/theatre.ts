@@ -332,13 +332,14 @@ export class TheatreUI extends UIScene {
   private handleConstructionPlot(cell: Vector) {
     const name = this.placeConstruction as string;
     const type = this.scene.engine.mix.getType(name);
+    const player = this.scene.player.getId();
 
-    if (type) {
-      this.scene.map.factory.load(type, {
-        name,
-        cell,
-        player: this.scene.player.getId()
-      });
+    if (name === 'ION') {
+      this.scene.map.factory.load('effect', { name: 'IONSFX', cell, player });
+    } else if (name === 'ATOM') {
+      this.scene.map.factory.load('effect', { name: 'ATOMSFX', cell, player });
+    } else if (type) {
+      this.scene.map.factory.load(type, { name, cell, player });
     }
 
     if (this.constructionCallback) {
