@@ -285,6 +285,7 @@ export abstract class Engine implements Core {
 
     try {
       const scene = found();
+      scene.onResize();
       console.group('Engine::nextScene()');
       await scene.init();
       console.groupEnd();

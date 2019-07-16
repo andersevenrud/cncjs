@@ -186,9 +186,12 @@ export class GameMap extends Entity {
     const start = data.waypoints.find(w => w.name === 'start');
     if (start) {
       console.debug('GameMap::init()', 'Starting at start', start.cell.toString());
+      const vp = this.scene.getScaledViewport();
+      const vw = vp.x2 - vp.x1;
+      const vh = vp.y2 - vp.y1;
       this.position = new Vector(
-        start.cell.x * CELL_SIZE,
-        start.cell.y * CELL_SIZE
+        Math.round((start.cell.x * CELL_SIZE) - (vw / 2) + (CELL_SIZE / 2)),
+        Math.round((start.cell.y * CELL_SIZE) - (vh / 2) + (CELL_SIZE / 2))
       );
     }
 

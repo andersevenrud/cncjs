@@ -1008,7 +1008,7 @@ export class MIX extends EventEmitter {
       units: Object.values(ini.UNITS).map(mapUnits(theatre, offset)),
       structures: Object.values(ini.STRUCTURES).map(mapStructures(theatre, offset)),
       waypoints: this.parseWaypoints(ini.Waypoints || ini.WAYPOINTS, offset), // FIXME
-      basic: transformObject(ini.BASIC, fname, name),
+      basic: transformObject((ini.BASIC || ini.Basic), fname, name), // FIXME
       terrain: mapOther(theatre, offset, 'TERRAIN', ini),
       overlays: mapOther(theatre, offset, 'OVERLAY', ini),
       smudge: mapOther(theatre, offset, 'SMUDGE', ini)
