@@ -9,7 +9,7 @@ import { Player } from './player';
 import { GameEngine } from './game';
 import { GameMap } from './map';
 import { cellFromPoint, pointFromCell, CELL_SIZE } from './physics';
-import { soundMap } from './mix';
+import { soundMap, wallNames } from './mix';
 import { Vector } from 'vector2d';
 
 export abstract class GameEntity extends Entity {
@@ -95,7 +95,13 @@ export abstract class GameEntity extends Entity {
   }
 
   public die(): boolean {
-    return false;
+    if (this.dying) {
+      return false;
+    }
+
+    this.dying = true;
+
+    return true;
   }
 
   public attack(target: GameEntity, report: boolean = false): void {
@@ -119,6 +125,14 @@ export abstract class GameEntity extends Entity {
   }
 
   public takeDamage(value: number): void {
+    if (this.health > 0) {
+      this.health = Math.max(0, this.health - value);
+
+      console.debug('GameEntity::takeDamage()', value, this.health);
+      if (this.health <= 0) {
+        this.die();
+      }
+    }
   }
 
   public updateWall(): void {
@@ -235,7 +249,8 @@ export abstract class GameEntity extends Entity {
   }
 
   public canReveal(): boolean {
-    return true;
+    // FIXME: Neutral ?
+    return this.isPlayer();
   }
 
   public canAttack(): boolean {
@@ -267,11 +282,11 @@ export abstract class GameEntity extends Entity {
   }
 
   public isPlayer(): boolean {
-    return false;
+    return this.player ? this.player.isSessionPlayer() : false;
   }
 
   public isCivilian(): boolean {
-    return false;
+    return !this.player || this.player.getName() === 'Neutral';
   }
 
   public isDeployable(): boolean {
@@ -291,12 +306,13 @@ export abstract class GameEntity extends Entity {
   }
 
   public isDestroyed(): boolean {
-    return this.destroyed;
+    return this.destroyed || this.dying;
   }
 
   public isWall(): boolean {
-    return false;
+    return wallNames.indexOf(this.getName()) !== -1;
   }
+
 
   public isStructure(): boolean {
     return false;
@@ -311,6 +327,6 @@ export abstract class GameEntity extends Entity {
   }
 
   public isTiberium(): boolean {
-    return false;
+    return this.getName().substr(0, 2) === 'TI';
   }
 }

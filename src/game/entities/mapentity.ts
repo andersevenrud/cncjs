@@ -295,27 +295,25 @@ export abstract class GameMapEntity extends GameEntity {
   }
 
   public die(destroy: boolean = true): boolean {
-    if (this.dying) {
-      return false;
-    }
-
-    this.dying = true;
-
-    if (this.reportLoss) {
-      if (this.isPlayer()) {
-        this.engine.playArchiveSfx('SPEECH.MIX/unitlost.wav', 'gui', { block: true });
+    if (super.die()) {
+      if (this.reportLoss) {
+        if (this.isPlayer()) {
+          this.engine.playArchiveSfx('SPEECH.MIX/unitlost.wav', 'gui', { block: true });
+        }
       }
+
+      if (this.reportDestroy) {
+        this.playSfx(this.reportDestroy);
+      }
+
+      if (destroy) {
+        this.destroy();
+      }
+
+      return true;
     }
 
-    if (this.reportDestroy) {
-      this.playSfx(this.reportDestroy);
-    }
-
-    if (destroy) {
-      this.destroy();
-    }
-
-    return true;
+    return false;
   }
 
   public attack(target: GameMapEntity, report: boolean = false) {
@@ -366,21 +364,6 @@ export abstract class GameMapEntity extends GameEntity {
         }
       }
     }
-  }
-
-  public takeDamage(value: number): void {
-    if (this.health > 0) {
-      this.health = Math.max(0, this.health - value);
-
-      console.debug('GameMapEntity::takeDamage()', value, this.health);
-      if (this.health <= 0) {
-        this.die();
-      }
-    }
-  }
-
-  public isDestroyed(): boolean {
-    return this.destroyed || this.dying;
   }
 
   public isMoving(): boolean {
@@ -492,11 +475,6 @@ export abstract class GameMapEntity extends GameEntity {
     return distance > speed ? vel : undefined;
   }
 
-  public canReveal(): boolean {
-    // FIXME: Neutral ?
-    return this.isPlayer();
-  }
-
   public canAttack(): boolean {
     return !!this.primaryWeapon || !!this.secondaryWeapon;
   }
@@ -508,23 +486,5 @@ export abstract class GameMapEntity extends GameEntity {
 
     return this.isPlayer() ? false : source.data.player != this.data.player;
   }
-
-  public isPlayer(): boolean {
-    return this.player ? this.player.isSessionPlayer() : false;
-  }
-
-  public isCivilian(): boolean {
-    return !this.player || this.player.getName() === 'Neutral';
-  }
-
-  public isWall(): boolean {
-    return wallNames.indexOf(this.data.name) !== -1;
-  }
-
-  public isTiberium(): boolean {
-    return this.data.name.substr(0, 2) === 'TI';
-  }
 }
-
-
 
