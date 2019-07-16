@@ -279,6 +279,14 @@ export abstract class GameEntity extends Entity {
     return false;
   }
 
+  public isUnit(): boolean {
+    return false;
+  }
+
+  public isInfantry(): boolean {
+    return false;
+  }
+
   public isTiberium(): boolean {
     return false;
   }

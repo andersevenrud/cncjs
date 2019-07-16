@@ -48,7 +48,7 @@ import { TheatreScene } from '../scenes/theatre';
 import { createGameMenus } from './mainmenu';
 import { GameEngine } from '../game';
 import { GameEntity } from '../entity';
-import { GameMapMask } from '../map';
+import { StructureMaskEntity } from '../entities/mask';
 import { ConstructionQueue } from './construction';
 import { cellFromPoint, isRectangleVisible } from '../physics';
 import { Vector } from 'vector2d';
@@ -149,7 +149,7 @@ export class TheatreUI extends UIScene {
     const onConstruct = (parent: UIConstruction) => (item: any) => {
       const name = item.name.toUpperCase();
       this.placeConstruction = name;
-      const mask = new GameMapMask(name, this.scene.map);
+      const mask = new StructureMaskEntity(name, this.scene.map);
       this.scene.map.setMask(mask);
 
       this.constructionCallback = () => parent.emit('placed', item);

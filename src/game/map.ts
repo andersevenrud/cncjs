@@ -3,7 +3,7 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import { Entity, Sprite, MousePosition, Box, collidePoint, collideAABB } from '../engine';
+import { Entity, MousePosition, Box, collidePoint, collideAABB } from '../engine';
 import { Grid, AStarFinder, DiagonalMovement } from 'pathfinding';
 import { TheatreScene } from './scenes/theatre';
 import { SmudgeEntity } from './entities/smudge';
@@ -13,11 +13,13 @@ import { EffectEntity } from './entities/effect';
 import { UnitEntity } from './entities/unit';
 import { StructureEntity } from './entities/structure';
 import { OverlayEntity } from './entities/overlay';
+import { StructureMaskEntity } from './entities/mask';
+import { GameMapEntitySelection } from './entities/selection';
 import { GameEntity } from './entity';
-import { MIXPlayerName, MIXMapInfoData, MIXMapData, MIXMapEntityData, MIXSaveGame, wallNames, parseDimensions, playerMap } from './mix';
+import { MIXPlayerName, MIXMapInfoData, MIXMapData, MIXMapEntityData, MIXSaveGame, wallNames, playerMap } from './mix';
 import { GameEngine } from './game';
 import { spriteFromName } from './sprites';
-import { cellFromPoint, pointFromCell, CELL_SIZE } from './physics';
+import { cellFromPoint, CELL_SIZE } from './physics';
 import { Player } from './player';
 import { FOW } from './fow';
 import { Vector } from 'vector2d';
@@ -34,162 +36,6 @@ export const sortByZindex = (a: GameEntity, b: GameEntity) => {
   const y = b.getZindex();
   return ((x < y) ? -1 : ((x > y) ? 1 : 0));
 };
-
-// FIXME: Don't remove this when building stops ? Hide ?
-export class GameMapMask extends Entity {
-  public readonly name: string;
-  public readonly map: GameMap;
-  public readonly dimension: Vector = new Vector(CELL_SIZE, CELL_SIZE);
-  private readonly sprite: Sprite = spriteFromName('CONQUER.MIX/trans.png');
-  private cell: Vector = new Vector(0, 0);
-  private white?: CanvasPattern;
-  private yellow?: CanvasPattern;
-  private red?: CanvasPattern;
-
-  public constructor(name: string, map: GameMap) {
-    super();
-    this.name = name;
-    this.map = map;
-
-    const properties = this.map.engine.mix.structures.get(name);
-    if (properties) {
-      const size = parseDimensions(properties.Dimensions);
-      if (properties.HasBib) {
-        size.add(new Vector(0, 1));
-      }
-
-      size.mulS(CELL_SIZE);
-      this.setDimension(size);
-    }
-  }
-
-  public async init(): Promise<void> {
-    await this.map.engine.loadArchiveSprite(this.sprite);
-
-    this.white = this.sprite.createPattern(new Vector(0, 0)) as CanvasPattern;
-    this.yellow = this.sprite.createPattern(new Vector(0, 1)) as CanvasPattern;
-    this.red = this.sprite.createPattern(new Vector(0, 2)) as CanvasPattern;
-  }
-
-  public onUpdate(deltaTime: number) {
-    const mouse = this.map.engine.mouse;
-    const point = mouse.getVector();
-    const pos = this.map.getRealMousePosition(point);
-    const cell = cellFromPoint(pos);
-    const position = pointFromCell(cell);
-
-    this.cell = cell;
-    this.setPosition(position);
-  }
-
-  public onRender(deltaTime: number, ctx: CanvasRenderingContext2D) {
-    const w = this.dimension.x / CELL_SIZE;
-    const h = this.dimension.y / CELL_SIZE;
-
-    this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
-
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const cx = this.cell.x + x;
-        const cy = this.cell.y + y;
-        let dx = x * CELL_SIZE;
-        let dy = y * CELL_SIZE;
-
-        // FIXME: Units and infantry
-        const occupied = !this.map.grid.isWalkableAt(cx, cy);
-        if (occupied) {
-          this.context.fillStyle = this.red || '#ff0000';
-        } else if (h > 1 && y > h - 2) {
-          this.context.fillStyle = this.yellow || '#ffff00';
-        } else {
-          this.context.fillStyle = this.white || '#ffffff';
-        }
-
-        this.context.fillRect(dx, dy, CELL_SIZE, CELL_SIZE);
-      }
-    }
-
-    ctx.drawImage(this.canvas, this.position.x, this.position.y);
-  }
-}
-
-/**
- * Mep Entity Selection
- */
-export class GameMapEntitySelection extends Entity {
-  public readonly map: GameMap;
-  private readonly sprite: Sprite = spriteFromName('CONQUER.MIX/select.png');
-
-  public constructor(map: GameMap) {
-    super();
-    this.map = map;
-  }
-
-  public async init(): Promise<void> {
-    await this.map.engine.loadArchiveSprite(this.sprite);
-  }
-
-  public render(target: GameEntity, ctx: CanvasRenderingContext2D): void {
-    // TODO: This can be cached based on dimensions
-    const { canvas } = this.sprite;
-    const position = target.getPosition();
-    const dimension = target.getDimension();
-    const isInfantry = target instanceof InfantryEntity;
-    const f = isInfantry ? 0 : 1;
-    const l = isInfantry ? 3 : 5;
-    const o = isInfantry ? new Vector(10, 3) : new Vector(7, 2);
-    const size = isInfantry ? new Vector(11, 12) : new Vector(16, 16);
-
-    // top-left
-    ctx.drawImage(
-      canvas,
-      o.x,
-      o.y + (f * this.sprite.size.y),
-      l,
-      l,
-      position.x,
-      position.y,
-      l,
-      l
-    );
-
-    ctx.drawImage( // top-right
-      canvas,
-      o.x + size.x - l,
-      o.y + (f * this.sprite.size.y),
-      l,
-      l,
-      position.x + dimension.x - l,
-      position.y,
-      l,
-      l
-    );
-
-    ctx.drawImage( // bottom-left
-      canvas,
-      o.x,
-      o.y + (f * this.sprite.size.y) + (size.y - l),
-      l,
-      l,
-      position.x,
-      position.y + dimension.y - l,
-      l,
-      l
-    );
-
-    ctx.drawImage( // bottom-right
-      canvas,
-      o.x + size.x - l,
-      o.y + (f * this.sprite.size.y) + (size.y - l),
-      l,
-      l,
-      position.x + dimension.x - l,
-      position.y + dimension.y - l,
-      l,
-      l
-    );
-  }
-}
 
 /**
  * Map Entity Factory
@@ -246,7 +92,7 @@ export class GameMap extends Entity {
   protected fowVisible: boolean = true;
   protected created: boolean = false;
   protected data?: MIXMapInfoData;
-  protected mask?: GameMapMask;
+  protected mask?: StructureMaskEntity;
   public readonly player: Player;
   private players: Map<MIXPlayerName, Player> = new Map(players);
 
@@ -592,7 +438,7 @@ export class GameMap extends Entity {
     this.fowVisible = !this.fowVisible;
   }
 
-  public setMask(mask?: GameMapMask): void {
+  public setMask(mask?: StructureMaskEntity): void {
     if (mask) {
       mask.init();
     }

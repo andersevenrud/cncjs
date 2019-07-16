@@ -156,4 +156,8 @@ export class InfantryEntity extends GameMapEntity {
   public isMovable(): boolean {
     return true;
   }
+
+  public isInfantry(): boolean {
+    return false;
+  }
 }

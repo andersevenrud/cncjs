@@ -161,4 +161,8 @@ export class UnitEntity extends GameMapEntity {
   public isMovable(): boolean {
     return this.data.name !== 'BOAT'; // FIXME
   }
+
+  public isUnit(): boolean {
+    return true;
+  }
 }
