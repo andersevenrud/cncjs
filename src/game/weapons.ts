@@ -180,7 +180,7 @@ export class Weapon {
       this.map.factory.load('effect', {
         name,
         cell: this.entity.getCell()
-      }, (effect: any): void => effect.setCenterEntity(this));
+      }, (effect: any): void => effect.setCenterEntity(this.entity));
     }
   }
 
