@@ -60,6 +60,7 @@ export const CONSTRUCTION_HEIGHT = THUMB_HEIGHT * THUMB_COUNT;
 export class GameUIEntity extends UIEntity {
   protected readonly sprites: Map<string, Sprite> = new Map();
   public readonly ui: UIScene;
+  protected readonly context: CanvasRenderingContext2D = this.canvas.getContext('2d', { alpha: false }) as CanvasRenderingContext2D;
 
   public constructor(name: string, position: Vector, ui: UIScene) {
     super(name, position, ui);

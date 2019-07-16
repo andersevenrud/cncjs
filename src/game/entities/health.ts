@@ -12,6 +12,7 @@ const HEALT_BAR_HEIGHT = 6;
 
 export class HealthBarEntity extends Entity {
   private parent: GameMapEntity;
+  protected readonly context: CanvasRenderingContext2D = this.canvas.getContext('2d', { alpha: false }) as CanvasRenderingContext2D;
 
   public constructor(parent: GameMapEntity) {
     super();

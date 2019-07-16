@@ -7,7 +7,7 @@ import { Animation, Sprite } from '../../engine';
 import { Player } from '../player';
 import { GameMap } from '../map';
 import { cellFromPoint, getDirection, getNewDirection, CELL_SIZE } from '../physics';
-import { MIXGrid, MIXMapEntityData, MIXObject, wallNames } from '../mix';
+import { MIXGrid, MIXMapEntityData, MIXObject } from '../mix';
 import { HealthBarEntity } from './health';
 import { spriteFromName } from '../sprites';
 import { Weapon } from '../weapons';
@@ -452,6 +452,7 @@ export abstract class GameMapEntity extends GameEntity {
   }
 
   public getWeaponSight(): number {
+    // FIXME
     if (this.primaryWeapon || this.secondaryWeapon) {
       return ((this.primaryWeapon || this.secondaryWeapon) as Weapon).weapon.Range;
     }

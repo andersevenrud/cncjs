@@ -313,7 +313,6 @@ export abstract class GameEntity extends Entity {
     return wallNames.indexOf(this.getName()) !== -1;
   }
 
-
   public isStructure(): boolean {
     return false;
   }
