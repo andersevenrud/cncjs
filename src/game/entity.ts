@@ -175,6 +175,10 @@ export abstract class GameEntity extends Entity {
     return this.health;
   }
 
+  public getHitPoints(): number {
+    return this.hitPoints;
+  }
+
   public getPowerProduction(): number {
     return 0;
   }

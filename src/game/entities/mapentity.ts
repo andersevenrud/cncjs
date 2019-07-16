@@ -7,13 +7,13 @@ import { Animation, Sprite } from '../../engine';
 import { Player } from '../player';
 import { GameMap } from '../map';
 import { cellFromPoint, getDirection, getNewDirection, CELL_SIZE } from '../physics';
-import { MIXGrid, MIXMapEntityData, MIXObject, wallNames, healthBarColors } from '../mix';
+import { MIXGrid, MIXMapEntityData, MIXObject, wallNames } from '../mix';
+import { HealthBarEntity } from './health';
 import { spriteFromName } from '../sprites';
 import { Weapon } from '../weapons';
 import { GameEntity } from '../entity';
 import { Vector } from 'vector2d';
 
-const HEALT_BAR_HEIGHT = 6;
 const SPEED_DIVIDER = 20;
 const TURNSPEED_DIVIDER = 8;
 
@@ -50,6 +50,7 @@ export abstract class GameMapEntity extends GameEntity {
   protected frame: Vector = new Vector(0, 0);
   protected frameOffset: Vector = new Vector(0, 0);
   protected animations: Map<string, GameMapEntityAnimation> = new Map();
+  protected healthBar: HealthBarEntity = new HealthBarEntity(this);
   protected reportLoss?: boolean;
   protected reportSelect?: string;
   protected reportMove?: string;
@@ -243,23 +244,6 @@ export abstract class GameMapEntity extends GameEntity {
     }
   }
 
-  public updateWall(): void {
-    if (this.sprite && this.isWall()) {
-      const lastFrameIndex = this.frameOffset.y;
-
-      const y = (true ? 0 : 16) + // FIXME
-         this.getSimilarEntity(new Vector(0, -1), 1) + // top
-         this.getSimilarEntity(new Vector(0, 1), 4) + // bottom
-         this.getSimilarEntity(new Vector(-1, 0), 8) + // left
-         this.getSimilarEntity(new Vector(1, 0), 2); // right
-
-      if (y != lastFrameIndex) {
-        this.direction = y;
-        this.frameOffset.setY(y);
-      }
-    }
-  }
-
   protected renderDebug(deltaTime: number, context: CanvasRenderingContext2D): void {
     const x = Math.trunc(this.position.x);
     const y = Math.trunc(this.position.y);
@@ -279,36 +263,10 @@ export abstract class GameMapEntity extends GameEntity {
     context.stroke();
   }
 
-  protected renderHealthBar(deltaTime: number, context: CanvasRenderingContext2D): void {
-    const c = healthBarColors[this.getDamageState()];
-    const x = Math.trunc(this.position.x);
-    const y = Math.trunc(this.position.y);
-
-    context.fillStyle = '#000000';
-    context.fillRect(
-      x,
-      y - HEALT_BAR_HEIGHT - 2,
-      this.dimension.x,
-      HEALT_BAR_HEIGHT
-    );
-
-    context.fillStyle = c;
-
-    context.fillRect(
-      x + 1,
-      y - HEALT_BAR_HEIGHT - 1,
-      Math.round(this.dimension.x * (this.health / this.hitPoints)) - 2,
-      HEALT_BAR_HEIGHT - 2
-    );
-  }
-
-  protected renderSelectionRectangle(deltaTime: number, context: CanvasRenderingContext2D): void {
-    this.map.selection.render(this, context);
-  }
-
   protected renderSprite(deltaTime: number, context: CanvasRenderingContext2D, sprite?: Sprite, frame?: Vector): void {
     const s = sprite || this.sprite;
     const f = frame || this.frame;
+
     if (s) {
       const position = this.getTruncatedPosition(this.offset);
       const canvas = s.render(f, position, context);
@@ -350,8 +308,8 @@ export abstract class GameMapEntity extends GameEntity {
     }
 
     if (this.isSelected()) {
-      this.renderHealthBar(deltaTime, context);
-      this.renderSelectionRectangle(deltaTime, context);
+      this.healthBar.render(deltaTime, context);
+      this.map.selection.render(this, context);
     }
   }
 
@@ -501,7 +459,9 @@ export abstract class GameMapEntity extends GameEntity {
   }
 
   public getArmor(): number {
-    return this.properties!.Armor || 0;
+    return this.properties
+      ? this.properties.Armor || 0
+      : 0;
   }
 
   public getColor(): string {
@@ -522,7 +482,9 @@ export abstract class GameMapEntity extends GameEntity {
   }
 
   public getMovementSpeed(): number {
-    return this.properties!.Speed as number;
+    return this.properties
+      ? this.properties.Speed || 0
+      : 0;
   }
 
   public getWeaponSight(): number {
@@ -534,7 +496,9 @@ export abstract class GameMapEntity extends GameEntity {
   }
 
   public getSight(): number {
-    return this.properties!.Sight as number;
+    return this.properties
+      ? this.properties.Sight as number
+      : 0;
   }
 
   public getMovementVelocity(): Vector | undefined {

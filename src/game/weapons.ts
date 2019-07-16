@@ -35,7 +35,7 @@ export class ProjectileEntity extends GameEntity {
     this.cell = cellFromPoint(this.position);
   }
 
-  public destroy() {
+  public destroy(): void {
     if (this.destroyed) {
       return;
     }
@@ -46,7 +46,7 @@ export class ProjectileEntity extends GameEntity {
       this.map.factory.load('effect', {
         name: this.bullet.Explosion,
         cell: this.target.getCell()
-      }, (effect: any) => effect.setCenterEntity(this));
+      }, (effect: any): void => effect.setCenterEntity(this));
     }
 
     this.weapon.map.removeEntity(this);
@@ -58,14 +58,14 @@ export class ProjectileEntity extends GameEntity {
         name: 'SMOKEY',
         player: -1,
         cell: this.cell
-      }, (effect: any) => {
+      }, (effect: any): void => {
         effect.setPosition(this.getPosition());
         effect.setCenterEntity(this);
       });
     }
   }
 
-  public onUpdate(deltaTime: number) {
+  public onUpdate(deltaTime: number): void {
     if (this.bullet.BulletSpeed === -1) {
       this.onHit();
     } else {
@@ -96,7 +96,7 @@ export class ProjectileEntity extends GameEntity {
     this.trailTick--;
   }
 
-  public onRender(deltaTime: number) {
+  public onRender(deltaTime: number): void {
     if (this.weapon.sprite) {
       const frame = new Vector(0, this.direction);
       const context = this.weapon.map.overlay.getContext();
@@ -104,7 +104,7 @@ export class ProjectileEntity extends GameEntity {
     }
   }
 
-  protected onHit() {
+  protected onHit(): void {
     const damage = this.weapon.weapon.Damage;
     const armor = this.target.getArmor();
     const verses = this.warhead.Verses[armor];
@@ -180,11 +180,11 @@ export class Weapon {
       this.map.factory.load('effect', {
         name,
         cell: this.entity.getCell()
-      }, (effect: any) => effect.setCenterEntity(this));
+      }, (effect: any): void => effect.setCenterEntity(this));
     }
   }
 
-  public onUpdate(deltaTime: number) {
+  public onUpdate(deltaTime: number): void {
     this.tick = (this.tick + 1) % this.rof;
   }
 }

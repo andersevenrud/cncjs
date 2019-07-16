@@ -143,6 +143,23 @@ export class StructureEntity extends GameMapEntity {
     this.engine.playArchiveSfx('SOUNDS.MIX/cashturn.wav', 'gui');
   }
 
+  public updateWall(): void {
+    if (this.sprite && this.isWall()) {
+      const lastFrameIndex = this.frameOffset.y;
+
+      const y = (true ? 0 : 16) + // FIXME
+         this.getSimilarEntity(new Vector(0, -1), 1) + // top
+         this.getSimilarEntity(new Vector(0, 1), 4) + // bottom
+         this.getSimilarEntity(new Vector(-1, 0), 8) + // left
+         this.getSimilarEntity(new Vector(1, 0), 2); // right
+
+      if (y != lastFrameIndex) {
+        this.direction = y;
+        this.frameOffset.setY(y);
+      }
+    }
+  }
+
   public onUpdate(deltaTime: number): void {
     const animation = this.animations.get(this.animation);
     const instance = this.constructing ? this.constructionAnimation : animation;
