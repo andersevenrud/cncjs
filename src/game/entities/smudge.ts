@@ -15,7 +15,7 @@ export class SmudgeEntity extends GameMapEntity {
     return {
       ...super.toJson(),
       type: 'smudge'
-    }
+    };
   }
 
   public async init(): Promise<void> {

@@ -43,7 +43,7 @@ export class StructureEntity extends GameMapEntity {
     return {
       ...super.toJson(),
       type: 'structure'
-    }
+    };
   }
 
   public async init(): Promise<void> {

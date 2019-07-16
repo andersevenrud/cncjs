@@ -17,7 +17,7 @@ export class EffectEntity extends GameMapEntity {
     return {
       ...super.toJson(),
       type: 'effect'
-    }
+    };
   }
 
   public async init(): Promise<void> {

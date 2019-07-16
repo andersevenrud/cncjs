@@ -23,7 +23,7 @@ export class TerrainEntity extends GameMapEntity {
     return {
       ...super.toJson(),
       type: 'terrain'
-    }
+    };
   }
 
   public async init(): Promise<void> {

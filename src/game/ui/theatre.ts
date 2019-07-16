@@ -54,7 +54,7 @@ import { cellFromPoint, isRectangleVisible } from '../physics';
 import { Vector } from 'vector2d';
 
 export const SCROLL_BORDER = 2;
-export type ActionsName = 'sell' | 'repair'
+export type ActionsName = 'sell' | 'repair';
 
 export class TheatreUI extends UIScene {
   public readonly scene: TheatreScene;
@@ -186,7 +186,7 @@ export class TheatreUI extends UIScene {
     btnSave.on('click', () => {
       const data = this.scene.map.toJson();
       const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-      requestSaveFile(blob, 'cncjs-savegame.json')
+      requestSaveFile(blob, 'cncjs-savegame.json');
     });
 
     btnLoad.on('click', async () => {

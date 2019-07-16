@@ -64,9 +64,9 @@ export const createSoundControlsMenu = (ui: UIScene, position: Vector): UIBox =>
   listViewThemes.setList(playlist.getList().map((item, index) => {
     const name = names[index];
     return `Track ${String(index + 1).padStart(2, ' ')} ${name.padEnd(maxLength, ' ')} (${formatTime(item.length || 0)})`;
-  }))
+  }));
 
-  playlist.on('play', index => {
+  playlist.on('play', () => {
     listViewThemes.setCurrent(playlist.index);
   });
 

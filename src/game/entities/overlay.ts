@@ -20,7 +20,7 @@ export class OverlayEntity extends GameMapEntity {
     return {
       ...super.toJson(),
       type: 'overlay'
-    }
+    };
   }
 
   public onUpdate(deltaTime: number): void {

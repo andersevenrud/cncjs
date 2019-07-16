@@ -114,7 +114,7 @@ export interface MIXObject {
 
 export type MIXCursorMap = {
   [Key in MIXCursorType]: MIXCursor;
-}
+};
 
 export interface MIXAircraft extends MIXObject {
   TurningSpeed: number;

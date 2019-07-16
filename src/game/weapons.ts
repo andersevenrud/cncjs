@@ -42,7 +42,6 @@ export class ProjectileEntity extends GameEntity {
 
     super.destroy();
 
-    const map = this.weapon.map;
     if (this.bullet.Explosion) {
       this.map.factory.load('effect', {
         name: this.bullet.Explosion,

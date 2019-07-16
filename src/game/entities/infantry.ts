@@ -29,13 +29,10 @@ export class InfantryEntity extends GameMapEntity {
     return {
       ...super.toJson(),
       type: 'infantry'
-    }
+    };
   }
 
   public async init(): Promise<void> {
-    const dx = (CELL_SIZE - this.dimension.x) / 2;
-    const dy = (CELL_SIZE - this.dimension.y) / 2;
-
     // TODO: Guy
     if (this.data.name === 'C10') {
       // FIXME: More sounds

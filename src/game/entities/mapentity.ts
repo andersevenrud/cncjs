@@ -92,7 +92,7 @@ export abstract class GameMapEntity extends GameEntity {
       ...super.toJson(),
       health: this.health,
       direction: this.direction
-    }
+    };
   }
 
   public async init(): Promise<void> {

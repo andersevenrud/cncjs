@@ -28,7 +28,7 @@ export class UnitEntity extends GameMapEntity {
     return {
       ...super.toJson(),
       type: 'unit'
-    }
+    };
   }
 
   public async init(): Promise<void> {

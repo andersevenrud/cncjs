@@ -54,7 +54,7 @@ export abstract class GameEntity extends Entity {
     return {
       cell: this.cell.toObject(),
       health: this.health
-    }
+    };
   }
 
   public async init(): Promise<void> {
