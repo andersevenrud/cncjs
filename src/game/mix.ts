@@ -811,6 +811,15 @@ const parseDirection = (str: string, base: number): number => {
   return dir > 0 ? base - Math.floor((dir / 255) * base) : 0;
 };
 
+const mapOther = (theatre: string, offset: Vector, section: string, ini: any) => Object.keys(ini[section])
+  .map((key: any) => {
+    return {
+      cell: cellFromIndex(parseInt(key, 10), 64, offset),
+      name: ini[section][key].split(',')[0],
+      theatre
+    };
+  });
+
 const mapInfantry = (theatre: string, offset: Vector) => (str: any): MIXMapEntityData => {
   const [player, name, health, cell, subcell, action, direction, trigger] = str.split(',');
 
@@ -990,44 +999,20 @@ export class MIX extends EventEmitter {
     const diffY = parseInt(ini.MAP.Y, 10);
     const size = new Vector(width, height);
     const offset = new Vector(diffX, diffY);
-    const tiles = parseTiles(rawBin, offset, this);
     const theatre = ini.MAP.Theater.toLowerCase().replace(/e$/, '');
-    const infantry = Object.values(ini.INFANTRY).map(mapInfantry(theatre, offset));
-    const units = Object.values(ini.UNITS).map(mapUnits(theatre, offset));
-    const structures = Object.values(ini.STRUCTURES).map(mapStructures(theatre, offset));
-    const waypoints = this.parseWaypoints(ini.Waypoints || ini.WAYPOINTS, offset); // FIXME
-    const basic = transformObject(ini.BASIC, fname, name);
 
-    const terrain = Object.keys(ini.TERRAIN)
-      .map((key: any) => {
-        return {
-          cell: cellFromIndex(parseInt(key, 10), 64, offset),
-          name: ini.TERRAIN[key].split(',')[0],
-          theatre
-        };
-      });
-
-    const overlays = Object.keys(ini.OVERLAY)
-      .map((key: any) => {
-        return {
-          cell: cellFromIndex(parseInt(key, 10), 64, offset),
-          name: ini.OVERLAY[key].split(',')[0],
-          theatre
-        };
-      });
-
-    const smudge = Object.keys(ini.SMUDGE)
-      .map((key: any) => {
-        return {
-          cell: cellFromIndex(parseInt(key, 10), 64, offset),
-          name: ini.SMUDGE[key].split(',')[0],
-          theatre
-        };
-      });
-
-    const map = { theatre, size, offset };
-
-    return { map, basic, terrain, tiles, infantry, units, smudge, structures, overlays, waypoints };
+    return {
+      map: { theatre, size, offset },
+      tiles: parseTiles(rawBin, offset, this),
+      infantry: Object.values(ini.INFANTRY).map(mapInfantry(theatre, offset)),
+      units: Object.values(ini.UNITS).map(mapUnits(theatre, offset)),
+      structures: Object.values(ini.STRUCTURES).map(mapStructures(theatre, offset)),
+      waypoints: this.parseWaypoints(ini.Waypoints || ini.WAYPOINTS, offset), // FIXME
+      basic: transformObject(ini.BASIC, fname, name),
+      terrain: mapOther(theatre, offset, 'TERRAIN', ini),
+      overlays: mapOther(theatre, offset, 'OVERLAY', ini),
+      smudge: mapOther(theatre, offset, 'SMUDGE', ini)
+    };
   }
 
   public getProperties(name: string): MIXObject | undefined {
