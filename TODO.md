@@ -76,6 +76,7 @@
     - [x] Attacking
     - [ ] Patrol
     - [ ] Force shot target (CTRL key)
+    - [ ] Special weapon availability (ION, NUKE, STRIKE)
     - [x] Death
     - [ ] Harvesting
     - [ ] Boarding and unboarding vehicles
@@ -91,6 +92,7 @@
     - [x] Tails and muzzle flashes
     - [ ] Nukes
     - [ ] ION Cannon
+    - [ ] Airstrikes
     - [ ] Special effects (like for obelisk)
     - [ ] Area of effect
     - [ ] Inaccuracy

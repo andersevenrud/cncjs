@@ -54,7 +54,7 @@ import { cellFromPoint, isRectangleVisible } from '../physics';
 import { Vector } from 'vector2d';
 
 export const SCROLL_BORDER = 2;
-export type ActionsName = 'sell' | 'repair';
+export type ActionsName = 'sell' | 'repair' | 'ion' | 'atom' | 'bomb';
 
 export class TheatreUI extends UIScene {
   public readonly scene: TheatreScene;
@@ -147,12 +147,19 @@ export class TheatreUI extends UIScene {
 
     // Glue
     const onConstruct = (parent: UIConstruction) => (item: any) => {
-      const name = item.name.toUpperCase();
+      const name = item.name;
       this.placeConstruction = name;
       const mask = new StructureMaskEntity(name, this.scene.map);
       this.scene.map.setMask(mask);
 
-      this.constructionCallback = () => parent.emit('placed', item);
+      if (['ION', 'ATOM', 'BOMB'].indexOf(name) !== -1) {
+        this.currentAction = item.name.toLowerCase();
+      }
+
+      this.constructionCallback = () => {
+        parent.emit('placed', item);
+        this.currentAction = undefined;
+      };
     };
 
     elStructures.on('place', onConstruct(elStructures));
@@ -542,6 +549,12 @@ export class TheatreUI extends UIScene {
         return hovering && hovering.isSellable() ? 'sell' : 'cannotSell';
       } else if (this.currentAction === 'repair') {
         return hovering && hovering.isRepairable() ? 'repair' : 'cannotRepair';
+      } else if (this.currentAction === 'ion') {
+        return 'ion';
+      } else if (this.currentAction === 'atom') {
+        return 'nuke';
+      } else if (this.currentAction === 'bomb') {
+        return 'bomb';
       } else {
         if (hovering && selected.length > 0 && hovering.isAttackable(selected[0]) && canAttack) {
           return revealed ? 'attack' : 'move';

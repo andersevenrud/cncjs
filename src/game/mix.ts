@@ -10,7 +10,7 @@ import * as INI from 'ini';
 
 export type MIXTeamName = 'gdi' | 'nod' | 'neutral';
 export type MIXPlayerName = 'GoodGuy' | 'BadGuy' | 'Neutral' | 'Special' | 'Multi1' | 'Multi2' | 'Multi3' | 'Multi4' | 'Multi5' | 'Multi6';
-export type MIXCursorType = 'default' | 'select' | 'move' | 'attack' | 'expand' | 'unavailable' | 'sell' | 'cannotSell' | 'cannotRepair' | 'repair' | 'cannotRepair' | 'pann' | 'panne' | 'pane' | 'panse' | 'pans' | 'pansw' | 'panw' | 'pannw' | 'invalid' | 'nuke' | 'ion' | 'enter' | 'c4' | 'cannotPann' | 'cannotPanne' | 'cannotPane' | 'cannotPanse' | 'cannotPans' | 'cannotPansw' | 'cannotPanw' | 'cannotPannw';
+export type MIXCursorType = 'default' | 'select' | 'move' | 'attack' | 'expand' | 'unavailable' | 'sell' | 'cannotSell' | 'cannotRepair' | 'repair' | 'cannotRepair' | 'pann' | 'panne' | 'pane' | 'panse' | 'pans' | 'pansw' | 'panw' | 'pannw' | 'invalid' | 'bomb' | 'nuke' | 'ion' | 'enter' | 'c4' | 'cannotPann' | 'cannotPanne' | 'cannotPane' | 'cannotPanse' | 'cannotPans' | 'cannotPansw' | 'cannotPanw' | 'cannotPannw';
 export type MIXGridValue = 'x' | 'X' | '-' | '+' | '*' | '.';
 export type MIXFontGlyphs = number[][];
 
@@ -601,7 +601,7 @@ export const cursorMap: MIXCursorMap = {
   //unavailables: { index: 27, x: 0.5, y: 0.5, count: 1 },
   repair: { index: 29, x: 0.5, y: 0.5, count: 24 },
   sell: { index: 62, x: 0.5, y: 0.5, count: 24 },
-  //something: { index: 88, x: 0.5, y: 0.5, count: 8 },
+  bomb: { index: 88, x: 0.5, y: 0.5, count: 8 },
   nuke: { index: 96, x: 0.5, y: 0.5, count: 7 },
   ion: { index: 103, x: 0.5, y: 0.5, count: 16 },
   enter: { index: 119, x: 0.5, y: 0.5, count: 3 },
