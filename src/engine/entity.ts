@@ -41,6 +41,10 @@ export class Entity {
    * Sets dimension
    */
   public setDimension(dimension: Vector): void {
+    if (this.dimension.equals(dimension)) {
+      return;
+    }
+
     this.dimension = dimension;
     this.canvas.width = dimension.x;
     this.canvas.height = dimension.y;
