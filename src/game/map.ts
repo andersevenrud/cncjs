@@ -181,6 +181,11 @@ export class GameMap extends Entity {
       ]);
     }
 
+    this.entities.sort(sortByZindex);
+    this.entities
+      .filter(e => e.isWall())
+      .forEach(e => e.updateWall());
+
     const start = data.waypoints.find(w => w.name === 'start');
     if (start) {
       console.debug('GameMap::init()', 'Starting at start', start.cell.toString());
@@ -393,13 +398,15 @@ export class GameMap extends Entity {
         entity.player.update(es);
       }
 
-      if (entity.isWall()) {
-        this.entities
-          .filter(e => e.isWall())
-          .forEach(e => e.updateWall());
-      }
+      if (this.created) {
+        if (entity.isWall()) {
+          this.entities
+            .filter(e => e.isWall())
+            .forEach(e => e.updateWall());
+        }
 
-      this.entities.sort(sortByZindex);
+        this.entities.sort(sortByZindex);
+      }
     } catch (e) {
       console.error(e);
     }
