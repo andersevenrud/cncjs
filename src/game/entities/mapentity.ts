@@ -244,25 +244,6 @@ export abstract class GameMapEntity extends GameEntity {
     }
   }
 
-  protected renderDebug(deltaTime: number, context: CanvasRenderingContext2D): void {
-    const x = Math.trunc(this.position.x);
-    const y = Math.trunc(this.position.y);
-    const length = Math.max(this.dimension.x, this.dimension.y);
-    const angle = (270 - (360 * this.direction / this.directions)) % 360;
-    const x1 = x + (this.dimension.x / 2);
-    const y1 = y + (this.dimension.y / 2);
-    const x2 = x1 + Math.cos(Math.PI * angle / 180) * length;
-    const y2 = y1 + Math.sin(Math.PI * angle / 180) * length;
-
-    context.strokeStyle = this.isPlayer() ? 'rgba(0, 255, 0, 0.3)' : `rgba(255, 255, 0, 0.3)`;
-    context.strokeRect(this.position.x + 0.5, this.position.y + 0.5, this.dimension.x, this.dimension.y);
-
-    context.beginPath();
-    context.moveTo(x1 + 0.5, y1 + 0.5);
-    context.lineTo(x2 + 0.5, y2 + 0.5);
-    context.stroke();
-  }
-
   protected renderSprite(deltaTime: number, context: CanvasRenderingContext2D, sprite?: Sprite, frame?: Vector): void {
     const s = sprite || this.sprite;
     const f = frame || this.frame;
