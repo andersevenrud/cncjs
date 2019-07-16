@@ -86,10 +86,10 @@ export class TheatreUI extends UIScene {
     const factoryConstruction = new ConstructionQueue(factories, player, this.scene.engine);
 
     if (data) {
-      structureConstruction.setBuildLevel(data.BuildLevel);
+      structureConstruction.setBuildLevel(data.info.BuildLevel);
       structureConstruction.updateAvailable();
 
-      factoryConstruction.setBuildLevel(data.BuildLevel);
+      factoryConstruction.setBuildLevel(data.info.BuildLevel);
       factoryConstruction.updateAvailable();
     }
 

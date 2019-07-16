@@ -91,7 +91,7 @@ export class GameMap extends Entity {
   protected mapDimension: Vector = new Vector(64, 64);
   protected fowVisible: boolean = true;
   protected created: boolean = false;
-  protected data?: MIXMapInfoData;
+  protected data?: MIXMapData;
   protected mask?: StructureMaskEntity;
   public readonly player: Player;
   private players: Map<MIXPlayerName, Player> = new Map(players);
@@ -138,11 +138,12 @@ export class GameMap extends Entity {
   public async init(save?: MIXSaveGame): Promise<void> {
     console.time();
     const data = await this.engine.mix.loadMap(this.name);
+    console.warn(data);
 
     this.theatre = data.theatre;
     this.mapDimension = new Vector(data.width, data.height);
     this.grid = new Grid(data.width, data.height);
-    this.data = data.info;
+    this.data = data;
 
     const wx = CELL_SIZE * this.mapDimension.x;
     const wy = CELL_SIZE * this.mapDimension.y;
@@ -332,19 +333,32 @@ export class GameMap extends Entity {
     }
 
     if (this.engine.getDebug()) {
-      context.fillStyle = 'rgba(255, 0, 0, 0.1)';
-      context.strokeStyle = 'rgba(255, 200, 255, 0.05)';
       context.lineWidth = 1;
 
+      const c = CELL_SIZE / 2;
       for (let y = 0; y < this.mapDimension.y; y++) {
         for (let x = 0; x < this.mapDimension.x; x++) {
           const px = CELL_SIZE * x - this.position.x + dx;
           const py = CELL_SIZE * y - this.position.y + dy;
+          const v = new Vector(x, y);
+          const waypoint = this.data!.waypoints.find(w => w.cell.equals(v));
+
+          context.fillStyle = 'rgba(255, 0, 0, 0.1)';
+          context.strokeStyle = 'rgba(255, 200, 255, 0.05)';
 
           if (this.grid.isWalkableAt(x, y)) {
             context.strokeRect(px + 0.5, py + 0.5, CELL_SIZE, CELL_SIZE);
           } else {
             context.fillRect(px, py, CELL_SIZE, CELL_SIZE);
+          }
+
+          if (waypoint) {
+            context.fillStyle = 'rgba(0, 0, 255, 0.1)';
+            context.fillRect(px, py, CELL_SIZE, CELL_SIZE);
+            context.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(waypoint.name || String(waypoint.id), px + c, py + c);
           }
         }
       }
@@ -506,7 +520,7 @@ export class GameMap extends Entity {
     return this.mapDimension;
   }
 
-  public getData(): MIXMapInfoData | undefined {
+  public getData(): MIXMapData | undefined {
     return this.data;
   }
 
