@@ -1,5 +1,7 @@
 # TODO
 
+This is an almost complete overview of the tasks done and to be done.
+
 ## Engine
 
 - [x] Base Engine
@@ -10,7 +12,6 @@
 - [x] Buffered Mouse
 - [x] Pointer lock
 - [x] Touch support
-- [ ] Gamepad support
 - [x] Contextual Audio
 - [x] Data Archive support
 - [x] Image loaders
@@ -50,6 +51,8 @@
     - [x] Button icon support
     - [x] Tooltips
     - [x] Render active unit selection
+    - [x] Cursors
+    - [x] Edge scrolling
 - [x] Rendering
     - [x] Map
     - [x] Entities
@@ -85,13 +88,14 @@
     - [ ] Tower turrets
     - [x] Infantry random idle animations
     - [ ] Aircraft
+    - [ ] Helicopters
     - [x] Boats
     - [ ] Spawn units and infantry in the correct structures
 - [x] Weapons
     - [x] Warheads and Effects
     - [x] Tails and muzzle flashes
-    - [ ] Nukes
-    - [ ] ION Cannon
+    - [x] Nukes
+    - [x] ION Cannon
     - [ ] Airstrikes
     - [ ] Special effects (like for obelisk)
     - [ ] Area of effect
