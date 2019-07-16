@@ -124,7 +124,7 @@ export abstract class Engine implements Core {
    * Initializes engine
    */
   public async init(): Promise<void> {
-    console.group('Engine::init()', this);
+    console.group('Engine::init()');
 
     await this.keyboard.init();
     await this.mouse.init();
@@ -246,7 +246,7 @@ export abstract class Engine implements Core {
    * Queues a new scene to render
    */
   public async pushScene(scene: EngineSceneFn, skip: boolean = true): Promise<void> {
-    console.debug('Engine::pushScene()', scene, skip);
+    console.debug('Engine::pushScene()', { skip });
 
     if (skip) {
       this.scene.off('done');
@@ -285,7 +285,7 @@ export abstract class Engine implements Core {
 
     try {
       const scene = found();
-      console.group('Engine::nextScene()', scene);
+      console.group('Engine::nextScene()');
       await scene.init();
       console.groupEnd();
       this.scene = scene;

@@ -29,7 +29,7 @@ export class KeyboardInput extends IODevice {
    * Initializes keyboard input
    */
   public async init(): Promise<void> {
-    console.debug('KeyboardInput::init()', this);
+    console.debug('KeyboardInput::init()');
 
     const onKeyDown = this.onKeyDown.bind(this);
     const onKeyUp = this.onKeyUp.bind(this);

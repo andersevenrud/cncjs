@@ -148,7 +148,7 @@ export class SoundOutput extends IODevice {
    * Initializes sound output
    */
   public async init(): Promise<void> {
-    console.debug('SoundOutput::init()', this);
+    console.debug('SoundOutput::init()');
 
     this.mainGainNode.connect(this.context.destination);
 

@@ -45,7 +45,7 @@ export class MouseInput extends IODevice {
    * Initializes mouse input
    */
   public async init(): Promise<void> {
-    console.debug('MouseInput::init()', this);
+    console.debug('MouseInput::init()');
 
     const onMouseDown = this.onMouseDown.bind(this);
     const onMouseUp = this.onMouseUp.bind(this);
