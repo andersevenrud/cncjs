@@ -4,15 +4,15 @@
  * @license MIT
  */
 
-import { Entity, Box, randomBetweenInteger } from '../../engine';
-import { Player } from '../player';
-import { GameEngine } from '../game';
-import { GameMap } from '../map';
-import { cellFromPoint, pointFromCell, CELL_SIZE } from '../physics';
-import { soundMap } from '../mix';
+import { Entity, Box, randomBetweenInteger } from '../engine';
+import { Player } from './player';
+import { GameEngine } from './game';
+import { GameMap } from './map';
+import { cellFromPoint, pointFromCell, CELL_SIZE } from './physics';
+import { soundMap } from './mix';
 import { Vector } from 'vector2d';
 
-export abstract class GameMapBaseEntity extends Entity {
+export abstract class GameEntity extends Entity {
   public readonly map: GameMap;
   public readonly player?: Player;
   protected offset: Vector = new Vector(0, 0);
@@ -70,7 +70,7 @@ export abstract class GameMapBaseEntity extends Entity {
     const count = soundMap[name];
     const suffix = count > 1 ? `-${randomBetweenInteger(1, count)}` : '';
     const source = `SOUNDS.MIX/${name.toLowerCase()}${suffix}.wav`;
-    console.debug('GameMapBaseEntity::playSfx()', { source, name, count });
+    console.debug('GameEntity::playSfx()', { source, name, count });
 
     return this.engine.playArchiveSfx(source, 'sfx', { position: this.position });
   }
@@ -79,7 +79,7 @@ export abstract class GameMapBaseEntity extends Entity {
     return false;
   }
 
-  public attack(target: GameMapBaseEntity, report: boolean = false): void {
+  public attack(target: GameEntity, report: boolean = false): void {
   }
 
   public move(position: Vector, report: boolean = false): void {
@@ -223,7 +223,7 @@ export abstract class GameMapBaseEntity extends Entity {
     return false;
   }
 
-  public isAttackable(source: GameMapBaseEntity): boolean {
+  public isAttackable(source: GameEntity): boolean {
     return !this.isSelectable();
   }
 

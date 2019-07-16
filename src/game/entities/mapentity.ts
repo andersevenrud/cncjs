@@ -10,7 +10,7 @@ import { cellFromPoint, getDirection, getNewDirection, CELL_SIZE } from '../phys
 import { MIXGrid, MIXMapEntityData, MIXObject, wallNames, healthBarColors } from '../mix';
 import { spriteFromName } from '../sprites';
 import { Weapon } from '../weapons';
-import { GameMapBaseEntity } from './base';
+import { GameEntity } from '../entity';
 import { Vector } from 'vector2d';
 
 const HEALT_BAR_HEIGHT = 6;
@@ -39,7 +39,7 @@ export class GameMapEntityAnimation extends Animation {
 /**
  * Map Entity
  */
-export abstract class GameMapEntity extends GameMapBaseEntity {
+export abstract class GameMapEntity extends GameEntity {
   public readonly player?: Player;
   public readonly properties?: MIXObject;
   protected dimension: Vector = new Vector(24, 24);

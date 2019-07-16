@@ -47,7 +47,7 @@ import {
 import { TheatreScene } from '../scenes/theatre';
 import { createGameMenus } from './mainmenu';
 import { GameEngine } from '../game';
-import { GameMapBaseEntity } from '../entities/base';
+import { GameEntity } from '../entity';
 import { GameMapMask } from '../map';
 import { ConstructionQueue } from './construction';
 import { cellFromPoint, isRectangleVisible } from '../physics';
@@ -550,7 +550,7 @@ export class TheatreUI extends UIScene {
             ? 'expand'
             : 'select';
         } else if (selected.length > 0) {
-          const movable = selected.some((s: GameMapBaseEntity): boolean => s.isMovable());
+          const movable = selected.some((s: GameEntity): boolean => s.isMovable());
           if (movable) {
             const walkable = map.grid.isWalkableAt(cell.x, cell.y);
             return walkable || !revealed ? 'move' : 'unavailable';

@@ -13,7 +13,7 @@ import { EffectEntity } from './entities/effect';
 import { UnitEntity } from './entities/unit';
 import { StructureEntity } from './entities/structure';
 import { OverlayEntity } from './entities/overlay';
-import { GameMapBaseEntity } from './entities/base';
+import { GameEntity } from './entity';
 import { MIXPlayerName, MIXMapInfoData, MIXMapData, MIXMapEntityData, MIXSaveGame, wallNames, parseDimensions, playerMap } from './mix';
 import { GameEngine } from './game';
 import { spriteFromName } from './sprites';
@@ -29,7 +29,7 @@ const players: PlayerMap[] = playerMap
     return [name, new Player(index, name as MIXPlayerName)];
   });
 
-export const sortByZindex = (a: GameMapBaseEntity, b: GameMapBaseEntity) => {
+export const sortByZindex = (a: GameEntity, b: GameEntity) => {
   const x = a.getZindex();
   const y = b.getZindex();
   return ((x < y) ? -1 : ((x > y) ? 1 : 0));
@@ -129,7 +129,7 @@ export class GameMapEntitySelection extends Entity {
     await this.map.engine.loadArchiveSprite(this.sprite);
   }
 
-  public render(target: GameMapBaseEntity, ctx: CanvasRenderingContext2D): void {
+  public render(target: GameEntity, ctx: CanvasRenderingContext2D): void {
     // TODO: This can be cached based on dimensions
     const { canvas } = this.sprite;
     const position = target.getPosition();
@@ -240,7 +240,7 @@ export class GameMapEntityFactory {
  */
 export class GameMap extends Entity {
   protected name: string;
-  protected entities: GameMapBaseEntity[] = [];
+  protected entities: GameEntity[] = [];
   protected visibleEntities: number = 0;
   protected mapDimension: Vector = new Vector(64, 64);
   protected fowVisible: boolean = true;
@@ -398,7 +398,7 @@ export class GameMap extends Entity {
     return path.map(([x, y]) => new Vector(x, y));
   }
 
-  public getEntitiesFromCell(cell: Vector, test: Function = () => true): GameMapBaseEntity[] {
+  public getEntitiesFromCell(cell: Vector, test: Function = () => true): GameEntity[] {
     return this.entities
       .filter(e => {
         const c: Vector = e.getCell();
@@ -529,7 +529,7 @@ export class GameMap extends Entity {
     return num !== (reachedY + reachedX);
   }
 
-  public async addEntity(entity: GameMapBaseEntity): Promise<void> {
+  public async addEntity(entity: GameEntity): Promise<void> {
     try {
       const cell = entity.getCell();
       if (cell.x < 0 || cell.y < 0 || cell.x > this.mapDimension.x || cell.y > this.mapDimension.y) {
@@ -559,7 +559,7 @@ export class GameMap extends Entity {
     }
   }
 
-  public removeEntity(entity: GameMapBaseEntity): void {
+  public removeEntity(entity: GameEntity): void {
     entity.destroy();
 
     const index = this.entities.findIndex(e => e === entity);
@@ -600,22 +600,22 @@ export class GameMap extends Entity {
     this.mask = mask;
   }
 
-  public getEntityFromVector(position: Vector, selectable: boolean): GameMapBaseEntity | undefined {
+  public getEntityFromVector(position: Vector, selectable: boolean): GameEntity | undefined {
     return this.entities.find(e => {
       const h = collidePoint(position, e.getBox());
       return h ? (selectable ? e.isSelectable() : false) : false;
     });
   }
 
-  public getEntityFromCell(cell: Vector): GameMapBaseEntity | undefined {
+  public getEntityFromCell(cell: Vector): GameEntity | undefined {
     return this.entities.find(e => collidePoint(cell, e.getCellBox()));
   }
 
-  public getSelectedEntities(): GameMapBaseEntity[] {
+  public getSelectedEntities(): GameEntity[] {
     return this.entities.filter(e => e.isSelected());
   }
 
-  public getVisibleEntities(): GameMapBaseEntity[] {
+  public getVisibleEntities(): GameEntity[] {
     const scale = this.engine.getScale();
     const viewport = this.scene.viewport;
     const viewbox: Box = {
@@ -645,7 +645,7 @@ export class GameMap extends Entity {
     return visible;
   }
 
-  public getEntities(): GameMapBaseEntity[] {
+  public getEntities(): GameEntity[] {
     return this.entities;
   }
 

@@ -4,7 +4,7 @@
  * @license MIT
  */
 import { Animation, randomBetweenInteger }  from '../../engine';
-import { GameMapEntity, GameMapEntityAnimation } from './map';
+import { GameMapEntity, GameMapEntityAnimation } from './mapentity';
 import { MIXInfantry, MIXInfantryAnimation, infantryIdleAnimations } from '../mix';
 import { CELL_SIZE } from '../physics';
 import { Vector } from 'vector2d';

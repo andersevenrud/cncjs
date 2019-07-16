@@ -5,7 +5,7 @@
  */
 
 import { Box, Animation, Sprite }  from '../../engine';
-import { GameMapEntity, GameMapEntityAnimation } from './map';
+import { GameMapEntity, GameMapEntityAnimation } from './mapentity';
 import { MIXGrid, MIXStructure, MIXStructureAnimation } from '../mix';
 import { CELL_SIZE } from '../physics';
 import { spriteFromName } from '../sprites';

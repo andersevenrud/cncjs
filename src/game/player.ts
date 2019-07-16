@@ -5,7 +5,7 @@
  */
 
 import { defaultTeamMap, MIXPlayerName, MIXTeamName } from './mix';
-import { GameMapBaseEntity } from './entities/base';
+import { GameEntity } from './entity';
 import EventEmitter from 'eventemitter3';
 
 export class Player extends EventEmitter {
@@ -34,7 +34,7 @@ export class Player extends EventEmitter {
     return `${this.id} ${this.name}/${this.team} C:${this.credits} P:${this.power.join('/')}`;
   }
 
-  public update(entities: GameMapBaseEntity[]): void {
+  public update(entities: GameEntity[]): void {
     this.structures.clear();
 
     for (let i = 0; i < entities.length; i++) {

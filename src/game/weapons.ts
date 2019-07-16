@@ -5,7 +5,7 @@
  */
 import { Sprite, randomBetweenInteger }  from '../engine';
 import { GameMap } from './map';
-import { GameMapBaseEntity } from './entities/base';
+import { GameEntity } from './entity';
 import { MIXWeapon, MIXBullet, MIXWarhead, irrelevantBulletImages } from './mix';
 import { cellFromPoint, getDirection, CELL_SIZE } from './physics';
 import { spriteFromName } from './sprites';
@@ -13,16 +13,16 @@ import { Vector } from 'vector2d';
 
 const directions = ['N', 'NW', 'W', 'SW', 'S', 'SE', 'E', 'NE'];
 
-export class ProjectileEntity extends GameMapBaseEntity {
+export class ProjectileEntity extends GameEntity {
   protected readonly bulletName: string;
   protected readonly bullet: MIXBullet;
   protected readonly warhead: MIXWarhead;
-  protected readonly target: GameMapBaseEntity;
+  protected readonly target: GameEntity;
   protected readonly weapon: Weapon;
   protected direction: number = 0;
   protected trailTick: number = 0;
 
-  public constructor(name: string, target: GameMapBaseEntity, weapon: Weapon) {
+  public constructor(name: string, target: GameEntity, weapon: Weapon) {
     super(weapon.map);
 
     this.target = target;
@@ -121,13 +121,13 @@ export class ProjectileEntity extends GameMapBaseEntity {
 export class Weapon {
   public readonly weapon: MIXWeapon;
   public readonly map: GameMap;
-  public readonly entity: GameMapBaseEntity;
+  public readonly entity: GameEntity;
   public readonly sprite?: Sprite;
   public readonly trailSprite?: Sprite;
   private tick: number = 0;
   private rof: number = 0;
 
-  public constructor(name: string, map: GameMap, entity: GameMapBaseEntity) {
+  public constructor(name: string, map: GameMap, entity: GameEntity) {
     this.map = map;
     this.weapon = map.engine.mix.weapons.get(name) as MIXWeapon;
     this.entity = entity;
@@ -155,7 +155,7 @@ export class Weapon {
     }
   }
 
-  protected fireProjectile(target: GameMapBaseEntity): void {
+  protected fireProjectile(target: GameEntity): void {
     const p = new ProjectileEntity(this.weapon.Projectile, target, this);
     this.map.addEntity(p);
     if (this.weapon.Report) {
@@ -165,7 +165,7 @@ export class Weapon {
     this.createMuzzleFlash();
   }
 
-  public fire(target: GameMapBaseEntity): void {
+  public fire(target: GameEntity): void {
     const fire = this.tick === 0;
     const fireTwice = this.tick === Math.round(this.rof / 4) && this.entity.canFireTwice();
     if (fire || fireTwice) {

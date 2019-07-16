@@ -3,7 +3,7 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import { GameMapEntity } from './map';
+import { GameMapEntity } from './mapentity';
 
 /**
  * Smudge Entity

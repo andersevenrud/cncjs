@@ -3,7 +3,7 @@
  * @author Anders Evenrud <andersevenrud@gmail.com>
  * @license MIT
  */
-import { GameMapEntity } from './map';
+import { GameMapEntity } from './mapentity';
 import { MIXGrid, MIXTerrain } from '../mix';
 import { Vector } from 'vector2d';
 

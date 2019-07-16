@@ -8,7 +8,7 @@ import { Animation, Sprite }  from '../../engine';
 import { MIXUnit } from '../mix';
 import { CELL_SIZE } from '../physics';
 import { spriteFromName } from '../sprites';
-import { GameMapEntity } from './map';
+import { GameMapEntity } from './mapentity';
 import { Vector } from 'vector2d';
 
 /**

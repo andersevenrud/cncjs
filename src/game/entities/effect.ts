@@ -4,7 +4,7 @@
  * @license MIT
  */
 import { Entity } from '../../engine';
-import { GameMapEntity, GameMapEntityAnimation } from './map';
+import { GameMapEntity, GameMapEntityAnimation } from './mapentity';
 import { MIXAnimation } from '../mix';
 import { CELL_SIZE } from '../physics';
 import { Vector } from 'vector2d';
