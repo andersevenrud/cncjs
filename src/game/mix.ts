@@ -25,7 +25,7 @@ export interface MIXMapEntityData {
   trigger?: string;
 }
 
-export interface MIXMapInfoData {
+export interface MIXMapBasicData {
   CarryOverCap: number;
   CarryOverMoney: number;
   Intro: string;
@@ -37,6 +37,12 @@ export interface MIXMapInfoData {
   Lose: string;
   Brief: string;
   Action: string;
+}
+
+export interface MIXMapMapData {
+  size: Vector;
+  theatre: string;
+  offset: Vector;
 }
 
 export interface MIXSaveGameEntityData extends MIXMapEntityData {
@@ -71,11 +77,8 @@ export interface MIXMapWaypointMap {
 }
 
 export interface MIXMapData {
-  width: number;
-  height: number;
-  theatre: string;
-  offset: Vector;
-  info: MIXMapInfoData;
+  map: MIXMapMapData;
+  basic: MIXMapBasicData;
   waypoints: MIXMapWaypoint[];
   terrain: MIXMapEntityData[];
   tiles: MIXMapTileData[][];
@@ -976,7 +979,8 @@ export class MIX extends EventEmitter {
   public async loadMap(name: string): Promise<MIXMapData> {
     console.debug('MIX::loadMap()', name);
 
-    const rawIniFile = await this.archive.extract(`GENERAL.MIX/${name}.ini`, 'text');
+    const fname = `GENERAL.MIX/${name}.ini`;
+    const rawIniFile = await this.archive.extract(fname, 'text');
     const rawBin = await this.archive.extract(`GENERAL.MIX/${name}.bin`, 'array');
     const ini = INI.parse(rawIniFile as string);
 
@@ -984,6 +988,7 @@ export class MIX extends EventEmitter {
     const height = parseInt(ini.MAP.Height, 10);
     const diffX = parseInt(ini.MAP.X, 10);
     const diffY = parseInt(ini.MAP.Y, 10);
+    const size = new Vector(width, height);
     const offset = new Vector(diffX, diffY);
     const tiles = parseTiles(rawBin, offset, this);
     const theatre = ini.MAP.Theater.toLowerCase().replace(/e$/, '');
@@ -991,7 +996,7 @@ export class MIX extends EventEmitter {
     const units = Object.values(ini.UNITS).map(mapUnits(theatre, offset));
     const structures = Object.values(ini.STRUCTURES).map(mapStructures(theatre, offset));
     const waypoints = this.parseWaypoints(ini.Waypoints || ini.WAYPOINTS, offset); // FIXME
-    const info = ini.BASIC;
+    const basic = transformObject(ini.BASIC, fname, name);
 
     const terrain = Object.keys(ini.TERRAIN)
       .map((key: any) => {
@@ -1020,7 +1025,9 @@ export class MIX extends EventEmitter {
         };
       });
 
-    return { info, theatre, width, height, offset, terrain, tiles, infantry, units, smudge, structures, overlays, waypoints };
+    const map = { theatre, size, offset };
+
+    return { map, basic, terrain, tiles, infantry, units, smudge, structures, overlays, waypoints };
   }
 
   public getProperties(name: string): MIXObject | undefined {

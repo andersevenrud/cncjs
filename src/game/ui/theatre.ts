@@ -76,7 +76,7 @@ export class TheatreUI extends UIScene {
   }
 
   public async init(): Promise<void> {
-    const theatre = this.scene.map.theatre;
+    const theatre = this.scene.map.getTheatre();
     const player = this.scene.map.player;
     const data = this.scene.map.getData();
     const structures = [...buildableStructures];
@@ -86,10 +86,10 @@ export class TheatreUI extends UIScene {
     const factoryConstruction = new ConstructionQueue(factories, player, this.scene.engine);
 
     if (data) {
-      structureConstruction.setBuildLevel(data.info.BuildLevel);
+      structureConstruction.setBuildLevel(data.basic.BuildLevel);
       structureConstruction.updateAvailable();
 
-      factoryConstruction.setBuildLevel(data.info.BuildLevel);
+      factoryConstruction.setBuildLevel(data.basic.BuildLevel);
       factoryConstruction.updateAvailable();
     }
 

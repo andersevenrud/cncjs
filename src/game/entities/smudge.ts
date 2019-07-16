@@ -32,7 +32,7 @@ export class SmudgeEntity extends GameMapEntity {
   }
 
   public getSpriteName(): string {
-    return `${this.map.theatre.toUpperCase()}.MIX/${this.data.name.toLowerCase()}.png`;
+    return `${this.map.getTheatre().toUpperCase()}.MIX/${this.data.name.toLowerCase()}.png`;
   }
 
   public getColor(): string {

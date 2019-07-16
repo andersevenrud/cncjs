@@ -16,7 +16,7 @@ import { OverlayEntity } from './entities/overlay';
 import { StructureMaskEntity } from './entities/mask';
 import { GameMapEntitySelection } from './entities/selection';
 import { GameEntity } from './entity';
-import { MIXPlayerName, MIXMapInfoData, MIXMapData, MIXMapEntityData, MIXSaveGame, wallNames, playerMap } from './mix';
+import { MIXPlayerName, MIXMapData, MIXMapEntityData, MIXSaveGame, wallNames, playerMap } from './mix';
 import { GameEngine } from './game';
 import { spriteFromName } from './sprites';
 import { cellFromPoint, CELL_SIZE } from './physics';
@@ -97,7 +97,6 @@ export class GameMap extends Entity {
   private players: Map<MIXPlayerName, Player> = new Map(players);
 
   public grid: Grid = new Grid(64, 64);
-  public theatre: string = 'temperat';
   public readonly engine: GameEngine;
   public readonly fow: FOW = new FOW(this);
   public readonly scene: TheatreScene;
@@ -138,16 +137,13 @@ export class GameMap extends Entity {
   public async init(save?: MIXSaveGame): Promise<void> {
     console.time();
     const data = await this.engine.mix.loadMap(this.name);
-    console.warn(data);
+    console.log(data);
 
-    this.theatre = data.theatre;
-    this.mapDimension = new Vector(data.width, data.height);
-    this.grid = new Grid(data.width, data.height);
+    this.mapDimension = data.map.size.clone() as Vector;
+    this.grid = new Grid(this.mapDimension.x, this.mapDimension.y);
     this.data = data;
 
-    const wx = CELL_SIZE * this.mapDimension.x;
-    const wy = CELL_SIZE * this.mapDimension.y;
-    const d = new Vector(wx, wy);
+    const d = this.mapDimension.clone().mulS(CELL_SIZE) as Vector;
 
     this.setDimension(d);
     this.objects.setDimension(d);
@@ -204,8 +200,8 @@ export class GameMap extends Entity {
     for (let y = 0; y < this.mapDimension.y; y++) {
       for (let x = 0; x < this.mapDimension.x; x++) {
         const pos = new Vector(CELL_SIZE * x, CELL_SIZE * y);
-        const tile = data.tiles[y + data.offset.y][x + data.offset.x];
-        const source = `${data.theatre.toUpperCase()}.MIX/${tile.name.toLowerCase()}.png`;
+        const tile = data.tiles[y + data.map.offset.y][x + data.map.offset.x];
+        const source = `${data.map.theatre.toUpperCase()}.MIX/${tile.name.toLowerCase()}.png`;
         const sprite = spriteFromName(source);
 
         if (sprite) {
@@ -522,6 +518,10 @@ export class GameMap extends Entity {
 
   public getData(): MIXMapData | undefined {
     return this.data;
+  }
+
+  public getTheatre(): string {
+    return this.data!.map.theatre;
   }
 
   public getPlayerById(id: number): Player | undefined {

@@ -85,7 +85,7 @@ export class StructureEntity extends GameMapEntity {
 
     if (this.properties!.HasBib) {
       const size = parseDimensions(this.properties!.Dimensions);
-      this.bib = await BibEntity.createOrCache(this.engine, size, this.map.theatre);
+      this.bib = await BibEntity.createOrCache(this.engine, size, this.map.getTheatre());
     }
 
     this.hitPoints = this.properties!.HitPoints;

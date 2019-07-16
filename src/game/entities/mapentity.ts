@@ -405,7 +405,7 @@ export abstract class GameMapEntity extends GameEntity {
     const matchers = ['T' ,'V', 'TI', 'TC', 'SPLIT'];
 
     if (matchers.indexOf(prefix) !== -1) { // FIXME
-      return `${this.map.theatre.toUpperCase()}.MIX/${this.data.name.toLowerCase()}.png`;
+      return `${this.map.getTheatre().toUpperCase()}.MIX/${this.data.name.toLowerCase()}.png`;
     }
 
     return `CONQUER.MIX/${this.data.name.toLowerCase()}.png`;
