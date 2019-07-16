@@ -13,6 +13,7 @@ const HEALT_BAR_HEIGHT = 6;
 export class HealthBarEntity extends Entity {
   private parent: GameMapEntity;
   protected readonly context: CanvasRenderingContext2D = this.canvas.getContext('2d', { alpha: false }) as CanvasRenderingContext2D;
+  private lastPercentage = -1;
 
   public constructor(parent: GameMapEntity) {
     super();
@@ -26,17 +27,21 @@ export class HealthBarEntity extends Entity {
     ));
 
     const percentage = this.parent.getHealth() / this.parent.getHitPoints();
-    const color = healthBarColors[this.parent.getDamageState()];
     const position = this.parent.getPosition();
     const x = Math.trunc(position.x);
     const y = Math.trunc(position.y);
-    const w = Math.round(this.dimension.x * percentage) - 2;
 
-    this.context.fillStyle = '#000000';
-    this.context.fillRect(0, 0, this.dimension.x,  HEALT_BAR_HEIGHT);
-    this.context.fillStyle = color;
-    this.context.fillRect(1, 1, w - 2, HEALT_BAR_HEIGHT - 2);
+    if (percentage !== this.lastPercentage) {
+      const color = healthBarColors[this.parent.getDamageState()];
+      const w = Math.round(this.dimension.x * percentage) - 2;
+
+      this.context.fillStyle = '#000000';
+      this.context.fillRect(0, 0, this.dimension.x,  HEALT_BAR_HEIGHT);
+      this.context.fillStyle = color;
+      this.context.fillRect(1, 1, w - 2, HEALT_BAR_HEIGHT - 2);
+    }
 
     context.drawImage(this.canvas, x, y - HEALT_BAR_HEIGHT - 2);
+    this.lastPercentage = percentage;
   }
 }
