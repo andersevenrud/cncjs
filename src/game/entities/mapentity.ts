@@ -360,7 +360,11 @@ export abstract class GameMapEntity extends GameEntity {
       for (let x = 0; x < w; x++) {
         let v = this.occupy.grid[y][x];
         if (v === 'x') {
-          this.map.grid.setWalkableAt(this.cell.x + x, this.cell.y + y, t);
+          try {
+            this.map.grid.setWalkableAt(this.cell.x + x, this.cell.y + y, t);
+          } catch (e) {
+            console.debug('Could not apply walkable', e);
+          }
         }
       }
     }
