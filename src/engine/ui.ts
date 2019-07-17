@@ -184,9 +184,16 @@ export class UIScene extends Entity {
   protected getCollidingEntity(position: Vector): UIEntityHit | undefined {
     return this.elements
       .filter((el): boolean => el.isClickable())
-      .map((el): UIEntityHit | undefined => el.collides(position, this.scaled))
+      .map((el): UIEntityHit | undefined => el.collides(position, this.scaled, true))
       .filter((res): boolean => !!res)
       [0];
+  }
+
+  /**
+   * Gets the UI Scale information
+   */
+  public getScale(): UISceneScale | undefined {
+    return this.scaled;
   }
 
   /**
@@ -373,12 +380,12 @@ export class UIEntity extends Entity {
   /**
    * Check collision of position
    */
-  public collides(position: Vector, scaled?: UISceneScale): UIEntityHit | undefined {
+  public collides(position: Vector, scaled?: UISceneScale, first: boolean = false): UIEntityHit | undefined {
     if (!this.isVisible() || this.isDisabled()) {
       return undefined;
     }
 
-    const box = this.getBox(scaled);
+    const box = this.getBox(first ? scaled : undefined);
     const collides = collidePoint(position, box);
     const els = this.elements.filter((el): boolean => el.isClickable());
 
@@ -386,7 +393,7 @@ export class UIEntity extends Entity {
       const rel = (position.clone() as Vector).subtract(this.position);
 
       const found = els
-        .map((el): UIEntityHit | undefined => el.collides(rel, scaled))
+        .map((el): UIEntityHit | undefined => el.collides(rel, scaled, false))
         .filter((el): boolean => !!el);
 
       if (found[0]) {

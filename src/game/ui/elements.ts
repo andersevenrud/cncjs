@@ -518,15 +518,18 @@ export class UISlider extends GameUIEntity {
       let value = 0;
 
       const buttonDimension = this.button.getDimension();
+      const scale = this.ui.getScale();
+      const scalef = scale ? scale.scale : 1;
+
       if (this.orientation === 'horizontal') {
-        const diff = this.ui.engine.mouse.getVector().x - this.dragStart.x;
+        const diff = (this.ui.engine.mouse.getVector().x - this.dragStart.x) / scalef;
         const maxX = this.dimension.x - buttonDimension.x;
         const newX = Math.min(maxX, Math.max(0, this.buttonStart!.x + diff));
         value = newX / maxX;
 
         this.button.setPosition(new Vector(newX, 0));
       } else if (this.orientation === 'vertical') {
-        const diff = this.ui.engine.mouse.getVector().y - this.dragStart.y;
+        const diff = (this.ui.engine.mouse.getVector().y - this.dragStart.y) / scalef;
         const mayY = this.dimension.y - buttonDimension.y;
         const newY = Math.min(mayY, Math.max(0, this.buttonStart!.y + diff));
         value = newY / mayY;
