@@ -299,7 +299,7 @@ export interface MIXStructureDimension {
 
 export interface MIXStructure extends MIXObject {
   ExitList: string;
-  Dimensions: string;
+  Dimensions: Vector;
   PowerDrain: number;
   PowerProduction: number;
   TiberiumStorage: number;
@@ -779,6 +779,11 @@ const stringToArray = (str: string): string[] => str === 'None'
   ? []
   : str.split(',');
 
+const parseDimensions = (size: string) => {
+  const [x, y] = size.split('x').map(i => parseInt(i, 10));
+  return new Vector(x, y);
+};
+
 const transformValue = (key: string, value: string, filename: string): any => {
   if (filename === 'GAME.DAT/infanims.ini' || arrayNumberMap.indexOf(key) !== -1) {
     return stringToArray(value).map((i): number => parseInt(i, 10));
@@ -788,6 +793,8 @@ const transformValue = (key: string, value: string, filename: string): any => {
     } catch (e) {
       console.error(e, key, value);
     }
+  } else if (key === 'Dimensions') {
+    return parseDimensions(value);
   } else if (value.match(/^[+-]?\d+(\.\d+)?$/) || value.match(/^\.(\d+)/)) {
     return parseFloat(value);
   } else if (value.match(/^(\d+)%$/)) {
@@ -955,11 +962,6 @@ const mapTeamTypes = (obj: any, offset: Vector): MIXMapTeamType[] => Object.keys
       actions
     };
   });
-
-export const parseDimensions = (size: string) => {
-  const [x, y] = size.split('x').map(i => parseInt(i, 10));
-  return new Vector(x, y);
-};
 
 export class MIX extends EventEmitter {
   private archive: DataArchive;

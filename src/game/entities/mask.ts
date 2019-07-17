@@ -6,7 +6,6 @@
 import { Entity, Sprite } from '../../engine';
 import { cellFromPoint, pointFromCell, CELL_SIZE } from '../physics';
 import { GameMap } from '../map';
-import { parseDimensions } from '../mix';
 import { spriteFromName } from '../sprites';
 import { Vector } from 'vector2d';
 
@@ -28,7 +27,7 @@ export class StructureMaskEntity extends Entity {
 
     const properties = this.map.engine.mix.structures.get(name);
     if (properties) {
-      const size = parseDimensions(properties.Dimensions);
+      const size = properties.Dimensions.clone() as Vector;
       if (properties.HasBib) {
         size.add(new Vector(0, 1));
       }

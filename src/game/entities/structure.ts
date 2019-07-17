@@ -10,7 +10,6 @@ import { MIXGrid, MIXStructure, MIXStructureAnimation } from '../mix';
 import { CELL_SIZE } from '../physics';
 import { spriteFromName } from '../sprites';
 import { BibEntity } from './bib';
-import { parseDimensions } from '../mix';
 import { Vector } from 'vector2d';
 
 const DAMAGE_SUFFIX = ['', '-Damaged', '-Destroyed'];
@@ -49,7 +48,7 @@ export class StructureEntity extends GameMapEntity {
   public async init(): Promise<void> {
     await super.init();
 
-    const size = parseDimensions(this.properties!.Dimensions);
+    const size = this.properties!.Dimensions.clone() as Vector;
     this.dimension = size.mulS(CELL_SIZE);
 
     const name = `${this.data.name}_Idle`;
@@ -84,7 +83,7 @@ export class StructureEntity extends GameMapEntity {
     }
 
     if (this.properties!.HasBib) {
-      const size = parseDimensions(this.properties!.Dimensions);
+      const size = this.properties!.Dimensions.clone() as Vector;
       this.bib = await BibEntity.createOrCache(this.engine, size, this.map.getTheatre());
     }
 
