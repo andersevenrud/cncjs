@@ -320,13 +320,13 @@ export class GameMap extends Entity {
           const py = CELL_SIZE * y - this.position.y + dy;
           const v = new Vector(x, y);
           const waypoint = this.data.waypoints.find(w => w.cell.equals(v));
-
-          context.fillStyle = 'rgba(255, 0, 0, 0.1)';
-          context.strokeStyle = 'rgba(255, 200, 255, 0.05)';
+          const celltrigger = this.data.cellTriggers.find(w => w.cell.equals(v));
 
           if (this.grid.isWalkableAt(x, y)) {
+            context.strokeStyle = 'rgba(255, 200, 255, 0.05)';
             context.strokeRect(px + 0.5, py + 0.5, CELL_SIZE, CELL_SIZE);
           } else {
+            context.fillStyle = 'rgba(255, 0, 0, 0.1)';
             context.fillRect(px, py, CELL_SIZE, CELL_SIZE);
           }
 
@@ -337,6 +337,15 @@ export class GameMap extends Entity {
             context.textAlign = 'center';
             context.textBaseline = 'middle';
             context.fillText(waypoint.name || String(waypoint.id), px + c, py + c);
+          }
+
+          if (celltrigger) {
+            context.fillStyle = 'rgba(0, 255, 255, 0.1)';
+            context.fillRect(px, py, CELL_SIZE, CELL_SIZE);
+            context.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(celltrigger.name, px + c, py + c);
           }
         }
       }
