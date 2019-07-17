@@ -7,7 +7,7 @@ import { Box, MusicTrack, Scene } from '../../engine';
 import { GameEngine } from '../game';
 import { GameMap } from '../map';
 import { TheatreUI } from '../ui/theatre';
-import { MIXPlayerName, MIXTheme } from '../mix';
+import { MIXMapData, MIXPlayerName, MIXTheme } from '../mix';
 import { cellFromPoint } from '../physics';
 import { Vector } from 'vector2d';
 
@@ -22,12 +22,12 @@ export class TheatreScene extends Scene {
   public readonly name: string;
   private loaded: boolean = false;
 
-  public constructor(name: string, player: MIXPlayerName, engine: GameEngine) {
+  public constructor(name: string, data:MIXMapData, player: MIXPlayerName, engine: GameEngine) {
     super(engine);
 
     this.engine = engine;
     this.name = name;
-    this.map = new GameMap(this.name, player, this.engine as GameEngine, this);
+    this.map = new GameMap(this.name, data, player, this.engine as GameEngine, this);
     this.ui = new TheatreUI(this);
   }
 

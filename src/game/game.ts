@@ -150,7 +150,9 @@ export class GameEngine extends Engine {
   }
 
   public async pushTheatreScene(name: string, player: MIXPlayerName, skip: boolean = true): Promise<void> {
-    this.pushScene(() => new TheatreScene(name, player, this), skip);
+    const data = await this.mix.loadMap(name);
+
+    this.pushScene(() => new TheatreScene(name, data, player, this), skip);
   }
 
   public async pushScoreScene(skip: boolean = true): Promise<void> {

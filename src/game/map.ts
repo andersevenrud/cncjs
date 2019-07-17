@@ -91,7 +91,7 @@ export class GameMap extends Entity {
   protected mapDimension: Vector = new Vector(64, 64);
   protected fowVisible: boolean = true;
   protected created: boolean = false;
-  protected data?: MIXMapData;
+  protected data: MIXMapData;
   protected mask?: StructureMaskEntity;
   public readonly player: Player;
   private players: Map<MIXPlayerName, Player> = new Map(players);
@@ -106,11 +106,12 @@ export class GameMap extends Entity {
   public readonly factory: GameMapEntityFactory = new GameMapEntityFactory(this);
   public readonly selection: GameMapEntitySelection = new GameMapEntitySelection(this);
 
-  public constructor(name: string, player: MIXPlayerName, engine: GameEngine, scene: TheatreScene) {
+  public constructor(name: string, data: MIXMapData, player: MIXPlayerName, engine: GameEngine, scene: TheatreScene) {
     super();
     this.name = name;
     this.engine = engine;
     this.scene = scene;
+    this.data = data;
     this.player = this.players.get(player) as Player;
     this.player.setSessionPlayer(true);
   }
@@ -136,7 +137,7 @@ export class GameMap extends Entity {
 
   public async init(save?: MIXSaveGame): Promise<void> {
     console.time();
-    const data = await this.engine.mix.loadMap(this.name);
+    const data = this.data;
     console.log(data);
 
     this.mapDimension = data.map.size.clone() as Vector;
@@ -340,7 +341,7 @@ export class GameMap extends Entity {
           const px = CELL_SIZE * x - this.position.x + dx;
           const py = CELL_SIZE * y - this.position.y + dy;
           const v = new Vector(x, y);
-          const waypoint = this.data!.waypoints.find(w => w.cell.equals(v));
+          const waypoint = this.data.waypoints.find(w => w.cell.equals(v));
 
           context.fillStyle = 'rgba(255, 0, 0, 0.1)';
           context.strokeStyle = 'rgba(255, 200, 255, 0.05)';
@@ -524,7 +525,7 @@ export class GameMap extends Entity {
   }
 
   public getTheatre(): string {
-    return this.data!.map.theatre;
+    return this.data.map.theatre;
   }
 
   public getPlayerById(id: number): Player | undefined {
