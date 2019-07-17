@@ -37,6 +37,7 @@ export class MouseInput extends IODevice {
   private activeButtons: Set<MouseButton> = new Set();
   private activePresses: Set<MouseButton> = new Set();
   private position: MousePosition = { x: 0, y: 0, z: 0 };
+  private lastTouchPosition: Vector = new Vector(0, 0);
   private wheelTimeout?: any;
   private pressStart?: Vector;
   private locked: boolean = false;
@@ -134,12 +135,16 @@ export class MouseInput extends IODevice {
    * Touch start
    */
   private onTouchStart(ev: TouchEvent): void {
-    ev.preventDefault();
-
-    this.onPointerDown('left', new Vector(
+    const v = new Vector(
       ev.touches[0].clientX,
       ev.touches[0].clientY
-    ));
+    );
+
+    this.lastTouchPosition = v;
+    this.onPointerMove(v);
+    this.onPointerDown('left', v);
+
+    ev.preventDefault();
   }
 
   /**
@@ -148,17 +153,20 @@ export class MouseInput extends IODevice {
   private onTouchEnd(ev: TouchEvent): void {
     ev.preventDefault();
 
-    this.onPointerUp('left', new Vector(-1, -1));
+    this.onPointerUp('left', this.lastTouchPosition);
   }
 
   /**
    * Touch move
    */
   private onTouchMove(ev: TouchEvent): void {
-    this.onPointerMove(new Vector(
+    const v = new Vector(
       ev.touches[0].clientX,
       ev.touches[0].clientY
-    ));
+    );
+
+    this.lastTouchPosition = v;
+    this.onPointerMove(v);
   }
 
   /**
@@ -223,7 +231,10 @@ export class MouseInput extends IODevice {
   private onPointerDown(btn: MouseButton, current: Vector): void {
     const scale = this.engine.getScale();
     const relCurrent = current.clone().divS(scale) as Vector;
-    this.pressStart = relCurrent;
+    this.pressStart = new Vector(
+      Math.trunc(relCurrent.x),
+      Math.trunc(relCurrent.y)
+    );
     this.activeButtons.add(btn);
   }
 
