@@ -227,7 +227,7 @@ export class TheatreUI extends UIScene {
     btnAbort.on('click', () => {
       this.scene.engine.sound.playlist.pause();
       this.scene.engine.playArchiveSfx('SPEECH.MIX/batlcon1.wav', 'gui', {
-        done: () => this.scene.engine.pushMenuScene()
+        done: () => this.scene.engine.onTheatreAborted()
       }, 'eva');
     });
 

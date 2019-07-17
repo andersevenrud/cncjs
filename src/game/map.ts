@@ -91,12 +91,12 @@ export class GameMap extends Entity {
   protected mapDimension: Vector = new Vector(64, 64);
   protected fowVisible: boolean = true;
   protected created: boolean = false;
-  protected data: MIXMapData;
   protected mask?: StructureMaskEntity;
   public readonly player: Player;
   private players: Map<MIXPlayerName, Player> = new Map(players);
 
   public grid: Grid = new Grid(64, 64);
+  public readonly data: MIXMapData;
   public readonly engine: GameEngine;
   public readonly fow: FOW = new FOW(this);
   public readonly scene: TheatreScene;
@@ -142,7 +142,6 @@ export class GameMap extends Entity {
 
     this.mapDimension = data.map.size.clone() as Vector;
     this.grid = new Grid(this.mapDimension.x, this.mapDimension.y);
-    this.data = data;
 
     const d = this.mapDimension.clone().mulS(CELL_SIZE) as Vector;
 
@@ -248,27 +247,6 @@ export class GameMap extends Entity {
     path.shift(); // FIXME
 
     return path.map(([x, y]) => new Vector(x, y));
-  }
-
-  public getEntitiesFromCell(cell: Vector, test: Function = () => true): GameEntity[] {
-    return this.entities
-      .filter(e => {
-        const c: Vector = e.getCell();
-        const d: Vector = e.getDimension();
-        return collidePoint(cell, {
-          x1: c.x,
-          x2: c.x + Math.floor(d.x / CELL_SIZE) - 1,
-          y1: c.y,
-          y2: c.y + Math.floor(d.y / CELL_SIZE) - 1
-        }) && test(e);
-      });
-  };
-
-  public getRealMousePosition(position: MousePosition | Vector): Vector {
-    return new Vector(
-      (position.x - this.scene.viewport.x1) + this.position.x,
-      (position.y - this.scene.viewport.y1) + this.position.y
-    );
   }
 
   public onUpdate(deltaTime: number): void {
@@ -536,6 +514,27 @@ export class GameMap extends Entity {
     }
 
     return undefined;
+  }
+
+  public getEntitiesFromCell(cell: Vector, test: Function = () => true): GameEntity[] {
+    return this.entities
+      .filter(e => {
+        const c: Vector = e.getCell();
+        const d: Vector = e.getDimension();
+        return collidePoint(cell, {
+          x1: c.x,
+          x2: c.x + Math.floor(d.x / CELL_SIZE) - 1,
+          y1: c.y,
+          y2: c.y + Math.floor(d.y / CELL_SIZE) - 1
+        }) && test(e);
+      });
+  };
+
+  public getRealMousePosition(position: MousePosition | Vector): Vector {
+    return new Vector(
+      (position.x - this.scene.viewport.x1) + this.position.x,
+      (position.y - this.scene.viewport.y1) + this.position.y
+    );
   }
 
   public isFowVisible(): boolean {

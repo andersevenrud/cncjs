@@ -21,7 +21,7 @@ import { ScoreScene } from './scenes/score';
 import { LoadingScene } from './scenes/loading';
 import { Cursor } from './ui/cursor';
 import { Player } from './player';
-import { MIX, MIXPlayerName } from './mix';
+import { MIX, MIXPlayerName, MIXTeamName, gdiMaps, nodMaps } from './mix';
 
 export interface GameEngineConfig {
   scrollSpeed: number;
@@ -108,7 +108,7 @@ export class GameEngine extends Engine {
         const debugPlayer: string = q.get('player') || 'GoodGuy';
 
         if (debugScene === 'theatre') {
-          await this.pushTheatreScene(debugMap || 'scg01ea', debugPlayer as MIXPlayerName);
+          await this.pushTheatreScene(debugMap || 'scg01ea', debugPlayer as MIXPlayerName, true);
         } else if (debugScene === 'team') {
           await this.pushTeamScene();
         } else if (debugScene === 'movie') {
@@ -146,13 +146,16 @@ export class GameEngine extends Engine {
   }
 
   public async pushMovieScene(name: string,skip: boolean = true ): Promise<void> {
-    this.pushScene(() => new MovieScene(this, name), skip);
+    this.pushScene(() => new MovieScene(name, this), skip);
   }
 
-  public async pushTheatreScene(name: string, player: MIXPlayerName, skip: boolean = true): Promise<void> {
+  public async pushTheatreScene(name: string, player: MIXPlayerName, skipMovie: boolean = false): Promise<void> {
     const data = await this.mix.loadMap(name);
-
-    this.pushScene(() => new TheatreScene(name, data, player, this), skip);
+    const movieName = data.basic.Brief;
+    if (!skipMovie) {
+      this.pushScene(() => new MovieScene(movieName, this), true);
+    }
+    this.pushScene(() => new TheatreScene(name, data, player, this), skipMovie);
   }
 
   public async pushScoreScene(skip: boolean = true): Promise<void> {
@@ -161,8 +164,7 @@ export class GameEngine extends Engine {
 
   public async pushMapSelectionScene(): Promise<void> {
     const player = this.scene instanceof TheatreScene ? this.scene.map.player : new Player(0, 'GoodGuy', 'gdi');
-    const lastMapName = this.scene instanceof TheatreScene ? this.scene.name : 'scg01ea';
-    this.pushScene(() => new MapSelectionScene(lastMapName, player, this));
+    this.pushScene(() => new MapSelectionScene(player, this));
   }
 
   public setScrollSpeed(speed: number): void {
@@ -171,6 +173,29 @@ export class GameEngine extends Engine {
 
   public getScrollSpeed(): number {
     return this.gameConfig.scrollSpeed;
+  }
+
+  public onTeamSelected(selected: MIXTeamName): void {
+    const player = selected === 'nod' ? 'BadGuy' : 'GoodGuy';
+    const maps = selected === 'nod' ? nodMaps : gdiMaps;
+    this.pushTheatreScene(maps[0], player);
+  }
+
+  public onTheatreWon(): void {
+    const map = (this.scene as TheatreScene).map;
+    const movieName = map.data.basic.Win;
+    const player = map.player;
+
+    this.pushScene(() => new MovieScene(movieName, this), true);
+    this.pushScene(() => new MapSelectionScene(player, this));
+  }
+
+  public onMapSelect(name: string, player: Player): void {
+    this.pushTheatreScene(name, player.getName());
+  }
+
+  public onTheatreAborted(): void {
+    this.pushMenuScene();
   }
 
   public onRender(deltaTime: number): void {
@@ -192,7 +217,7 @@ export class GameEngine extends Engine {
       } else if (this.keyboard.wasClicked('F2')) {
         this.pushTeamScene(true);
       } else if (this.keyboard.wasClicked('F3')) {
-        this.pushTheatreScene('scg03ea', 'GoodGuy', true);
+        this.pushTheatreScene('scg03ea', 'GoodGuy');
       } else if (this.keyboard.wasClicked('F4')) {
         this.pushMovieScene('banner', true);
       } else if (this.keyboard.wasClicked('F5')) {

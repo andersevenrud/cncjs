@@ -53,14 +53,12 @@ class MapScene extends Entity {
 export class MapSelectionScene extends Scene {
   public engine: GameEngine;
   private player: Player;
-  private lastMapName: string;
   protected readonly ui: MapSelectionUI;
   protected readonly screen: MapScene;
 
-  public constructor(lastMapName: string, player: Player, engine: GameEngine) {
+  public constructor(player: Player, engine: GameEngine) {
     super(engine);
     this.engine = engine;
-    this.lastMapName = lastMapName;
     this.player = player;
     this.screen = new MapScene(engine);
     this.ui = new MapSelectionUI(player.getTeam(), this);
@@ -86,7 +84,7 @@ export class MapSelectionScene extends Scene {
   }
 
   public handleMapSelection(name: string): void {
-    this.engine.pushTheatreScene(name, this.player.getName());
+    this.engine.onMapSelect(name, this.player);
   }
 
   public onResize(): void {

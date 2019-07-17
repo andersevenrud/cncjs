@@ -8,7 +8,6 @@ import { spriteFromName } from  '../sprites';
 import { GameEngine } from '../game';
 import { getScaledDimensions } from '../physics';
 import { Vector } from 'vector2d';
-import { gdiMaps, nodMaps } from '../mix';
 
 /**
  * Team Scene
@@ -54,14 +53,7 @@ export class TeamScene extends Scene {
     const viewport =  this.engine.getScaledDimension();
     const clickedRight = (position.x) > (viewport.x / 2);
     const selected = clickedRight ? 'nod' : 'gdi';
-    const player = selected === 'nod' ? 'BadGuy' : 'GoodGuy';
-    const maps = selected === 'nod' ? nodMaps : gdiMaps;
-
-    const done = () => {
-      this.engine.pushMovieScene(`${selected}1`);
-      this.engine.pushTheatreScene(maps[0], player, false);
-    };
-
+    const done = () => this.engine.onTeamSelected(selected);
     const context = this.sounds.get(selected) as AudioBuffer;
 
     playlist.pause();

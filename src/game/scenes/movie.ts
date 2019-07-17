@@ -17,7 +17,7 @@ export class MovieScene extends Scene {
   private loaded: boolean = false;
   private failed: boolean = false;
 
-  public constructor(engine: Core, name: string) {
+  public constructor(name: string, engine: Core) {
     super(engine);
 
     this.engine = engine;
@@ -63,7 +63,7 @@ export class MovieScene extends Scene {
       this.failed = true;
     });
 
-    this.movieElement.src = `MOVIES.MIX/${this.name}.webm`;
+    this.movieElement.src = `MOVIES.MIX/${this.name.toLowerCase()}.webm`;
   }
 
   public onUpdate(deltaTime: number): void {
