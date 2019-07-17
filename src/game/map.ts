@@ -5,7 +5,6 @@
  */
 import { Entity, MousePosition, Box, collidePoint, collideAABB } from '../engine';
 import { Grid, AStarFinder, DiagonalMovement } from 'pathfinding';
-import { TheatreScene } from './scenes/theatre';
 import { SmudgeEntity } from './entities/smudge';
 import { TerrainEntity } from './entities/terrain';
 import { InfantryEntity } from './entities/infantry';
@@ -85,32 +84,30 @@ export class GameMapEntityFactory {
  * Map
  */
 export class GameMap extends Entity {
-  protected name: string;
+  private readonly players: Map<MIXPlayerName, Player> = new Map(players);
+  protected readonly name: string;
   protected entities: GameEntity[] = [];
   protected visibleEntities: number = 0;
   protected mapDimension: Vector = new Vector(64, 64);
   protected fowVisible: boolean = true;
   protected created: boolean = false;
   protected mask?: StructureMaskEntity;
-  public readonly player: Player;
-  private players: Map<MIXPlayerName, Player> = new Map(players);
-
+  protected viewport: Box = { x1: 0, x2: 800, y1: 0, y2: 600 };
   public grid: Grid = new Grid(64, 64);
+  public readonly player: Player;
   public readonly data: MIXMapData;
   public readonly engine: GameEngine;
   public readonly fow: FOW = new FOW(this);
-  public readonly scene: TheatreScene;
   public readonly terrain: Entity = new Entity();
   public readonly objects: Entity = new Entity();
   public readonly overlay: Entity = new Entity();
   public readonly factory: GameMapEntityFactory = new GameMapEntityFactory(this);
   public readonly selection: GameMapEntitySelection = new GameMapEntitySelection(this);
 
-  public constructor(name: string, data: MIXMapData, player: MIXPlayerName, engine: GameEngine, scene: TheatreScene) {
+  public constructor(name: string, data: MIXMapData, player: MIXPlayerName, engine: GameEngine) {
     super();
     this.name = name;
     this.engine = engine;
-    this.scene = scene;
     this.data = data;
     this.player = this.players.get(player) as Player;
     this.player.setSessionPlayer(true);
@@ -186,9 +183,9 @@ export class GameMap extends Entity {
     const start = data.waypoints.find(w => w.name === 'start');
     if (start) {
       console.debug('GameMap::init()', 'Starting at start', start.cell.toString());
-      const vp = this.scene.getScaledViewport();
-      const vw = vp.x2 - vp.x1;
-      const vh = vp.y2 - vp.y1;
+      const scale = this.engine.getScale();
+      const vw = (this.viewport.x2 - this.viewport.x1) / scale;
+      const vh = (this.viewport.y2 - this.viewport.y1) / scale;
       this.position = new Vector(
         Math.round((start.cell.x * CELL_SIZE) - (vw / 2) + (CELL_SIZE / 2)),
         Math.round((start.cell.y * CELL_SIZE) - (vh / 2) + (CELL_SIZE / 2))
@@ -249,6 +246,10 @@ export class GameMap extends Entity {
     return path.map(([x, y]) => new Vector(x, y));
   }
 
+  public onResize(viewport: Box): void {
+    this.viewport = viewport;
+  }
+
   public onUpdate(deltaTime: number): void {
     if (this.mask) {
       this.mask.onUpdate(deltaTime);
@@ -277,15 +278,14 @@ export class GameMap extends Entity {
     const objects = this.objects.getContext();
     const terrain = this.terrain.getContext();
 
-    const viewport = this.scene.viewport;
-    const vw = viewport.x2 - viewport.x1;
-    const vh = viewport.y2 - viewport.y1;
+    const vw = this.viewport.x2 - this.viewport.x1;
+    const vh = this.viewport.y2 - this.viewport.y1;
     const sx = this.position.x;
     const sy = this.position.y;
     const sw = Math.max(vw - sx, this.dimension.x - sx);
     const sh = Math.max(vh - sy, this.dimension.y - sy);
-    const dx = viewport.x1;
-    const dy = viewport.y1;
+    const dx = this.viewport.x1;
+    const dy = this.viewport.y1;
     const dw = sw;
     const dh = sh;
 
@@ -346,12 +346,11 @@ export class GameMap extends Entity {
   }
 
   public moveRelative(offset: Vector): boolean {
-    const viewport = this.scene.viewport;
     const scale = this.engine.getScale();
     const npos = this.position.clone().add(offset) as Vector;
 
-    const vw = (viewport.x2 - viewport.x1);
-    const vh = (viewport.y2 - viewport.y1);
+    const vw = (this.viewport.x2 - this.viewport.x1);
+    const vh = (this.viewport.y2 - this.viewport.y1);
     const vx = vw / scale;
     const vy = vh / scale;
     const margin = 100;
@@ -462,12 +461,11 @@ export class GameMap extends Entity {
 
   public getVisibleEntities(): GameEntity[] {
     const scale = this.engine.getScale();
-    const viewport = this.scene.viewport;
     const viewbox: Box = {
-      x1: viewport.x1 * scale + this.position.x,
-      x2: viewport.x2 / scale + this.position.x,
-      y1: viewport.y1 * scale + this.position.y,
-      y2: viewport.y2 / scale + this.position.y
+      x1: this.viewport.x1 * scale + this.position.x,
+      x2: this.viewport.x2 / scale + this.position.x,
+      y1: this.viewport.y1 * scale + this.position.y,
+      y2: this.viewport.y2 / scale + this.position.y
     };
 
     const visible = this.entities.filter(e => collideAABB(e.getRenderBox(), viewbox));
@@ -495,7 +493,7 @@ export class GameMap extends Entity {
   }
 
   public getMapDimension(): Vector {
-    return this.mapDimension;
+    return this.mapDimension.clone() as Vector;
   }
 
   public getData(): MIXMapData | undefined {
@@ -532,8 +530,8 @@ export class GameMap extends Entity {
 
   public getRealMousePosition(position: MousePosition | Vector): Vector {
     return new Vector(
-      (position.x - this.scene.viewport.x1) + this.position.x,
-      (position.y - this.scene.viewport.y1) + this.position.y
+      (position.x - this.viewport.x1) + this.position.x,
+      (position.y - this.viewport.y1) + this.position.y
     );
   }
 

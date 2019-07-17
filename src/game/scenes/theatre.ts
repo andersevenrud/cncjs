@@ -27,7 +27,7 @@ export class TheatreScene extends Scene {
 
     this.engine = engine;
     this.name = name;
-    this.map = new GameMap(this.name, data, player, this.engine as GameEngine, this);
+    this.map = new GameMap(this.name, data, player, this.engine as GameEngine);
     this.ui = new TheatreUI(this);
   }
 
@@ -76,6 +76,8 @@ export class TheatreScene extends Scene {
     this.viewport.x2 = v.x2 * s;
     this.viewport.y1 = v.y1 / s;
     this.viewport.y2 = v.y2 * s;
+
+    this.map.onResize(this.viewport);
   }
 
   public onUpdate(deltaTime: number): void {
