@@ -76,6 +76,42 @@ export interface MIXMapWaypointMap {
   [Key: string]: string;
 }
 
+export interface MIXMapTrigger {
+  name: string;
+}
+
+export interface MIXMapCellTrigger {
+  name: string;
+  cell: Vector;
+}
+
+export interface MIXMapTeamTypeUnit {
+  name: string;
+  count: number;
+}
+
+export interface MIXMapTeamTypeAction {
+  name: string;
+  arg: number;
+}
+
+export interface MIXMapTeamType {
+  name: string;
+  teamName: string;
+  toggleAlt: boolean;
+  toggleLink: boolean;
+  autocreate: boolean;
+  replaceTeam: boolean;
+  forceReplaceTeam: boolean;
+  units: MIXMapTeamTypeUnit[];
+  actions: MIXMapTeamTypeAction[];
+}
+
+export interface MIXMapBase {
+  name: string;
+  cell: Vector;
+}
+
 export interface MIXMapData {
   map: MIXMapMapData;
   basic: MIXMapBasicData;
@@ -87,6 +123,10 @@ export interface MIXMapData {
   structures: MIXMapEntityData[];
   overlays: MIXMapEntityData[];
   smudge: MIXMapEntityData[];
+  triggers: MIXMapTrigger[];
+  cellTriggers: MIXMapCellTrigger[];
+  teamTypes: MIXMapTeamType[];
+  base: MIXMapBase[];
 };
 
 export interface MIXCursor {
@@ -864,6 +904,58 @@ const mapStructures = (theatre: string, offset: Vector) => (str: any): MIXMapEnt
 };
 
 
+const mapTriggers = (obj: any, offset: Vector): MIXMapTrigger[] => Object.keys(obj)
+  .map(name => ({
+    name
+  }));
+
+const mapCellTriggers = (obj: any, offset: Vector): MIXMapCellTrigger[] => Object.keys(obj)
+  .map(cell => ({
+    cell: cellFromIndex(parseInt(cell, 10), 64, offset),
+    name: obj[cell]
+  }))
+
+const mapBase = (obj: any, offset: Vector): MIXMapBase[] => Object.keys(obj)
+  .filter(key => key !== 'Count')
+  .map(key => {
+    const [name, index] = obj[key].split(',');
+    return { name, cell: new Vector(0, 0) }; // FIXME
+  });
+
+const mapTeamTypes = (obj: any, offset: Vector): MIXMapTeamType[] => Object.keys(obj)
+  .map(name => {
+    const str = obj[name].split(',');
+    const preamble = str.splice(0, 10);
+    const unitCount = parseInt(str.shift(), 10);
+    const units = (unitCount > 0 ? str.splice(0, unitCount) : [])
+      .map((str: string) => {
+        const [name, count] = str.split(':');
+        return { name: name.toUpperCase(), count: parseInt(count, 10) };
+      });
+    const actionCount = parseInt(str.shift(), 10);
+    const actions = (actionCount > 0 ? str.splice(0, actionCount) : [])
+      .map((str: string) => {
+        const [name, arg] = str.split(':');
+        return { name, arg: typeof arg === 'undefined' ? undefined : parseInt(arg, 10) };
+      });
+    const replaceTeam = parseInt(str.shift(), 10) ? true : false;
+    const forceReplaceTeam = parseInt(str.shift(), 10) ? true : false;
+    const [ teamName, toggleLink, unknown1, toggleAlt, autocreate, unknown2, unknown3, multiplier, unknown4, unknown5] = preamble;
+
+    return {
+      name,
+      teamName,
+      toggleLink: toggleLink === '1',
+      toggleAlt: toggleAlt === '1',
+      autocreate: autocreate === '1',
+      multiplier: parseInt(multiplier, 10),
+      replaceTeam,
+      forceReplaceTeam,
+      units,
+      actions
+    };
+  });
+
 export const parseDimensions = (size: string) => {
   const [x, y] = size.split('x').map(i => parseInt(i, 10));
   return new Vector(x, y);
@@ -1011,7 +1103,11 @@ export class MIX extends EventEmitter {
       basic: transformObject((ini.BASIC || ini.Basic), fname, name), // FIXME
       terrain: mapOther(theatre, offset, 'TERRAIN', ini),
       overlays: mapOther(theatre, offset, 'OVERLAY', ini),
-      smudge: mapOther(theatre, offset, 'SMUDGE', ini)
+      smudge: mapOther(theatre, offset, 'SMUDGE', ini),
+      triggers: mapTriggers(ini.Triggers, offset),
+      cellTriggers: mapCellTriggers(ini.CellTriggers, offset),
+      teamTypes: mapTeamTypes(ini.TeamTypes, offset),
+      base: mapBase(ini.Base, offset)
     };
   }
 
