@@ -910,7 +910,6 @@ const mapStructures = (theatre: string, offset: Vector) => (str: any): MIXMapEnt
   };
 };
 
-
 const mapTriggers = (obj: any, offset: Vector): MIXMapTrigger[] => Object.keys(obj)
   .map(name => ({
     name
@@ -1106,9 +1105,9 @@ export class MIX extends EventEmitter {
       terrain: mapOther(theatre, offset, 'TERRAIN', ini),
       overlays: mapOther(theatre, offset, 'OVERLAY', ini),
       smudge: mapOther(theatre, offset, 'SMUDGE', ini),
-      triggers: mapTriggers(ini.Triggers, offset),
-      cellTriggers: mapCellTriggers(ini.CellTriggers, offset),
-      teamTypes: mapTeamTypes(ini.TeamTypes, offset),
+      triggers: mapTriggers(ini.Triggers || {}, offset),
+      cellTriggers: mapCellTriggers(ini.CellTriggers || {}, offset),
+      teamTypes: mapTeamTypes(ini.TeamTypes || {}, offset),
       base: mapBase(ini.Base, offset)
     };
   }
