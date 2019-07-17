@@ -101,6 +101,7 @@ export class SoundOutput extends IODevice {
   private sfxNodes: SoundEffect[] = [];
   private position: Vector = new Vector(0, 0);
   private muted: boolean = false;
+  private playingMusic: boolean = false;
 
   protected nodes: SoundNodes = {
     sfx: this.sfxGainNode,
@@ -131,6 +132,7 @@ export class SoundOutput extends IODevice {
     this.musicElement.src = '';
     this.playlist.clear();
     this.position = new Vector(0, 0);
+    this.playingMusic = false;
   }
 
   /**
@@ -195,6 +197,10 @@ export class SoundOutput extends IODevice {
       // https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#webaudio
       this.context.resume()
         .catch((e): void => console.warn(e));
+
+      if (this.playingMusic) {
+        this.musicElement.play();
+      }
     }
   }
 
@@ -319,6 +325,8 @@ export class SoundOutput extends IODevice {
     this.musicElement.src = track.source;
     this.musicElement.play()
       .catch((e: Error): void => console.warn('SoundOuput::playMusic()', e));
+
+    this.playingMusic = true;
   }
 
   /**
@@ -331,6 +339,8 @@ export class SoundOutput extends IODevice {
       this.musicElement.play()
         .catch((e: Error): void => console.warn('SoundOuput::pauseMusic()', e));
     }
+
+    this.playingMusic = !state;
   }
 
   /**
