@@ -41,7 +41,7 @@ export class FOW extends Entity {
             continue;
           }
 
-          if (!this.grid[y][x]) {
+          if (this.grid[y] && !this.grid[y][x]) {
             this.updated = true;
             this.grid[y][x] = 1;
           }
