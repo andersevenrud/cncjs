@@ -224,7 +224,13 @@ export class TheatreUI extends UIScene {
       }
     });
 
+    let aborted = false;
     btnAbort.on('click', () => {
+      if (aborted) {
+        return;
+      }
+      aborted = true;
+
       this.scene.engine.sound.playlist.pause();
       this.scene.engine.playArchiveSfx('SPEECH.MIX/batlcon1.wav', 'gui', {
         done: () => this.scene.engine.onTheatreAborted()
