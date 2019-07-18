@@ -87,7 +87,8 @@ export class StructureEntity extends GameMapEntity {
       this.bib = await BibEntity.createOrCache(this.engine, size, this.map.getTheatre());
     }
 
-    this.hitPoints = this.properties!.HitPoints;
+    // NOTE: Apparenty the game does this internally
+    this.hitPoints = this.properties!.HitPoints * 2;
     if (!this.data.health) {
       this.health = this.hitPoints;
     }
