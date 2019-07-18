@@ -85,7 +85,7 @@ This is an almost complete overview of the tasks done and to be done.
     - [ ] Boarding and unboarding vehicles
     - [x] Damage indication
     - [x] Turrets
-    - [ ] Tower turrets
+    - [x] Tower turrets
     - [x] Infantry random idle animations
     - [ ] Aircraft
     - [ ] Helicopters

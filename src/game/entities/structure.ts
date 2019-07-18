@@ -51,10 +51,14 @@ export class StructureEntity extends GameMapEntity {
     const size = this.properties!.Dimensions.clone() as Vector;
     this.dimension = size.mulS(CELL_SIZE);
 
+    if (this.properties.HasTurret) {
+      this.turretDirection = this.direction;
+    }
+
     const name = `${this.data.name}_Idle`;
     const anim = this.engine.mix.structureAnimations.get(name) as MIXStructureAnimation;
     if (anim) {
-      // FIXME
+      // FIXME this does not compute well
       const damageOffset = anim.StartFrame + anim.Frames;
       this.animations.set('Idle', new GameMapEntityAnimation(name, new Vector(0, anim.StartFrame), anim.Frames, 0.1, 0));
       this.animations.set('Idle-Damaged', new GameMapEntityAnimation(name, new Vector(0, anim.StartFrame + damageOffset), anim.Frames, 0.1, 0));
@@ -161,6 +165,8 @@ export class StructureEntity extends GameMapEntity {
   }
 
   public onUpdate(deltaTime: number): void {
+    super.onUpdate(deltaTime);
+
     const animation = this.animations.get(this.animation);
     const instance = this.constructing ? this.constructionAnimation : animation;
 
@@ -191,7 +197,17 @@ export class StructureEntity extends GameMapEntity {
     const sprite = this.constructing ? this.constructionSprite : this.sprite;
     const context = this.map.objects.getContext();
 
-    this.renderSprite(deltaTime, context, sprite);
+    if (!this.constructing && this.properties.HasTurret) {
+      const offY = this.getDamageState() * (sprite!.frames / 4);
+      const turretFrame = new Vector(
+        this.frameOffset.x,
+        Math.round(this.turretDirection) + offY
+      );
+
+      this.renderSprite(deltaTime, context, sprite, turretFrame);
+    } else {
+      this.renderSprite(deltaTime, context, sprite);
+    }
 
     if (this.bib) {
       this.map.terrain.getContext().drawImage(this.bib.getCanvas(), this.position.x, this.position.y + this.bib.getOffset());
