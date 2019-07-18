@@ -72,7 +72,7 @@ export class StructureEntity extends GameMapEntity {
     await this.engine.loadArchiveSprite(this.repairSprite);
     this.repairAnimation = new Animation('repair-animation', new Vector(0, 2), 2, 0.05);
 
-    if (!this.isCivilian()) {
+    if (!this.isCivilian() && !this.isWall()) {
       await this.initMake();
     }
 

@@ -286,7 +286,7 @@ export abstract class GameEntity extends Entity {
   }
 
   public isCivilian(): boolean {
-    return !this.player || this.player.getName() === 'Neutral';
+    return !this.player || this.player.getName() === 'Neutral' || this.player.getName() === 'Special';
   }
 
   public isDeployable(): boolean {
