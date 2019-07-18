@@ -93,9 +93,10 @@ export class StructureEntity extends GameMapEntity {
 
     // NOTE: Apparenty the game does this internally
     this.hitPoints = this.properties!.HitPoints * 2;
-    if (!this.data.health) {
+    if (this.data.health) {
       this.health = this.hitPoints;
     }
+    this.health *= 2;
   }
 
   protected async initMake(): Promise<void> {
