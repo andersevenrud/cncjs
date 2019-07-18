@@ -243,31 +243,30 @@ export abstract class Engine implements Core {
   }
 
   /**
+   * Clears current scene and the queue
+   */
+  public clearScenes(): void {
+    if (this.scene) {
+      this.scene.off('done');
+      this.scene.destroy();
+    }
+
+    this.sceneQueue = [];
+  }
+
+  /**
    * Queues a new scene to render
    */
-  public async pushScene(scene: EngineSceneFn, skip: boolean = true): Promise<void> {
-    console.debug('Engine::pushScene()', { skip });
+  public async pushScene(scene: EngineSceneFn): Promise<void> {
+    console.debug('Engine::pushScene()');
 
-    if (skip) {
-      this.scene.off('done');
-      this.sceneQueue = [scene];
-    } else {
-      this.sceneQueue.push(scene);
-    }
-
-    if (skip) {
-      await this.nextScene();
-    }
-
-    this.scene.once('done', (): void => {
-      this.nextScene();
-    });
+    this.sceneQueue.push(scene);
   }
 
   /**
    * Go to next scene
    */
-  private async nextScene(): Promise<void> {
+  public async nextScene(): Promise<void> {
     let found = this.sceneQueue.shift();
     if (!found) {
       found = () => new NullScene(this);
@@ -285,6 +284,9 @@ export abstract class Engine implements Core {
 
     try {
       const scene = found();
+      scene.once('done', (): void => {
+        this.nextScene();
+      });
       scene.onResize();
       console.group('Engine::nextScene()');
       await scene.init();
