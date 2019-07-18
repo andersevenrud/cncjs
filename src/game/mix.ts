@@ -14,6 +14,12 @@ export type MIXCursorType = 'default' | 'select' | 'move' | 'attack' | 'expand' 
 export type MIXGridValue = 'x' | 'X' | '-' | '+' | '*' | '.';
 export type MIXFontGlyphs = number[][];
 
+enum MIXMapTriggerRepeat {
+  Never = 0,
+  Once = 1,
+  Always = 2
+}
+
 export interface MIXMapEntityData {
   name: string;
   cell: Vector;
@@ -78,6 +84,12 @@ export interface MIXMapWaypointMap {
 
 export interface MIXMapTrigger {
   name: string;
+  condition: string;
+  action: string;
+  counter: number;
+  playerName: MIXPlayerName;
+  teamType: string;
+  repeat: MIXMapTriggerRepeat;
 }
 
 export interface MIXMapCellTrigger {
@@ -911,9 +923,18 @@ const mapStructures = (theatre: string, offset: Vector) => (str: any): MIXMapEnt
 };
 
 const mapTriggers = (obj: any, offset: Vector): MIXMapTrigger[] => Object.keys(obj)
-  .map(name => ({
-    name
-  }));
+  .map(name => {
+    const [condition, action, counter, playerName, teamType, repeat] = obj[name].split(',');
+    return {
+      name: name.toLowerCase(),
+      condition,
+      action,
+      counter: parseInt(counter, 10),
+      playerName,
+      teamType,
+      repeat: parseInt(repeat, 10)
+    };
+  });
 
 const mapCellTriggers = (obj: any, offset: Vector): MIXMapCellTrigger[] => Object.keys(obj)
   .map(cell => ({

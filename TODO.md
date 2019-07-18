@@ -63,7 +63,7 @@ This is an almost complete overview of the tasks done and to be done.
     - [x] Smudge
     - [x] Rendering order
 - [x] Map
-    - [ ] Win conditions
+    - [ ] Win conditions (in progress)
     - [ ] Triggers
     - [ ] Reinforcements
     - [x] Clamp viewport position on movement

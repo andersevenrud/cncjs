@@ -15,7 +15,7 @@ import { OverlayEntity } from './entities/overlay';
 import { StructureMaskEntity } from './entities/mask';
 import { GameMapEntitySelection } from './entities/selection';
 import { GameEntity } from './entity';
-import { MIXPlayerName, MIXMapData, MIXMapEntityData, MIXSaveGame, wallNames, playerMap } from './mix';
+import { MIXMapTrigger, MIXPlayerName, MIXMapData, MIXMapEntityData, MIXSaveGame, wallNames, playerMap } from './mix';
 import { GameEngine } from './game';
 import { spriteFromName } from './sprites';
 import { cellFromPoint, CELL_SIZE } from './physics';
@@ -79,12 +79,49 @@ export class GameMapEntityFactory {
   }
 }
 
+/**
+ * Map Triggers
+ */
+export class GameMapTrigger {
+  private trigger: MIXMapTrigger;
+  private map: GameMap;
+  private done: boolean = false;
+
+  public constructor(trigger: MIXMapTrigger, map: GameMap) {
+    this.trigger = trigger;
+    this.map = map;
+  }
+
+  public process(): void {
+    if (this.done) {
+      return;
+    }
+
+    if (this.trigger.condition === 'All Destr.') {
+      const met = this.map.getEntities()
+        .filter(entity => entity.player && entity.player.getName() === this.trigger.playerName)
+        .length === 0;
+
+      if (met) {
+        if (this.trigger.action === 'Win') {
+          this.map.engine.onTheatreWon();
+        } else if (this.trigger.action === 'Lose') {
+          this.map.engine.onTheatreLost();
+        }
+        this.done = true;
+      }
+    }
+  }
+}
+
+declare var window: any;
 
 /**
  * Map
  */
 export class GameMap extends Entity {
   private readonly players: Map<MIXPlayerName, Player> = new Map(players);
+  private triggers: GameMapTrigger[] = [];
   protected readonly name: string;
   protected entities: GameEntity[] = [];
   protected visibleEntities: number = 0;
@@ -111,6 +148,8 @@ export class GameMap extends Entity {
     this.data = data;
     this.player = this.players.get(player) as Player;
     this.player.setSessionPlayer(true);
+
+    window.map = this;
   }
 
   public toString(): string {
@@ -139,6 +178,7 @@ export class GameMap extends Entity {
 
     this.mapDimension = data.map.size.clone() as Vector;
     this.grid = new Grid(this.mapDimension.x, this.mapDimension.y);
+    this.triggers = data.triggers.map(trigger => new GameMapTrigger(trigger, this));
 
     const d = this.mapDimension.clone().mulS(CELL_SIZE) as Vector;
 
@@ -268,8 +308,11 @@ export class GameMap extends Entity {
     });
 
     this.player.setPower(power);
-
     this.fow.onUpdate(deltaTime);
+
+    if ((this.engine.ticks % 10) === 0) {
+      this.triggers.forEach(trigger => trigger.process());
+    }
   }
 
   public onRender(deltaTime: number, context: CanvasRenderingContext2D): void {
