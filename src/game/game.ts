@@ -90,7 +90,7 @@ export class GameEngine extends Engine {
     if (this.configuration.debugMode) {
       const debugMuted: string | null = q.get('muted');
       const debugZoom: string | null = q.get('zoom');
-      const debugState: boolean = q.get('debug') !== 'false';
+      const debugState: boolean = q.get('debug') === 'true';
       this.debug = debugState;
 
 
