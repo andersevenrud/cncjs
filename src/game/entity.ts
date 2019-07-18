@@ -36,7 +36,6 @@ export abstract class GameEntity extends Entity {
 
     this.map = map;
     this.engine = map.engine;
-    this.turretDirection = this.direction;
   }
 
   public destroy(): void {
@@ -83,6 +82,21 @@ export abstract class GameEntity extends Entity {
     context.moveTo(x1 + 0.5, y1 + 0.5);
     context.lineTo(x2 + 0.5, y2 + 0.5);
     context.stroke();
+
+    if (this.turretDirection !== -1) {
+      const length = CELL_SIZE / 2;
+      const angle = (270 - (360 * this.turretDirection / this.turretDirections)) % 360;
+      const x1 = x + (this.dimension.x / 2);
+      const y1 = y + (this.dimension.y / 2);
+      const x2 = x1 + Math.cos(Math.PI * angle / 180) * length;
+      const y2 = y1 + Math.sin(Math.PI * angle / 180) * length;
+
+      context.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+      context.beginPath();
+      context.moveTo(x1 + 0.5, y1 + 0.5);
+      context.lineTo(x2 + 0.5, y2 + 0.5);
+      context.stroke();
+    }
   }
 
   public async playSfx(name: string): Promise<void> {

@@ -32,6 +32,10 @@ export class UnitEntity extends GameMapEntity {
   }
 
   public async init(): Promise<void> {
+    if (this.properties.HasTurret) {
+      this.turretDirection = this.direction;
+    }
+
     await super.init();
 
     if (!this.sprite) {
