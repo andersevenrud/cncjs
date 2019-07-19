@@ -9,8 +9,7 @@ import {
   SoundEffect,
   DataArchive,
   DataArchiveImageLoader,
-  DataArchiveSoundLoader,
-  EngineSceneFn
+  DataArchiveSoundLoader
 } from '../engine';
 import { MenuScene } from './scenes/menu';
 import { MapSelectionScene } from './scenes/map';
@@ -131,9 +130,8 @@ export class GameEngine extends Engine {
     this.loaded = true;
   }
 
-  public async pushScene(scene: EngineSceneFn): Promise<void> {
+  public onNextScene(): void {
     this.cursor.setCursor();
-    return super.pushScene(scene);
   }
 
   public async pushMenuScene(): Promise<void> {

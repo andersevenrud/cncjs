@@ -1139,7 +1139,7 @@ export class MIX extends EventEmitter {
     const offset = new Vector(diffX, diffY);
     const theatre = ini.MAP.Theater.toLowerCase().replace(/e$/, '');
 
-    return {
+    return Object.freeze({
       map: { theatre, size, offset },
       tiles: parseTiles(rawBin, offset, this),
       infantry: Object.values(ini.INFANTRY).map(mapInfantry(theatre, offset)),
@@ -1155,7 +1155,7 @@ export class MIX extends EventEmitter {
       teamTypes: mapTeamTypes(ini.TeamTypes || {}, offset),
       base: mapBase(ini.Base, offset),
       players: mapPlayers(ini) as MIXMapPlayerMap
-    };
+    });
   }
 
   public getProperties(name: string): MIXObject | undefined {

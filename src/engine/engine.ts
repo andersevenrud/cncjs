@@ -373,6 +373,12 @@ export abstract class Engine implements Core {
   }
 
   /**
+   * When scene changes
+   */
+  public onNextScene(): void {
+  }
+
+  /**
    * Sets cursor
    */
   public setCursor(enabled: boolean): void {
