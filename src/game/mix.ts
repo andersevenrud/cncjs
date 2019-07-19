@@ -124,6 +124,20 @@ export interface MIXMapBase {
   cell: Vector;
 }
 
+export interface MIXMapPlayer {
+  FlagHome: number;
+  FlagLocation: number;
+  MaxBuilding: number;
+  Allies: MIXMapPlayer[];
+  MaxUnit: number;
+  Credits: number;
+  Edge: string;
+}
+
+export type MIXMapPlayerMap = {
+  [Key in MIXPlayerName]: MIXMapPlayer;
+}
+
 export interface MIXMapData {
   map: MIXMapMapData;
   basic: MIXMapBasicData;
@@ -139,6 +153,7 @@ export interface MIXMapData {
   cellTriggers: MIXMapCellTrigger[];
   teamTypes: MIXMapTeamType[];
   base: MIXMapBase[];
+  players: MIXMapPlayerMap;
 };
 
 export interface MIXCursor {
@@ -431,7 +446,8 @@ export const arrayMap: string[] = [
   'Prerequisites',
   'Theaters',
   'SecondaryTypeCells',
-  'Verses'
+  'Verses',
+  'Allies'
 ];
 
 export const arrayNumberMap: string[] = [
@@ -949,6 +965,14 @@ const mapBase = (obj: any, offset: Vector): MIXMapBase[] => Object.keys(obj)
     return { name, cell: new Vector(0, 0) }; // FIXME
   });
 
+const mapPlayers = (obj: any): Partial<MIXMapPlayerMap> => playerMap
+  .reduce((accumulator, name) => {
+    return {
+      ...accumulator,
+      [name]: transformObject(obj[name], name, name)
+    };
+  }, {});
+
 const mapTeamTypes = (obj: any, offset: Vector): MIXMapTeamType[] => Object.keys(obj)
   .map(name => {
     const str = obj[name].split(',');
@@ -1129,7 +1153,8 @@ export class MIX extends EventEmitter {
       triggers: mapTriggers(ini.Triggers || {}, offset),
       cellTriggers: mapCellTriggers(ini.CellTriggers || {}, offset),
       teamTypes: mapTeamTypes(ini.TeamTypes || {}, offset),
-      base: mapBase(ini.Base, offset)
+      base: mapBase(ini.Base, offset),
+      players: mapPlayers(ini) as MIXMapPlayerMap
     };
   }
 
