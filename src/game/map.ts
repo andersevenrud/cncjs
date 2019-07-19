@@ -176,6 +176,13 @@ export class GameMap extends Entity {
     const data = this.data;
     console.log(data);
 
+    for (let p of this.players.values()) {
+      const n = p.getName();
+      if (data.players[n]) {
+        p.load(data.players[n]);
+      }
+    }
+
     this.mapDimension = data.map.size.clone() as Vector;
     this.grid = new Grid(this.mapDimension.x, this.mapDimension.y);
     this.triggers = data.triggers.map(trigger => new GameMapTrigger(trigger, this));

@@ -4,7 +4,7 @@
  * @license MIT
  */
 
-import { defaultTeamMap, MIXPlayerName, MIXTeamName } from './mix';
+import { defaultTeamMap, MIXMapPlayer, MIXPlayerName, MIXTeamName } from './mix';
 import { GameEntity } from './entity';
 import EventEmitter from 'eventemitter3';
 
@@ -45,6 +45,10 @@ export class Player extends EventEmitter {
     }
 
     this.emit('entities-updated');
+  }
+
+  public load(data: MIXMapPlayer): void {
+    this.credits = data.Credits * 100;
   }
 
   public addCredits(credits: number): void {
