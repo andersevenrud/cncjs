@@ -559,6 +559,10 @@ export class GameMap extends Entity {
     return this.data;
   }
 
+  public getMask(): StructureMaskEntity | undefined {
+    return this.mask;
+  }
+
   public getTheatre(): string {
     return this.data.map.theatre;
   }

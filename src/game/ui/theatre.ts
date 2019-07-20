@@ -360,6 +360,11 @@ export class TheatreUI extends UIScene {
     } else if (name === 'ATOM') {
       this.scene.map.factory.load('effect', { name: 'ATOMSFX', cell, player });
     } else if (type) {
+      const mask = this.scene.map.getMask();
+      if (mask && mask.isBlocked()) {
+        return;
+      }
+
       this.scene.map.factory.load(type, { name, cell, player });
     }
 

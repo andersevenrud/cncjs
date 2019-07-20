@@ -19,6 +19,7 @@ export class StructureMaskEntity extends Entity {
   private white?: CanvasPattern;
   private yellow?: CanvasPattern;
   private red?: CanvasPattern;
+  private blocked: boolean = true;
 
   public constructor(name: string, map: GameMap) {
     super();
@@ -61,6 +62,7 @@ export class StructureMaskEntity extends Entity {
     const h = this.dimension.y / CELL_SIZE;
 
     this.context.clearRect(0, 0, this.dimension.x, this.dimension.y);
+    this.blocked = false;
 
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
@@ -73,6 +75,7 @@ export class StructureMaskEntity extends Entity {
         const occupied = !this.map.grid.isWalkableAt(cx, cy);
         if (occupied) {
           this.context.fillStyle = this.red || '#ff0000';
+          this.blocked = true;
         } else if (h > 1 && y > h - 2) {
           this.context.fillStyle = this.yellow || '#ffff00';
         } else {
@@ -84,5 +87,9 @@ export class StructureMaskEntity extends Entity {
     }
 
     ctx.drawImage(this.canvas, this.position.x, this.position.y);
+  }
+
+  public isBlocked(): boolean {
+    return this.blocked;
   }
 }
