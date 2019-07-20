@@ -296,6 +296,12 @@ export abstract class GameMapEntity extends GameEntity {
 
   public die(destroy: boolean = true): boolean {
     if (super.die()) {
+      this.targetDirection = -1;
+      this.targetPosition = undefined;
+      this.currentPath = [];
+      this.attacking = false;
+      this.targetEntity = undefined;
+
       if (this.reportLoss) {
         if (this.isPlayer()) {
           this.engine.playArchiveSfx('SPEECH.MIX/unitlost.wav', 'gui', { block: true });

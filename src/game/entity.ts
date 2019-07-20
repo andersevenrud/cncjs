@@ -30,6 +30,7 @@ export abstract class GameEntity extends Entity {
   protected health: number = 100;
   protected hitPoints: number = 100;
   protected zIndex: number = 0;
+  protected subCell: number = -1;
 
   public constructor(map: GameMap) {
     super();
@@ -256,6 +257,10 @@ export abstract class GameEntity extends Entity {
 
   public getName(): string {
     return '';
+  }
+
+  public getSubCell(): number {
+    return this.subCell;
   }
 
   public canRotate(): boolean {

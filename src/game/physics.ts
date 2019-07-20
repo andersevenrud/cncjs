@@ -79,3 +79,30 @@ export const getScaledDimensions = (source: Vector, target: Vector): any => { //
 
 export const isRectangleVisible = (box: Box): boolean =>
   (box.x2 - box.x1) > 12 && (box.y2 - box.y1) > 12;
+
+export const getSubCellOffset = (subcell: number, dimension: Vector): Vector => {
+  const offset = new Vector(0, 0);
+
+  if (subcell >= 0) {
+    const center = dimension.clone() as Vector;
+    center.subtract(new Vector(CELL_SIZE / 2, CELL_SIZE / 2));
+    offset.add(center);
+
+    if (subcell !== 0) {
+      const row = Math.floor((subcell - 1) / 2);
+      const col = (subcell - 1) % 2;
+
+      const dx = dimension.x / 2;
+      const dy = dimension.y / 2;
+
+      const v = new Vector(
+        ((col + 1) %  2) === 1 ? -dx : dx,
+        (row + 1) < 2 ? -dy : dy
+      );
+
+      offset.add(v);
+    }
+  }
+
+  return offset;
+};

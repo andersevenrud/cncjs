@@ -6,7 +6,7 @@
 import { Animation, randomBetweenInteger }  from '../../engine';
 import { GameMapEntity, GameMapEntityAnimation } from './mapentity';
 import { MIXInfantry, MIXInfantryAnimation, infantryIdleAnimations } from '../mix';
-import { CELL_SIZE } from '../physics';
+import { getSubCellOffset } from '../physics';
 import { Vector } from 'vector2d';
 
 /**
@@ -51,24 +51,9 @@ export class InfantryEntity extends GameMapEntity {
 
     const subcell = this.data!.subcell!;
     if (subcell >= 0) {
-      const center = this.getDimension();
-      center.subtract(new Vector(CELL_SIZE / 2, CELL_SIZE / 2));
-      this.position.add(center);
-
-      if (subcell !== 0) {
-        const row = Math.floor((subcell - 1) / 2);
-        const col = (subcell - 1) % 2;
-
-        const dx = this.dimension.x / 2;
-        const dy = this.dimension.y / 2;
-
-        const v = new Vector(
-          ((col + 1) %  2) === 1 ? -dx : dx,
-          (row + 1) < 2 ? -dy : dy
-        );
-
-        this.position.add(v);
-      }
+      const offset = getSubCellOffset(subcell, this.getDimension());
+      this.position.add(offset);
+      this.subCell = subcell;
     }
 
     const animations = this.engine.mix.infantryAnimations.get(`Sequence_${this.data.name}`) as MIXInfantryAnimation;
@@ -84,12 +69,6 @@ export class InfantryEntity extends GameMapEntity {
 
   public die(): boolean {
     if (super.die(false)) {
-      this.targetDirection = -1;
-      this.targetPosition = undefined;
-      this.currentPath = [];
-      this.attacking = false;
-      this.targetEntity = undefined;
-
       // FIXME
       const animation = this.animations.get('Die1') as Animation;
       animation.once('done', () => this.destroy());
