@@ -79,6 +79,15 @@ export class InfantryEntity extends GameMapEntity {
     return false;
   }
 
+  public move(position: Vector, report: boolean = false): boolean {
+    if (super.move(position, report)) {
+      this.targetSubCell = 0; // FIXME
+      return true;
+    }
+
+    return false;
+  }
+
   public onUpdate(deltaTime: number): void {
     super.onUpdate(deltaTime);
 
@@ -134,6 +143,6 @@ export class InfantryEntity extends GameMapEntity {
   }
 
   public isInfantry(): boolean {
-    return false;
+    return true;
   }
 }

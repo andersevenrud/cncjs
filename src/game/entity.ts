@@ -122,8 +122,8 @@ export abstract class GameEntity extends Entity {
   public attack(target: GameEntity, report: boolean = false): void {
   }
 
-  public move(position: Vector, report: boolean = false): void {
-    this.moveTo(position, report);
+  public move(position: Vector, report: boolean = false): boolean {
+    return this.moveTo(position, report);
   }
 
   public sell(): void {

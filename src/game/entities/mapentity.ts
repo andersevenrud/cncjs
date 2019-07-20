@@ -6,7 +6,7 @@
 import { Animation, Sprite } from '../../engine';
 import { Player } from '../player';
 import { GameMap } from '../map';
-import { cellFromPoint, getDirection, getNewDirection, CELL_SIZE } from '../physics';
+import { getSubCellOffset, cellFromPoint, getDirection, getNewDirection, CELL_SIZE } from '../physics';
 import { MIXGrid, MIXMapEntityData, MIXObject } from '../mix';
 import { HealthBarEntity } from './health';
 import { spriteFromName } from '../sprites';
@@ -57,6 +57,7 @@ export abstract class GameMapEntity extends GameEntity {
   protected reportAttack?: string;
   protected reportConstruct?: string;
   protected reportDestroy?: string;
+  protected targetSubCell: number = -1;
   protected targetDirection: number = -1;
   protected targetPosition?: Vector;
   protected targetEntity?: GameMapEntity;
@@ -84,7 +85,7 @@ export abstract class GameMapEntity extends GameEntity {
 
   public toString(): string {
     const s = this.getDamageState();
-    return `${this.data.player}:${this.data.name} ${this.health}/${this.hitPoints}H@${s} ${this.getTruncatedPosition().toString()}@${this.cell.toString()}x${this.direction.toFixed(1)} (t:${this.turretDirection.toFixed(1)}) | ${this.animation || '<null>'}@${this.frame.toString()} ${this.zIndex}z`;
+    return `${this.data.player}:${this.data.name} ${this.health}/${this.hitPoints}H@${s} ${this.getTruncatedPosition().toString()}@${this.cell.toString()}x${this.direction.toFixed(1)} (s: ${this.subCell} t:${this.turretDirection.toFixed(1)}) | ${this.animation || '<null>'}@${this.frame.toString()} ${this.zIndex}z`;
   }
 
   public toJson(): any {
@@ -223,6 +224,8 @@ export abstract class GameMapEntity extends GameEntity {
         this.position.subtract(vel);
         this.cell = cellFromPoint(this.position);
       } else {
+        this.subCell = this.targetSubCell;
+        this.targetSubCell = -1;
         this.targetPosition = undefined;
         this.targetDirection = -1;
       }
@@ -230,6 +233,11 @@ export abstract class GameMapEntity extends GameEntity {
       if (this.currentPath.length > 0) {
         const destination = this.currentPath.shift() as Vector;
         this.targetPosition = destination.clone().mulS(CELL_SIZE) as Vector;
+
+        if (this.currentPath.length === 0 && this.targetSubCell !== -1) { // FIXME
+          const offset = getSubCellOffset(this.targetSubCell, this.getDimension());
+          this.targetPosition.add(offset);
+        }
 
         const direction = getDirection(this.targetPosition, this.position, this.directions);
         if (this.canRotate()) {
@@ -330,9 +338,9 @@ export abstract class GameMapEntity extends GameEntity {
     }
   }
 
-  public move(position: Vector, report: boolean = false): void {
+  public move(position: Vector, report: boolean = false): boolean {
     this.targetEntity = undefined;
-    this.moveTo(position, report);
+    return this.moveTo(position, report);
   }
 
   protected moveTo(position: Vector, report: boolean = false, force: boolean = false): boolean {
@@ -340,6 +348,7 @@ export abstract class GameMapEntity extends GameEntity {
     const dst = position;
     const path = this.map.createPath(src, dst, force);
 
+    this.targetSubCell = -1;
     this.targetDirection = -1;
     this.targetPosition = undefined;
     this.currentPath = path;
