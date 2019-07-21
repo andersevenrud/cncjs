@@ -40,7 +40,7 @@ export class GameMapEntityAnimation extends Animation {
  * Map Entity
  */
 export abstract class GameMapEntity extends GameEntity {
-  public readonly player?: Player;
+  public player?: Player;
   public readonly properties?: MIXObject;
   protected dimension: Vector = new Vector(24, 24);
   protected readonly data: MIXMapEntityData;
@@ -86,7 +86,7 @@ export abstract class GameMapEntity extends GameEntity {
 
   public toString(): string {
     const s = this.getDamageState();
-    return `${this.data.player}:${this.data.name} ${this.health}/${this.hitPoints}H@${s} ${this.getTruncatedPosition().toString()}@${this.cell.toString()}x${this.direction.toFixed(1)} (s: ${this.subCell} t:${this.turretDirection.toFixed(1)}) | ${this.animation || '<null>'}@${this.frame.toString()} ${this.zIndex}z`;
+    return `${this.getPlayerId()}:${this.data.name} ${this.health}/${this.hitPoints}H@${s} ${this.getTruncatedPosition().toString()}@${this.cell.toString()}x${this.direction.toFixed(1)} (s: ${this.subCell} t:${this.turretDirection.toFixed(1)}) | ${this.animation || '<null>'}@${this.frame.toString()} ${this.zIndex}z`;
   }
 
   public toJson(): any {
@@ -145,16 +145,13 @@ export abstract class GameMapEntity extends GameEntity {
       }
     }
 
-    if (typeof this.data.player === 'number') {
-      const xoff = this.getSpritePlayerIndex();
-      this.frameOffset.setX(xoff);
-    }
-
     this.toggleWalkableTiles(false);
   }
 
   public onUpdate(deltaTime: number): void {
     const animation = this.animations.get(this.animation);
+    const xoff = this.getSpritePlayerIndex();
+    this.frameOffset.setX(xoff);
 
     if (animation) {
       animation.onUpdate();
@@ -416,8 +413,9 @@ export abstract class GameMapEntity extends GameEntity {
   }
 
   public getSpritePlayerIndex(): number {
-    if (this.data.player! < 2) {
-      return Math.max(0, this.data.player!);
+    const num = this.getPlayerId();
+    if (num < 2) {
+      return Math.max(0, num);
     }
 
     return 0;
@@ -456,12 +454,6 @@ export abstract class GameMapEntity extends GameEntity {
     return this.isPlayer()
       ? '#00ff00'
       : '#ff0000';
-  }
-
-  public getPlayerId(): number {
-    return typeof this.data.player === 'number'
-      ? this.data.player
-      : super.getPlayerId();
   }
 
   public getName(): string {
@@ -525,7 +517,7 @@ export abstract class GameMapEntity extends GameEntity {
       return false;
     }
 
-    return this.isPlayer() ? false : source.data.player != this.data.player;
+    return this.isPlayer() ? false : source.data.player != this.getPlayerId();
   }
 }
 

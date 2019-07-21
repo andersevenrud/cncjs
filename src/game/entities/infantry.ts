@@ -4,6 +4,7 @@
  * @license MIT
  */
 import { Animation, randomBetweenInteger }  from '../../engine';
+import { GameEntity } from '../entity';
 import { GameMapEntity, GameMapEntityAnimation } from './mapentity';
 import { MIXInfantry, MIXInfantryAnimation, infantryIdleAnimations } from '../mix';
 import { getSubCellOffset } from '../physics';
@@ -24,6 +25,7 @@ export class InfantryEntity extends GameMapEntity {
   protected reportMove?: string = 'ACKNO';
   protected reportAttack?: string = 'ACKNO';
   protected zIndex: number = 2;
+  protected capturing?: GameEntity;
 
   public toJson(): any {
     return {
@@ -67,6 +69,14 @@ export class InfantryEntity extends GameMapEntity {
     await super.init();
   }
 
+  public capture(target: GameEntity): void {
+    if (this.canCapture()) {
+      const targetCell = target.getCell();
+      this.moveTo(targetCell, true, true);
+      this.capturing = target;
+    }
+  }
+
   public die(): boolean {
     if (super.die(false)) {
       // FIXME
@@ -86,6 +96,11 @@ export class InfantryEntity extends GameMapEntity {
     }
 
     return false;
+  }
+
+  protected moveTo(position: Vector, report: boolean = false, force: boolean = false): boolean {
+    this.capturing = undefined;
+    return super.moveTo(position, report, force);
   }
 
   public onUpdate(deltaTime: number): void {
@@ -111,6 +126,19 @@ export class InfantryEntity extends GameMapEntity {
       if (this.idleTimer < 0) {
         this.idleAnimation = infantryIdleAnimations[randomBetweenInteger(0, infantryIdleAnimations.length - 1)];
         this.idleTimer = randomBetweenInteger(200, 1000);
+      }
+    }
+
+    if (this.capturing) {
+      const distance =  this.capturing.getCell()
+        .distance(this.getCell());
+
+      if (distance <= 1) {
+        if (this.player) {
+          this.capturing.setPlayer(this.player);
+          // FIXME: Need to call player update to get credits etc.
+        }
+        this.destroy();
       }
     }
 

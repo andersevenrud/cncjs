@@ -14,7 +14,7 @@ import { Vector } from 'vector2d';
 
 export abstract class GameEntity extends Entity {
   public readonly map: GameMap;
-  public readonly player?: Player;
+  public player?: Player;
   protected offset: Vector = new Vector(0, 0);
   protected cell: Vector = new Vector(0, 0);
   protected rendered: boolean = false;
@@ -136,6 +136,9 @@ export abstract class GameEntity extends Entity {
   public deploy(): void {
   }
 
+  public capture(target: GameEntity): void {
+  }
+
   protected moveTo(position: Vector, report: boolean = false): boolean {
     return false;
   }
@@ -180,6 +183,10 @@ export abstract class GameEntity extends Entity {
 
   public setPrimary(primary: boolean): void {
     this.primary = primary;
+  }
+
+  public setPlayer(player: Player): void {
+    this.player = player;
   }
 
   public getMovementSpeed(): number {
@@ -241,7 +248,7 @@ export abstract class GameEntity extends Entity {
   }
 
   public getPlayerId(): number {
-    return -1;
+    return this.player ? this.player.getId() : -1;
   }
 
   public getRenderBox(): Box {
@@ -285,6 +292,10 @@ export abstract class GameEntity extends Entity {
     return false;
   }
 
+  public canCapture(): boolean {
+    return ['E6'].indexOf(this.getName()) !== -1;
+  }
+
   public isFactory(): boolean {
     return ['WEAP', 'AFLD'].indexOf(this.getName()) !== -1;
   }
@@ -295,6 +306,10 @@ export abstract class GameEntity extends Entity {
 
   public isHelipad(): boolean {
     return ['HPAD'].indexOf(this.getName()) !== -1;
+  }
+
+  public isCapturable(): boolean {
+    return this.isStructure() && !this.isWall() && !this.isPlayer(); // FIXME
   }
 
   public isAttackable(source: GameEntity): boolean {

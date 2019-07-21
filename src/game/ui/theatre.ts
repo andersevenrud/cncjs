@@ -408,6 +408,8 @@ export class TheatreUI extends UIScene {
       if (this.cursor === 'select') {
         map.unselectEntities();
         hit.setSelected(true);
+      } else if (this.cursor === 'enter') {
+        selected.forEach(s => s.capture(hit)); //  FIXME
       } else if (this.cursor === 'attack') {
         selected.forEach((s, i) => s.attack(hit, i === 0));
       } else if (this.cursor === 'sell') {
@@ -558,6 +560,7 @@ export class TheatreUI extends UIScene {
     const selected = map.getSelectedEntities();
     const hovering = map.getEntityFromVector(pos, true);
     const canAttack = selected.some(s => s.canAttack());
+    const canCapture = selected.some(s => s.canCapture());
     const cell = cellFromPoint(pos);
     const revealed = map.isFowVisible() ? map.fow.isRevealedAt(cell) : true;
 
@@ -573,7 +576,9 @@ export class TheatreUI extends UIScene {
       } else if (this.currentAction === 'bomb') {
         return 'bomb';
       } else {
-        if (hovering && selected.length > 0 && hovering.isAttackable(selected[0]) && canAttack) {
+        if (hovering && selected.length > 0 && hovering.isCapturable() && canCapture) {
+          return revealed ? 'enter' : 'unavailable';
+        } else if (hovering && selected.length > 0 && hovering.isAttackable(selected[0]) && canAttack) {
           return revealed ? 'attack' : 'move';
         } else if (revealed && hovering && hovering.isSelectable()) {
           return selected[0] === hovering &&  hovering.isDeployable()

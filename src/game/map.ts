@@ -71,7 +71,6 @@ export class GameMapEntityFactory {
 
     if (primary) {
       const cell = primary.getCell().add(primary.getExitOffset());
-      console.warn(cell)
       await this.load(type, {
         name,
         player,

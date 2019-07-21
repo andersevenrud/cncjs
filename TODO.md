@@ -112,7 +112,7 @@ This is an almost complete overview of the tasks done and to be done.
     - [ ] Apply correct timings to animations and actions
     - [x] Selling
     - [x] Repairing
-    - [ ] Capturing
+    - [x] Capturing
     - [ ] C4-ing
     - [ ] Primary structure selection
     - [ ] Subcell infantry group damage division
