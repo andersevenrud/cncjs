@@ -55,6 +55,37 @@ export class GameMapEntityFactory {
     this.map = map;
   }
 
+  public async spawn(type: string, name: string, player: number): Promise<void> {
+    const structures = this.map.getEntities()
+      .filter(entity => entity.getPlayerId() === player)
+      .filter(entity => { // FIXME
+        if (type === 'infantry') {
+          return entity.isBarracks();
+        } else if (type === 'unit') {
+          return entity.isFactory();
+        }
+        return false;
+      });
+
+    const primary = (structures.find(entity => entity.isPrimary()) || structures[0]) as StructureEntity;
+
+    if (primary) {
+      const cell = primary.getCell().add(primary.getExitOffset());
+      console.warn(cell)
+      await this.load(type, {
+        name,
+        player,
+        cell
+      }, (entity: GameEntity) => {
+        const b = primary.getCellBox();
+        const v = new Vector(b.x1, b.y2);
+        entity.move(v, false);
+      });
+    } else {
+      console.error('Aww... could not find a suitable location to spawn', name);
+    }
+  }
+
   public async load(type: string, data: MIXMapEntityData, cb?: Function): Promise<void> {
     const Class: any = GameMapEntityFactory.entityMap[this.getRealType(type, data)];
     if (Class) {

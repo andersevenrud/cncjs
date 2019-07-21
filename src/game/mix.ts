@@ -172,6 +172,7 @@ export interface MIXObject {
   Sight?: number;
   Cost: number;
   HitPoints: number;
+  ExitList?: string;
   OverlapList?: string;
   OccupyList?: string;
   HasTurret?: boolean;
@@ -325,7 +326,6 @@ export interface MIXStructureDimension {
 }
 
 export interface MIXStructure extends MIXObject {
-  ExitList: string;
   Dimensions: Vector;
   PowerDrain: number;
   PowerProduction: number;

@@ -44,6 +44,7 @@ export abstract class GameMapEntity extends GameEntity {
   public readonly properties?: MIXObject;
   protected dimension: Vector = new Vector(24, 24);
   protected readonly data: MIXMapEntityData;
+  protected exit?: MIXGrid;
   protected occupy?: MIXGrid;
   protected overlap?: MIXGrid;
   protected sprite?: Sprite;
@@ -138,6 +139,9 @@ export abstract class GameMapEntity extends GameEntity {
       }
       if (this.properties.OverlapList) {
         this.overlap = this.engine.mix.grids.get(this.properties.OverlapList);
+      }
+      if (this.properties.ExitList) {
+        this.exit = this.engine.mix.grids.get(this.properties.ExitList);
       }
     }
 
@@ -493,6 +497,23 @@ export abstract class GameMapEntity extends GameEntity {
     const distance = this.targetPosition!.distance(this.position);
 
     return distance > speed ? vel : undefined;
+  }
+
+  // FIXME
+  public getExitOffset(): Vector {
+    if (this.exit) {
+      const off = this.exit.offset || new Vector(0, 0);
+      for (let y = 0; y < this.exit.grid.length; y++) {
+        let row = this.exit.grid[y];
+        for (let x = 0; x < row.length; x++) {
+          if (row[x] === '.') {
+            return (new Vector(x, y)).subtract(off);
+          }
+        }
+      }
+    }
+
+    return new Vector(0, 0);
   }
 
   public canAttack(): boolean {

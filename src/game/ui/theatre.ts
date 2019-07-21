@@ -170,6 +170,12 @@ export class TheatreUI extends UIScene {
     elFactoriesUp.on('click', () => elFactories.moveUp());
     elFactoriesDown.on('click', () => elFactories.moveDown());
 
+    factoryConstruction.on('spawn', item => {
+      const player = this.scene.map.player.getId();
+      this.scene.map.factory.spawn(item.type, item.name, player);
+      factoryConstruction.reset(item);
+    });
+
     const onTooltipOver = (root: UIEntity) => (position: Vector, text: string) => {
       const dimension = tooltip.getDimension();
       const newPosition = root.getRealPosition()

@@ -870,7 +870,9 @@ export class UIConstruction extends GameUIEntity {
         }
       } else {
         if (found.state === 'ready') {
-          this.emit('place', found);
+          if (['unit', 'infantry'].indexOf(found.type) === -1) {
+            this.emit('place', found);
+          }
         } else {
           this.queue.build(found);
         }

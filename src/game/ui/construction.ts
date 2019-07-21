@@ -69,7 +69,9 @@ export class ConstructionQueue extends EventEmitter {
           this.emit('ready', item);
           if (['unit', 'infantry'].indexOf(item.type) !== -1) {
             this.engine.playArchiveSfx('SPEECH.MIX/unitredy.wav', 'gui', {}, 'eva');
+            this.emit('spawn', item);
           } else {
+            this.emit('ready', item);
             this.engine.playArchiveSfx('SPEECH.MIX/constru1.wav', 'gui', {}, 'eva');
           }
         } else {

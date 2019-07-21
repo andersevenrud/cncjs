@@ -90,7 +90,7 @@ This is an almost complete overview of the tasks done and to be done.
     - [ ] Aircraft
     - [ ] Helicopters
     - [x] Boats
-    - [ ] Spawn units and infantry in the correct structures
+    - [x] Spawn units and infantry in the correct structures
 - [x] Weapons
     - [x] Warheads and Effects
     - [x] Tails and muzzle flashes
@@ -121,12 +121,14 @@ This is an almost complete overview of the tasks done and to be done.
     - [ ] Squashing of infantry when units drive over
     - [ ] Tiberium spread
     - [ ] Tiberium trees
+    - [ ] Tiberium storage
 - [x] Sounds
     - [x] Unit reporting
     - [x] Effects
     - [x] Projectiles
     - [x] EVA
 - [x] Pathfinding
+    - [ ] Group movement
     - [ ] Movement weights
     - [ ] Movement soft collisions
 - [ ] AI

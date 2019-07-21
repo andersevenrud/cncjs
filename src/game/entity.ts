@@ -31,6 +31,7 @@ export abstract class GameEntity extends Entity {
   protected hitPoints: number = 100;
   protected zIndex: number = 0;
   protected subCell: number = -1;
+  protected primary: boolean = false;
 
   public constructor(map: GameMap) {
     super();
@@ -177,6 +178,10 @@ export abstract class GameEntity extends Entity {
     this.health = health;
   }
 
+  public setPrimary(primary: boolean): void {
+    this.primary = primary;
+  }
+
   public getMovementSpeed(): number {
     return 1;
   }
@@ -280,6 +285,18 @@ export abstract class GameEntity extends Entity {
     return false;
   }
 
+  public isFactory(): boolean {
+    return ['WEAP', 'AFLD'].indexOf(this.getName()) !== -1;
+  }
+
+  public isBarracks(): boolean {
+    return ['PYLE', 'HAND'].indexOf(this.getName()) !== -1;
+  }
+
+  public isHelipad(): boolean {
+    return ['HPAD'].indexOf(this.getName()) !== -1;
+  }
+
   public isAttackable(source: GameEntity): boolean {
     return !this.isSelectable();
   }
@@ -346,5 +363,9 @@ export abstract class GameEntity extends Entity {
 
   public isTiberium(): boolean {
     return this.getName().substr(0, 2) === 'TI';
+  }
+
+  public isPrimary(): boolean {
+    return this.primary;
   }
 }
