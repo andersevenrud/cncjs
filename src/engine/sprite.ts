@@ -63,7 +63,7 @@ export class Sprite {
   /**
    * Renders sprite
    */
-  public render(frame: Vector, position: Vector, context: CanvasRenderingContext2D): HTMLCanvasElement {
+  public render(frame: Vector, position?: Vector, context?: CanvasRenderingContext2D): HTMLCanvasElement {
     const xoff = frame.x * this.size.x;
     const yoff = frame.y * this.size.y;
     let [sx, sy, sw, sh, dx, dy, dw, dh] = this.getRect(position);
@@ -82,7 +82,9 @@ export class Sprite {
       Sprite.cacheCount++;
     }
 
-    context.drawImage(canvas, dx, dy);
+    if (context) {
+      context.drawImage(canvas, dx, dy);
+    }
 
     return canvas;
   }
@@ -132,14 +134,14 @@ export class Sprite {
   /**
    * Gets the rectangle required for rendering on a target
    */
-  public getRect(position: Vector): number[] {
+  public getRect(position?: Vector): number[] {
     const off = this.getClipOffset();
     const sx = 0;
     const sy = 0;
     const sw = this.size.x;
     const sh = this.size.y;
-    const dx = position.x - off.x;
-    const dy = position.y - off.y;
+    const dx = (position ? position.x : 0) - off.x;
+    const dy = (position ? position.y : 0) - off.y;
     const dw = sw;
     const dh = sh;
 

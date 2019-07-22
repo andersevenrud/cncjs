@@ -32,6 +32,7 @@ export abstract class GameEntity extends Entity {
   protected zIndex: number = 0;
   protected subCell: number = -1;
   protected primary: boolean = false;
+  protected storageSlots: number[] = [0, 0]; // Taken / Available
 
   public constructor(map: GameMap) {
     super();
@@ -276,6 +277,14 @@ export abstract class GameEntity extends Entity {
 
   public getSubCell(): number {
     return this.subCell;
+  }
+
+  public getStorageSlots(): number {
+    return this.storageSlots[1];
+  }
+
+  public getStorageValue(): number {
+    return this.storageSlots[0];
   }
 
   public canRotate(): boolean {

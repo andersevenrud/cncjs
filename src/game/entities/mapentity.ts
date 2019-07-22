@@ -9,6 +9,7 @@ import { GameMap } from '../map';
 import { getSubCellOffset, cellFromPoint, getDirection, getNewDirection, CELL_SIZE } from '../physics';
 import { MIXGrid, MIXMapEntityData, MIXObject } from '../mix';
 import { HealthBarEntity } from './health';
+import { StorageBarEntity } from './storage';
 import { spriteFromName } from '../sprites';
 import { Weapon } from '../weapons';
 import { GameEntity } from '../entity';
@@ -52,6 +53,7 @@ export abstract class GameMapEntity extends GameEntity {
   protected frameOffset: Vector = new Vector(0, 0);
   protected animations: Map<string, GameMapEntityAnimation> = new Map();
   protected healthBar: HealthBarEntity = new HealthBarEntity(this);
+  protected storageBar?: StorageBarEntity;
   protected reportLoss?: boolean;
   protected reportSelect?: string;
   protected reportMove?: string;
@@ -143,6 +145,11 @@ export abstract class GameMapEntity extends GameEntity {
       if (this.properties.ExitList) {
         this.exit = this.engine.mix.grids.get(this.properties.ExitList);
       }
+    }
+
+    if (this.getStorageSlots() > 0) {
+      this.storageBar = new StorageBarEntity(this, this.engine);
+      await this.storageBar.init();
     }
 
     this.toggleWalkableTiles(false);
@@ -300,7 +307,12 @@ export abstract class GameMapEntity extends GameEntity {
     if (this.isSelected()) {
       this.healthBar.render(deltaTime, context);
       this.map.selection.render(this, context);
+
+      if (this.storageBar) {
+        this.storageBar.render(deltaTime, context);
+      }
     }
+
   }
 
   public die(destroy: boolean = true): boolean {

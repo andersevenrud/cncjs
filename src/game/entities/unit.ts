@@ -36,6 +36,10 @@ export class UnitEntity extends GameMapEntity {
       this.turretDirection = this.direction;
     }
 
+    if (this.data.name === 'HARV') {
+      this.storageSlots[1] = 10;
+    }
+
     await super.init();
 
     if (!this.sprite) {
