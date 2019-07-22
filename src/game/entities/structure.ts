@@ -138,8 +138,9 @@ export class StructureEntity extends GameMapEntity {
     this.reportDestroy = undefined;
 
     if (this.isPlayer()) {
+      const rules = this.engine.mix.getGeneralRules();
       this.player!.addCredits(
-        this.properties.Cost / 2
+        this.properties.Cost * rules.RefundPercent
       );
     }
 
@@ -195,7 +196,9 @@ export class StructureEntity extends GameMapEntity {
       // TODO: Sound
       // TODO: Check credits
       // TODO: Report credit drain
-      this.health += 1;
+      // TODO: Steps
+      const rules = this.engine.mix.getGeneralRules();
+      this.health = Math.min(this.hitPoints, this.health + rules.RepairStep);
       if (this.health >= this.hitPoints) {
         this.repairing = false;
       }

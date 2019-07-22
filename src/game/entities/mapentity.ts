@@ -433,11 +433,11 @@ export abstract class GameMapEntity extends GameEntity {
   }
 
   public getDamageState(): number {
-    // TODO: Rules
+    const rules = this.engine.mix.getGeneralRules();
     const value = Math.max(this.health / this.hitPoints, 0);
-    if (value <= 0.25) {
+    if (value <= rules.ConditionRed) {
       return 2;
-    } else if (value <= 0.50) {
+    } else if (value <= rules.ConditionYellow) {
       return 1;
     }
     return 0;
