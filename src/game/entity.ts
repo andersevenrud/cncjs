@@ -120,6 +120,9 @@ export abstract class GameEntity extends Entity {
     return true;
   }
 
+  public harvest(target: GameEntity, report: boolean = false): void {
+  }
+
   public attack(target: GameEntity, report: boolean = false): void {
   }
 
@@ -290,6 +293,10 @@ export abstract class GameEntity extends Entity {
 
   public canFireTwice(): boolean {
     return false;
+  }
+
+  public canHarvest(): boolean {
+    return ['HARV'].indexOf(this.getName()) !== -1;
   }
 
   public canCapture(): boolean {

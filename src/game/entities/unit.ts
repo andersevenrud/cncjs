@@ -76,6 +76,10 @@ export class UnitEntity extends GameMapEntity {
     }
   }
 
+  public harvest(target: GameMapEntity, report: boolean = false): void {
+    this.moveTo(target.getCell(), report);
+  }
+
   public die(): boolean {
     // TODO: Crowded unit should spawn a low-health infantry
     if (super.die()) {

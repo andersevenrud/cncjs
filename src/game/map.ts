@@ -533,13 +533,6 @@ export class GameMap extends Entity {
     this.mask = mask;
   }
 
-  public getEntityFromVector(position: Vector, selectable: boolean): GameEntity | undefined {
-    return this.entities.find(e => {
-      const h = collidePoint(position, e.getBox());
-      return h ? (selectable ? e.isSelectable() : false) : false;
-    });
-  }
-
   public getEntityFromCell(cell: Vector): GameEntity | undefined {
     return this.entities.find(e => collidePoint(cell, e.getCellBox()));
   }

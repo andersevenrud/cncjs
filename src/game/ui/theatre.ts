@@ -397,31 +397,38 @@ export class TheatreUI extends UIScene {
       return;
     }
 
-    const hit = map.getEntities()
-      .filter(e => e.isSelectable())
-      .find(e => collidePoint(point, e.getSelectionBox()));
+    const selected = map.getSelectedEntities();
+    const entities = map.getEntities()
+      .filter(e => collidePoint(point, e.getSelectionBox()));
 
-    if (hit) {
-      const selected = map.getSelectedEntities();
-      console.log('Hit', point, cell, hit);
+    const hitEntity = entities.find(e => e.isSelectable());
+    const hitTiberium = entities.find(e => e.isTiberium());
+
+    if (hitEntity) {
+      console.log('hitEntity', point, cell, hitEntity);
 
       if (this.cursor === 'select') {
         map.unselectEntities();
-        hit.setSelected(true);
+        hitEntity.setSelected(true);
       } else if (this.cursor === 'enter') {
-        selected.forEach(s => s.capture(hit)); //  FIXME
+        selected.forEach(s => s.capture(hitEntity)); //  FIXME
       } else if (this.cursor === 'attack') {
-        selected.forEach((s, i) => s.attack(hit, i === 0));
+        selected.forEach((s, i) => s.attack(hitEntity, i === 0));
       } else if (this.cursor === 'sell') {
-        hit.sell();
+        hitEntity.sell();
       } else if (this.cursor === 'repair') {
-        hit.repair();
+        hitEntity.repair();
       } else if (this.cursor === 'expand') {
         const deployable = selected.filter(s => s.isDeployable());
         if (deployable.length > 0) {
           deployable[0].deploy();
           this.toggleSidebar(true); // FIXME
         }
+      }
+    } else if (hitTiberium) {
+      if (this.cursor === 'harvest' && hitTiberium) {
+        console.error(hitTiberium)
+        selected.forEach((s, i) => s.harvest(hitTiberium, i === 0));
       }
     } else {
       if (this.cursor === 'move') {
@@ -558,9 +565,12 @@ export class TheatreUI extends UIScene {
     const map = this.scene.map;
     const pos = map.getRealMousePosition(mpos);
     const selected = map.getSelectedEntities();
-    const hovering = map.getEntityFromVector(pos, true);
+    const entities = map.getEntities().filter(e => collidePoint(pos, e.getBox()));
+    const hovering = entities.find(e => e.isSelectable());
+    const tiberium = entities.find(e => e.isTiberium());
     const canAttack = selected.some(s => s.canAttack());
     const canCapture = selected.some(s => s.canCapture());
+    const canHarvest = selected.some(s => s.canHarvest());
     const cell = cellFromPoint(pos);
     const revealed = map.isFowVisible() ? map.fow.isRevealedAt(cell) : true;
 
@@ -578,6 +588,8 @@ export class TheatreUI extends UIScene {
       } else {
         if (hovering && selected.length > 0 && hovering.isCapturable() && canCapture) {
           return revealed ? 'enter' : 'unavailable';
+        } else if (tiberium && selected.length > 0 && canHarvest) {
+          return revealed ? 'harvest' : 'unavailable';
         } else if (hovering && selected.length > 0 && hovering.isAttackable(selected[0]) && canAttack) {
           return revealed ? 'attack' : 'move';
         } else if (revealed && hovering && hovering.isSelectable()) {
