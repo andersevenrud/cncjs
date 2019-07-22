@@ -11,7 +11,7 @@ import { MIXGrid } from '../mix';
  */
 export class OverlayEntity extends GameMapEntity {
   protected tiberiumLeft = 11;
-  protected zIndex: number = 4;
+  protected zIndex: number = this.isTiberium() ? 1 : 4;
   protected occupy: MIXGrid = this.isTiberium()
     ? { name: '', grid: [] }
     : { name: '', grid: [['x']] };
@@ -32,7 +32,7 @@ export class OverlayEntity extends GameMapEntity {
   }
 
   public onRender(deltaTime: number): void {
-    const context = this.map.overlay.getContext();
+    const context = this.map.objects.getContext();
     this.renderSprite(deltaTime, context);
     super.onRender(deltaTime);
   }
