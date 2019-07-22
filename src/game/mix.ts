@@ -10,7 +10,7 @@ import * as INI from 'ini';
 
 export type MIXTeamName = 'gdi' | 'nod' | 'neutral';
 export type MIXPlayerName = 'GoodGuy' | 'BadGuy' | 'Neutral' | 'Special' | 'Multi1' | 'Multi2' | 'Multi3' | 'Multi4' | 'Multi5' | 'Multi6';
-export type MIXCursorType = 'default' | 'select' | 'move' | 'attack' | 'expand' | 'unavailable' | 'sell' | 'cannotSell' | 'cannotRepair' | 'repair' | 'cannotRepair' | 'pann' | 'panne' | 'pane' | 'panse' | 'pans' | 'pansw' | 'panw' | 'pannw' | 'invalid' | 'bomb' | 'nuke' | 'ion' | 'enter' | 'c4' | 'cannotPann' | 'cannotPanne' | 'cannotPane' | 'cannotPanse' | 'cannotPans' | 'cannotPansw' | 'cannotPanw' | 'cannotPannw';
+export type MIXCursorType = 'default' | 'select' | 'move' | 'attack' | 'expand' | 'unavailable' | 'sell' | 'cannotSell' | 'cannotRepair' | 'repair' | 'cannotRepair' | 'pann' | 'panne' | 'pane' | 'panse' | 'pans' | 'pansw' | 'panw' | 'pannw' | 'invalid' | 'bomb' | 'nuke' | 'ion' | 'enter' | 'c4' | 'cannotPann' | 'cannotPanne' | 'cannotPane' | 'cannotPanse' | 'cannotPans' | 'cannotPansw' | 'cannotPanw' | 'cannotPannw' | 'harvest';
 export type MIXGridValue = 'x' | 'X' | '-' | '+' | '*' | '.';
 export type MIXFontGlyphs = number[][];
 
@@ -428,15 +428,93 @@ export interface MIXFontMap {
   [Key: string]: MIXFont;
 }
 
-// FIXME
-export interface MIXRulesGroup {
-  [Key: string]: any;
+export interface MIXRulesGeneral {
+  CrateMinimum: number;
+  CrateMaximum: number;
+  CrateRadius: number;
+  CrateRegen: number;
+  UnitCrateType: boolean;
+  SoloCrateMoney: number;
+  SilverCrate: string;
+  WoodCrate: string;
+  RefundPercent: number;
+  ReloadRate: number;
+  RepairPercent: number;
+  RepairRate: number;
+  RepairStep: number;
+  IonDamage: number;
+  AtomDamage: number;
+  BallisticScatter: number;
+  C4Delay: number;
+  Crush: number;
+  ExpSpread: number;
+  HomingScatter: number;
+  MaxDamage: number;
+  MinDamage: number;
+  TiberiumExplosive: boolean;
+  PlayerAutoCrush: boolean;
+  PlayerReturnFire: boolean;
+  PlayerScatter: boolean;
+  ProneDamage: number;
+  TreeTargeting: boolean;
+  Incoming: number;
+  BailCount: number;
+  BuildSpeed: number;
+  BuildupTime: number;
+  TiberiumValue: number;
+  GrowthRate: number;
+  SeparateAircraft: boolean;
+  SurvivorRate: number;
+  AllyReveal: boolean;
+  ConditionRed: number;
+  ConditionYellow: number;
+  DropZoneRadius: number;
+  EnemyHealth: boolean;
+  Gravity: number;
+  IdleActionFrequency: number;
+  MessageDelay: number;
+  MovieTime: number;
+  NamedCivilians: boolean;
+  SavourDelay: number;
+  SpeakDelay: number;
+  BaseBias: number;
+  BaseDefenseDelay: number;
+  CloseEnough: number;
+  DamageDelay: number;
+  GameSpeedBias: number;
+  LZScanRadius: number;
+  Stray: number;
+  SubmergeDelay: number;
+  SuspendDelay: number;
+  SuspendPriority: number;
+  TeamDelay: number;
+}
+
+export interface MIXRulesRecharge {
+  Nuke: number;
+  Airstrike: number;
+  IonCannon: number;
+}
+
+export interface MIXRulesPowerups { // FIXME
+  Airstrike: string[];
+  Cloak: string[];
+  Darkness: string[];
+  Explosion: string[];
+  HealBase: string[];
+  ICBM: string[];
+  IonCannon: string[];
+  Money: string[];
+  Napalm: string[];
+  Nuke: string[];
+  Reveal: string[];
+  Squad: string[];
+  Unit: string[];
+  Visceroid: string[];
 }
 
 export interface MIXRules {
-  General: MIXRulesGroup;
-  Recharge: MIXRulesGroup;
-  Powerups: MIXRulesGroup;
+  [Key: string]: any;
 }
 
 export const healthBarColors = ['#00ff00', '#ffff00', '#ff0000'];
@@ -447,7 +525,21 @@ export const arrayMap: string[] = [
   'Theaters',
   'SecondaryTypeCells',
   'Verses',
-  'Allies'
+  'Allies',
+  'Airstrike',
+  'Cloak',
+  'Darkness',
+  'Explosion',
+  'HealBase',
+  'ICBM',
+  'IonCannon',
+  'Money',
+  'Napalm',
+  'Nuke',
+  'Reveal',
+  'Squad',
+  'Unit',
+  'Visceroid'
 ];
 
 export const arrayNumberMap: string[] = [
@@ -667,6 +759,7 @@ export const cursorMap: MIXCursorMap = {
   unavailable: { index: 11, x: 0.5, y: 0.5, count: 1 },
   select: { index: 12, x: 0.5, y: 0.5, count: 6 },
   attack: { index: 18, x: 0.5, y: 0.5, count: 8 },
+  harvest: { index: 18, x: 0.5, y: 0.5, count: 8 }, // Custom
   expand: { index: 53, x: 0.5, y: 0.5, count: 9 },
   //moves: { index: 26, x: 0.5, y: 0.5, count: 1 },
   //unavailables: { index: 27, x: 0.5, y: 0.5, count: 1 },
@@ -1201,5 +1294,9 @@ export class MIX extends EventEmitter {
       });
 
     return newMap;
+  }
+
+  public getGeneralRules(): MIXRulesGeneral {
+    return this.rules.get('General')! as MIXRulesGeneral;
   }
 }
