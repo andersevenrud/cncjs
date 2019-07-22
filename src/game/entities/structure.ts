@@ -6,13 +6,11 @@
 
 import { Box, Animation, Sprite }  from '../../engine';
 import { GameMapEntity, GameMapEntityAnimation } from './mapentity';
-import { MIXGrid, MIXStructure, MIXStructureAnimation } from '../mix';
+import { MIXGrid, MIXStructure } from '../mix';
 import { CELL_SIZE } from '../physics';
 import { spriteFromName } from '../sprites';
 import { BibEntity } from './bib';
 import { Vector } from 'vector2d';
-
-const DAMAGE_SUFFIX = ['', '-Damaged', '-Destroyed'];
 
 /**
  * Structure Entity
@@ -33,6 +31,7 @@ export class StructureEntity extends GameMapEntity {
   protected constructionSprite?: Sprite;
   protected constructionAnimation?: Animation;
   protected reportDestroy?: string = 'CRUMBLE';
+  protected damageOffsets: number[] = [0, 0, 0];
   protected occupy?: MIXGrid = {
     name: '',
     grid: [['x']]
@@ -55,14 +54,24 @@ export class StructureEntity extends GameMapEntity {
       this.turretDirection = this.direction;
     }
 
-    const name = `${this.data.name}_Idle`;
-    const anim = this.engine.mix.structureAnimations.get(name) as MIXStructureAnimation;
-    if (anim) {
-      // FIXME this does not compute well
-      const damageOffset = anim.StartFrame + anim.Frames;
-      this.animations.set('Idle', new GameMapEntityAnimation(name, new Vector(0, anim.StartFrame), anim.Frames, 0.1, 0));
-      this.animations.set('Idle-Damaged', new GameMapEntityAnimation(name, new Vector(0, anim.StartFrame + damageOffset), anim.Frames, 0.1, 0));
-      this.animations.set('Idle-Destroyed', new GameMapEntityAnimation(name, new Vector(0, anim.StartFrame + (damageOffset * 2)), 1, 0.1, 0));
+    const frameCount = this.sprite ? this.sprite.frames - 1 : 0;
+    for (const a of this.engine.mix.structureAnimations.keys()) {
+      const [n, an] = a.split('_');
+      const anim = this.engine.mix.structureAnimations.get(a);
+      if (anim && n === this.data.name) {
+        this.animations.set(an, new GameMapEntityAnimation(an, new Vector(0, anim.StartFrame), anim.Frames, 0.1, 0));
+        this.animations.set(an + '-Damaged', new GameMapEntityAnimation(an + '-Damaged', new Vector(0, anim.StartFrame + (frameCount / 2)), anim.Frames, 0.1, 0));
+      }
+    }
+
+    if (frameCount > 0) {
+      this.animations.set('Destroyed', new GameMapEntityAnimation('Destroyed', new Vector(0, frameCount), 1, 0.1, 0));
+    } else {
+      if (this.isCivilian() && !this.isWall()){
+        this.animations.set('Idle', new GameMapEntityAnimation(name, new Vector(0, 0), 1, 0.1, 0));
+        this.animations.set('Idle-Damaged', new GameMapEntityAnimation(name, new Vector(0, 1), 1, 0.1, 0));
+        this.animations.set('Destroyed', new GameMapEntityAnimation(name, new Vector(0, 2), 1, 0.1, 0));
+      }
     }
 
     if (this.data.name === 'WEAP') {
@@ -94,9 +103,10 @@ export class StructureEntity extends GameMapEntity {
     // NOTE: Apparenty the game does this internally
     this.hitPoints = this.properties!.HitPoints * 2;
     if (this.data.health) {
+      this.health *= 2;
+    } else {
       this.health = this.hitPoints;
     }
-    this.health *= 2;
   }
 
   protected async initMake(): Promise<void> {
@@ -191,7 +201,13 @@ export class StructureEntity extends GameMapEntity {
       }
     }
 
-    this.animation = 'Idle' + DAMAGE_SUFFIX[this.getDamageState()];
+    if (this.getDamageState() > 1) {
+      this.animation = 'Destroyed';
+    } else if (this.getDamageState() === 1){
+      this.animation = 'Idle-Damaged';
+    } else {
+      this.animation = 'Idle';
+    }
   }
 
   public onRender(deltaTime: number): void {
