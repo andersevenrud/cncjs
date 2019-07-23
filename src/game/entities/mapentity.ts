@@ -144,7 +144,6 @@ export abstract class GameMapEntity extends GameEntity {
     }
 
     if (this.canHarvest()) {
-      console.error(this.directions)
       humanDirections.reduce((accumulator: number, d: string) => {
         const name = `Harvest-${d}`;
         this.animations.set(name, new GameMapEntityAnimation(name, new Vector(0, accumulator), 4, 0.1));

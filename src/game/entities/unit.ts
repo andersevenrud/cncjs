@@ -20,6 +20,8 @@ export class UnitEntity extends GameMapEntity {
   protected dimension: Vector = new Vector(24, 24);
   protected wakeSprite?: Sprite;
   protected wakeAnimation?: Animation;
+  protected damagedSmoke?: Sprite;
+  protected damagedSmokeAnimation?: Animation;
   protected reportSelect?: string = 'AWAIT1';
   protected reportMove?: string = 'ACKNO';
   protected reportAttack?: string = 'ACKNO';
@@ -67,6 +69,9 @@ export class UnitEntity extends GameMapEntity {
         this.offset.setY((this.sprite.size.y / 2) - (CELL_SIZE / 2));
       }
 
+      this.damagedSmoke = spriteFromName('CONQUER.MIX/smoke_m.png');
+      this.damagedSmokeAnimation = new Animation('Damaged-Smoke', new Vector(0, 0), this.damagedSmoke.frames, 0.5);
+      await this.engine.loadArchiveSprite(this.damagedSmoke);
     }
   }
 
@@ -117,6 +122,10 @@ export class UnitEntity extends GameMapEntity {
     if (this.wakeAnimation) {
       this.wakeAnimation.onUpdate();
     }
+
+    if (this.damagedSmokeAnimation) {
+      this.damagedSmokeAnimation.onUpdate();
+    }
   }
 
   public onRender(deltaTime: number): void {
@@ -156,6 +165,16 @@ export class UnitEntity extends GameMapEntity {
           Math.round(this.turretDirection) + this.sprite.frames / 2
         );
         this.sprite.render(turretFrame, position, context);
+      }
+
+      if (this.getDamageState() > 1 && this.damagedSmoke) {
+        const frame = this.damagedSmokeAnimation!.getFrameIndex();
+        const frameposition = position.clone().add(new Vector(
+          this.damagedSmoke.size.x / 2,
+          0
+        )) as Vector;
+
+        this.damagedSmoke.render(frame, frameposition, context);
       }
     }
   }
