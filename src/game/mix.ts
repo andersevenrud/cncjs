@@ -529,7 +529,7 @@ export const arrayMap: string[] = [
   'Airstrike',
   'Cloak',
   'Darkness',
-  'Explosion',
+  //'Explosion', // FIXME
   'HealBase',
   'ICBM',
   'IonCannon',
