@@ -427,7 +427,6 @@ export class TheatreUI extends UIScene {
       }
     } else if (hitTiberium) {
       if (this.cursor === 'harvest' && hitTiberium) {
-        console.error(hitTiberium)
         selected.forEach((s, i) => s.harvest(hitTiberium, i === 0));
       }
     } else {

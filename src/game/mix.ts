@@ -519,6 +519,8 @@ export interface MIXRules {
 
 export const healthBarColors = ['#00ff00', '#ffff00', '#ff0000'];
 
+export const humanDirections = ['N', 'NW', 'W', 'SW', 'S', 'SE', 'E', 'NE'];
+
 export const arrayMap: string[] = [
   'Owner',
   'Prerequisites',

@@ -106,7 +106,7 @@ export class InfantryEntity extends GameMapEntity {
   public onUpdate(deltaTime: number): void {
     super.onUpdate(deltaTime);
 
-    let animation = this.attacking
+    let animation = this.currentAction === 'attack'
       ? 'FireUp'
       : this.dying ? 'Die1' :
         this.targetPosition ? 'Walk' : this.idleAnimation;

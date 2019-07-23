@@ -7,7 +7,7 @@ import { Animation, Sprite } from '../../engine';
 import { Player } from '../player';
 import { GameMap } from '../map';
 import { getSubCellOffset, cellFromPoint, getDirection, getNewDirection, CELL_SIZE } from '../physics';
-import { MIXGrid, MIXMapEntityData, MIXObject } from '../mix';
+import { MIXGrid, MIXMapEntityData, MIXObject, humanDirections } from '../mix';
 import { HealthBarEntity } from './health';
 import { StorageBarEntity } from './storage';
 import { spriteFromName } from '../sprites';
@@ -18,12 +18,7 @@ import { Vector } from 'vector2d';
 const SPEED_DIVIDER = 20;
 const TURNSPEED_DIVIDER = 8;
 
-export type GameMapEntityTargetAction = 'attack' | 'patrol';
-
-export interface GameMapEntityTarget {
-  entity: GameMapEntity;
-  action: GameMapEntityTargetAction;
-}
+export type GameMapEntityTargetAction = 'attack' | 'harvest' | 'enter' | 'capture' | 'bomb';
 
 /**
  * Map Entity Animation
@@ -64,10 +59,11 @@ export abstract class GameMapEntity extends GameEntity {
   protected targetDirection: number = -1;
   protected targetPosition?: Vector;
   protected targetEntity?: GameMapEntity;
+  protected targetAction?: GameMapEntityTargetAction;
   protected currentPath: Vector[] = [];
+  protected currentAction?: GameMapEntityTargetAction;
   protected primaryWeapon?: Weapon;
   protected secondaryWeapon?: Weapon;
-  protected attacking: boolean = false;
 
   public constructor(data: MIXMapEntityData, map: GameMap) {
     super(map);
@@ -147,6 +143,15 @@ export abstract class GameMapEntity extends GameEntity {
       }
     }
 
+    if (this.canHarvest()) {
+      console.error(this.directions)
+      humanDirections.reduce((accumulator: number, d: string) => {
+        const name = `Harvest-${d}`;
+        this.animations.set(name, new GameMapEntityAnimation(name, new Vector(0, accumulator), 4, 0.1));
+        return accumulator + 4;
+      }, this.directions);
+    }
+
     if (this.getStorageSlots() > 0) {
       this.storageBar = new StorageBarEntity(this, this.engine);
       await this.storageBar.init();
@@ -189,19 +194,19 @@ export abstract class GameMapEntity extends GameEntity {
 
     const rotationSpeed = this.getRotationSpeed() / TURNSPEED_DIVIDER;
 
-    this.attacking = false;
+    this.currentAction = undefined;
 
     if (this.targetEntity) {
       const targetCell = this.targetEntity.getCell();
       const direction = getDirection(targetCell, this.cell, this.directions);
       const turretDirection = getDirection(targetCell, this.cell, this.turretDirections);
       const distance = Math.floor(targetCell.distance(this.cell)); // FIXME: Rounding off makes this less accurate
-
+      const sight = this.targetAction === 'harvest' ? 0 : this.getWeaponSight();
       const turretReached = Math.round(this.turretDirection) === turretDirection;
       const rotateTurret = this.properties!.HasTurret && !this.properties!.NoTurretLock;
       if (rotateTurret && !turretReached) {
         this.turretDirection = getNewDirection(this.turretDirection, turretDirection, rotationSpeed * 4, this.turretDirections);
-      } else if (distance <= this.getWeaponSight()) {
+      } else if (distance <= sight) {
         if (!this.canRotate()) {
           this.direction = direction;
         }
@@ -211,15 +216,17 @@ export abstract class GameMapEntity extends GameEntity {
         }
 
         this.targetPosition = undefined;
-        this.attacking = true;
         this.currentPath = [];
-      } else if (this.currentPath.length === 0) {
+        this.currentAction = this.targetAction;
+      } else if (this.currentPath.length === 0 && this.targetPosition === undefined) {
         this.moveTo(targetCell, false, true);
       }
     }
 
-    if (this.attacking) {
+    if (this.currentAction === 'attack') {
       this.primaryWeapon!.fire(this.targetEntity!);
+    } else if (this.currentAction === 'harvest') {
+      this.harvestResource(this.targetEntity!);
     } else if (this.targetDirection !== -1) {
       this.direction = getNewDirection(this.direction, this.targetDirection, rotationSpeed, this.directions);
 
@@ -230,7 +237,10 @@ export abstract class GameMapEntity extends GameEntity {
       const vel = this.getMovementVelocity();
       if (vel) {
         this.position.subtract(vel);
-        this.cell = cellFromPoint(this.position);
+        this.cell = cellFromPoint(new Vector(
+          Math.floor(this.position.x),
+          Math.floor(this.position.y)
+        ));
       } else {
         this.subCell = this.targetSubCell;
         this.targetSubCell = -1;
@@ -320,8 +330,8 @@ export abstract class GameMapEntity extends GameEntity {
       this.targetDirection = -1;
       this.targetPosition = undefined;
       this.currentPath = [];
-      this.attacking = false;
       this.targetEntity = undefined;
+      this.targetAction = undefined;
 
       if (this.reportLoss) {
         if (this.isPlayer()) {
@@ -343,8 +353,18 @@ export abstract class GameMapEntity extends GameEntity {
     return false;
   }
 
+  public harvest(target: GameMapEntity, report: boolean = false): void {
+    this.targetEntity = target;
+    this.targetAction = 'harvest';
+
+    if (report && this.reportMove) {
+      this.playSfx(this.reportMove);
+    }
+  }
+
   public attack(target: GameMapEntity, report: boolean = false) {
     this.targetEntity = target;
+    this.targetAction = 'attack';
 
     if (report && this.reportAttack) {
       this.playSfx(this.reportAttack);
@@ -353,7 +373,12 @@ export abstract class GameMapEntity extends GameEntity {
 
   public move(position: Vector, report: boolean = false): boolean {
     this.targetEntity = undefined;
+    this.targetAction = undefined;
+
     return this.moveTo(position, report);
+  }
+
+  protected harvestResource(target: GameMapEntity): void {
   }
 
   protected moveTo(position: Vector, report: boolean = false, force: boolean = false): boolean {
@@ -365,7 +390,6 @@ export abstract class GameMapEntity extends GameEntity {
     this.targetDirection = -1;
     this.targetPosition = undefined;
     this.currentPath = path;
-    this.attacking = false;
 
     if (report && this.reportMove) {
       this.playSfx(this.reportMove);

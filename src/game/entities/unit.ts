@@ -5,7 +5,7 @@
  */
 
 import { Animation, Sprite }  from '../../engine';
-import { MIXUnit } from '../mix';
+import { MIXUnit, humanDirections } from '../mix';
 import { CELL_SIZE } from '../physics';
 import { spriteFromName } from '../sprites';
 import { GameMapEntity } from './mapentity';
@@ -16,6 +16,7 @@ import { Vector } from 'vector2d';
  */
 export class UnitEntity extends GameMapEntity {
   public readonly properties: MIXUnit = this.engine.mix.units.get(this.data.name) as MIXUnit;
+  protected targetTiberium?: GameMapEntity;
   protected dimension: Vector = new Vector(24, 24);
   protected wakeSprite?: Sprite;
   protected wakeAnimation?: Animation;
@@ -65,6 +66,7 @@ export class UnitEntity extends GameMapEntity {
       if (this.sprite.size.y > CELL_SIZE) {
         this.offset.setY((this.sprite.size.y / 2) - (CELL_SIZE / 2));
       }
+
     }
   }
 
@@ -80,8 +82,15 @@ export class UnitEntity extends GameMapEntity {
     }
   }
 
-  public harvest(target: GameMapEntity, report: boolean = false): void {
-    this.moveTo(target.getCell(), report);
+  protected moveTo(position: Vector, report: boolean = false, force: boolean = false): boolean {
+    this.animation = '';
+    return super.moveTo(position, report, force);
+  }
+
+  protected harvestResource(target: GameMapEntity): void {
+    const dir = Math.round(this.getDirection() / 4);
+    const hdir = humanDirections[dir];
+    this.animation = `Harvest-${hdir}`;
   }
 
   public die(): boolean {
@@ -137,7 +146,8 @@ export class UnitEntity extends GameMapEntity {
       const frame = new Vector(this.frameOffset.x, spriteOffset + turretOffset);
       this.sprite.render(frame, position, context);
     } else {
-      const frame = new Vector(this.frameOffset.x, Math.round(this.direction));
+      const frameY = this.animation !== '' ? this.frame.y : Math.round(this.direction);
+      const frame = new Vector(this.frameOffset.x, frameY);
       this.sprite.render(frame, position, context);
 
       if (this.properties.HasTurret) {

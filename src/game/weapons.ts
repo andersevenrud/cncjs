@@ -6,12 +6,10 @@
 import { Sprite, randomBetweenInteger }  from '../engine';
 import { GameMap } from './map';
 import { GameEntity } from './entity';
-import { MIXWeapon, MIXBullet, MIXWarhead, irrelevantBulletImages } from './mix';
+import { MIXWeapon, MIXBullet, MIXWarhead, irrelevantBulletImages, humanDirections } from './mix';
 import { cellFromPoint, getDirection, CELL_SIZE } from './physics';
 import { spriteFromName } from './sprites';
 import { Vector } from 'vector2d';
-
-const directions = ['N', 'NW', 'W', 'SW', 'S', 'SE', 'E', 'NE'];
 
 export class ProjectileEntity extends GameEntity {
   protected readonly bulletName: string;
@@ -174,7 +172,7 @@ export class Weapon {
 
   protected createMuzzleFlash(): void {
     if (this.weapon.MuzzleFlash) {
-      const dir = directions[this.entity.getDirection()];
+      const dir = humanDirections[this.entity.getDirection()];
       const name = this.weapon.MuzzleFlash.replace('-N', `-${dir}`);
 
       this.map.factory.load('effect', {
