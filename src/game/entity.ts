@@ -393,7 +393,7 @@ export abstract class GameEntity extends Entity {
   }
 
   public isTiberium(): boolean {
-    return this.getName().substr(0, 2) === 'TI';
+    return false;
   }
 
   public isPrimary(): boolean {

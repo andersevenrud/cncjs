@@ -12,6 +12,7 @@ import { EffectEntity } from './entities/effect';
 import { UnitEntity } from './entities/unit';
 import { StructureEntity } from './entities/structure';
 import { OverlayEntity } from './entities/overlay';
+import { TiberiumEntity } from './entities/tiberium';
 import { StructureMaskEntity } from './entities/mask';
 import { GameMapEntitySelection } from './entities/selection';
 import { GameEntity } from './entity';
@@ -42,6 +43,7 @@ export const sortByZindex = (a: GameEntity, b: GameEntity) => {
 export class GameMapEntityFactory {
   private readonly map: GameMap;
   protected static readonly entityMap: any = {
+    tiberium: TiberiumEntity,
     terrain: TerrainEntity,
     overlay: OverlayEntity,
     effect: EffectEntity,
@@ -242,10 +244,17 @@ export class GameMap extends Entity {
         });
       }));
     } else {
+      const [overlays, tiberium] = data.overlays.reduce((a: MIXMapEntityData[][], o) => {
+        const i = o.name.substr(0, 2) === 'TI' ? 1 : 0;
+        a[i].push(o);
+        return a;
+      }, [[], []]);
+
       await Promise.all([
         ...createEntityFrom('smudge', data.smudge),
         ...createEntityFrom('terrain', data.terrain),
-        ...createEntityFrom('overlay', data.overlays),
+        ...createEntityFrom('overlay', overlays),
+        ...createEntityFrom('tiberium', tiberium),
         ...createEntityFrom('structure', data.structures),
         ...createEntityFrom('infantry', data.infantry),
         ...createEntityFrom('unit', data.units)

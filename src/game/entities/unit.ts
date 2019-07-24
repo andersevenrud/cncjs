@@ -9,6 +9,7 @@ import { MIXUnit, humanDirections } from '../mix';
 import { CELL_SIZE } from '../physics';
 import { spriteFromName } from '../sprites';
 import { GameMapEntity } from './mapentity';
+import { TiberiumEntity } from './tiberium';
 import { Vector } from 'vector2d';
 
 /**
@@ -16,7 +17,6 @@ import { Vector } from 'vector2d';
  */
 export class UnitEntity extends GameMapEntity {
   public readonly properties: MIXUnit = this.engine.mix.units.get(this.data.name) as MIXUnit;
-  protected targetTiberium?: GameMapEntity;
   protected dimension: Vector = new Vector(24, 24);
   protected wakeSprite?: Sprite;
   protected wakeAnimation?: Animation;
@@ -26,6 +26,7 @@ export class UnitEntity extends GameMapEntity {
   protected reportMove?: string = 'ACKNO';
   protected reportAttack?: string = 'ACKNO';
   protected zIndex: number = 3;
+  protected harvesting: boolean = false;
 
   public toJson(): any {
     return {
@@ -93,9 +94,35 @@ export class UnitEntity extends GameMapEntity {
   }
 
   protected harvestResource(target: GameMapEntity): void {
+    if (this.storageSlots[0] >= this.storageSlots[1]) {
+      this.animation = '';
+      return;
+    }
+
     const dir = Math.round(this.getDirection() / 4);
     const hdir = humanDirections[dir];
-    this.animation = `Harvest-${hdir}`;
+    const animationName = `Harvest-${hdir}`;
+
+    if (this.animation === animationName) {
+      const animation = this.animations.get(this.animation);
+      if (animation) {
+        const end = animation.getOffset().y + animation.getCount() - 1;
+        if (this.frame.y >= end) {
+          if (!this.harvesting) {
+            const target = this.targetEntity as TiberiumEntity;
+            if (target && target.hasTiberium()) {
+              target.subtractTiberium();
+              this.storageSlots[0]++;
+            }
+          }
+          this.harvesting = true;
+        } else {
+          this.harvesting = false;
+        }
+      }
+    }
+
+    this.animation = animationName;
   }
 
   public die(): boolean {

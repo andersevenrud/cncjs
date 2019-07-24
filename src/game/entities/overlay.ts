@@ -10,25 +10,14 @@ import { MIXGrid } from '../mix';
  * Overlay Entity
  */
 export class OverlayEntity extends GameMapEntity {
-  protected tiberiumLeft = 11;
-  protected zIndex: number = this.isTiberium() ? 1 : 4;
-  protected occupy: MIXGrid = this.isTiberium()
-    ? { name: '', grid: [] }
-    : { name: '', grid: [['x']] };
+  protected zIndex: number = 4;
+  protected occupy: MIXGrid = { name: '', grid: [['x']] };
 
   public toJson(): any {
     return {
       ...super.toJson(),
       type: 'overlay'
     };
-  }
-
-  public onUpdate(deltaTime: number): void {
-    super.onUpdate(deltaTime);
-
-    if (this.isTiberium()) {
-      this.frameOffset.setY(this.tiberiumLeft);
-    }
   }
 
   public onRender(deltaTime: number): void {
@@ -38,6 +27,6 @@ export class OverlayEntity extends GameMapEntity {
   }
 
   public getColor(): string {
-    return this.isTiberium() ? '#004400' : '#ffffff';
+    return '#ffffff';
   }
 }
