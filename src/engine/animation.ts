@@ -76,4 +76,15 @@ export class Animation extends EventEmitter {
       .add(offset)
       .add(new Vector(0, frame)) as Vector;
   }
+
+  /**
+   * Get animation frame count
+   */
+  public getCount(): number {
+    return this.count;
+  }
+
+  public getOffset(): Vector {
+    return this.offset.clone() as Vector;
+  }
 }
