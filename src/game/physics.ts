@@ -106,3 +106,16 @@ export const getSubCellOffset = (subcell: number, dimension: Vector): Vector => 
 
   return offset;
 };
+
+export const findClosestPosition = (source: Vector, positions: Vector[]) => {
+  let closest = -1;
+
+  for (let i = 0; i < positions.length; i++) {
+    let distance = source.distance(positions[i]);
+    if (closest === -1 || distance < closest) {
+      closest = i;
+    }
+  }
+
+  return closest;
+};

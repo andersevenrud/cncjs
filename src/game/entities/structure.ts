@@ -248,6 +248,13 @@ export class StructureEntity extends GameMapEntity {
     }
   }
 
+  public getEnterOffset(): Vector {
+    if (this.isRefinery()) {
+      return new Vector(0, 2);
+    }
+    return new Vector(0, 0);
+  }
+
   public getPowerProduction(): number {
     return this.properties.PowerProduction;
   }

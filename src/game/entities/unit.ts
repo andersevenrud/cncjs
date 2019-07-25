@@ -6,7 +6,7 @@
 
 import { Animation, Sprite }  from '../../engine';
 import { MIXUnit, humanDirections } from '../mix';
-import { CELL_SIZE } from '../physics';
+import { findClosestPosition, CELL_SIZE } from '../physics';
 import { spriteFromName } from '../sprites';
 import { GameMapEntity } from './mapentity';
 import { TiberiumEntity } from './tiberium';
@@ -93,9 +93,37 @@ export class UnitEntity extends GameMapEntity {
     return super.moveTo(position, report, force);
   }
 
+  protected returnHome(): void {
+    if (this.targetPosition) {
+      return;
+    }
+
+    if (this.canHarvest()) {
+      const procs = this.map.getEntities()
+        .filter(e => e.getPlayerId() === this.getPlayerId())
+        .filter(e => e.isRefinery());
+        // FIXME: Damage state
+
+      const positions = procs.map(e => e.getPosition());
+      const closest = findClosestPosition(this.position, positions);
+
+      if (closest === -1) {
+        console.log('Could not find a refinery.')
+      } else {
+        const proc = procs[closest] as GameMapEntity;
+        this.targetAction = 'harvest-return';
+        this.enter(proc, false);
+      }
+
+      console.error(closest, this.targetEntity)
+    }
+  }
+
   protected harvestResource(target: GameMapEntity): void {
     if (this.storageSlots[0] >= this.storageSlots[1]) {
       this.animation = '';
+      this.targetEntity = undefined;
+      this.returnHome();
       return;
     }
 
@@ -152,6 +180,16 @@ export class UnitEntity extends GameMapEntity {
 
     if (this.damagedSmokeAnimation) {
       this.damagedSmokeAnimation.onUpdate();
+    }
+
+    if (this.targetAction === 'harvest-return') {
+      if (this.currentPath.length === 0) {
+        if (this.direction !== 14) {
+          // TODO
+        } else {
+          this.targetDirection = 14;
+        }
+      }
     }
   }
 

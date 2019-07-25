@@ -127,6 +127,13 @@ export abstract class GameEntity extends Entity {
   public attack(target: GameEntity, report: boolean = false): void {
   }
 
+  public enter(entity: GameEntity, report: boolean = false): boolean {
+    const destination = entity.getCell()
+      .add(entity.getEnterOffset());
+
+    return this.moveTo(destination, report, true);
+  }
+
   public move(position: Vector, report: boolean = false): boolean {
     return this.moveTo(position, report);
   }
@@ -143,7 +150,7 @@ export abstract class GameEntity extends Entity {
   public capture(target: GameEntity): void {
   }
 
-  protected moveTo(position: Vector, report: boolean = false): boolean {
+  protected moveTo(position: Vector, report: boolean = false, force: boolean = false): boolean {
     return false;
   }
 
@@ -287,6 +294,14 @@ export abstract class GameEntity extends Entity {
     return this.storageSlots[0];
   }
 
+  public getEnterOffset(): Vector {
+    return new Vector(0, 0);
+  }
+
+  public getExitOffset(): Vector {
+    return new Vector(0, 0);
+  }
+
   public canRotate(): boolean {
     return false;
   }
@@ -322,6 +337,10 @@ export abstract class GameEntity extends Entity {
 
   public isHelipad(): boolean {
     return ['HPAD'].indexOf(this.getName()) !== -1;
+  }
+
+  public isRefinery(): boolean {
+    return ['PROC'].indexOf(this.getName()) !== -1;
   }
 
   public isCapturable(): boolean {

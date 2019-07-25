@@ -18,7 +18,7 @@ import { Vector } from 'vector2d';
 const SPEED_DIVIDER = 20;
 const TURNSPEED_DIVIDER = 8;
 
-export type GameMapEntityTargetAction = 'attack' | 'harvest' | 'enter' | 'capture' | 'bomb';
+export type GameMapEntityTargetAction = 'attack' | 'harvest' | 'enter' | 'capture' | 'bomb' | 'harvest-return';
 
 /**
  * Map Entity Animation

@@ -411,7 +411,13 @@ export class TheatreUI extends UIScene {
         map.unselectEntities();
         hitEntity.setSelected(true);
       } else if (this.cursor === 'enter') {
-        selected.forEach(s => s.capture(hitEntity)); //  FIXME
+        selected.forEach(s => {
+          if (s.canHarvest() && hitEntity.isRefinery()) {
+            s.enter(hitEntity);
+          } else {
+            s.capture(hitEntity);
+          }
+        }); //  FIXME
       } else if (this.cursor === 'attack') {
         selected.forEach((s, i) => s.attack(hitEntity, i === 0));
       } else if (this.cursor === 'sell') {
@@ -586,6 +592,8 @@ export class TheatreUI extends UIScene {
         return 'bomb';
       } else {
         if (hovering && selected.length > 0 && hovering.isCapturable() && canCapture) {
+          return revealed ? 'enter' : 'unavailable';
+        } else if (hovering && selected.length > 0 && hovering.isRefinery() && canHarvest) {
           return revealed ? 'enter' : 'unavailable';
         } else if (tiberium && selected.length > 0 && canHarvest) {
           return revealed ? 'harvest' : 'unavailable';
