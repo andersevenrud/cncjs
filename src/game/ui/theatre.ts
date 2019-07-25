@@ -55,6 +55,12 @@ import { Vector } from 'vector2d';
 
 export const SCROLL_BORDER = 2;
 export type ActionsName = 'sell' | 'repair' | 'ion' | 'atom' | 'bomb';
+export type CursorActionName = ('capture' | 'harvest') & MIXCursorType;
+
+export interface CursorAction {
+  name?: CursorActionName;
+  cursor: MIXCursorType;
+}
 
 export class TheatreUI extends UIScene {
   public readonly scene: TheatreScene;
@@ -64,11 +70,11 @@ export class TheatreUI extends UIScene {
   private placeConstruction?: string;
   private currentAction?: ActionsName;
   private menuOpen: boolean = false;
-  private cursor: MIXCursorType = 'default';
   private mapButton?: UIIconButton;
   private minimap?: UIMinimap;
   private sidebar?: UISidebar;
   private constructionCallback?: Function;
+  private cursorAction: CursorAction = { cursor: 'default' };
 
   public constructor(scene: TheatreScene) {
     super(scene.engine);
@@ -404,27 +410,25 @@ export class TheatreUI extends UIScene {
     const hitEntity = entities.find(e => e.isSelectable());
     const hitTiberium = entities.find(e => e.isTiberium());
 
+
+    const action = this.cursorAction.name;
     if (hitEntity) {
       console.log('hitEntity', point, cell, hitEntity);
 
-      if (this.cursor === 'select') {
+      if (action === 'select') {
         map.unselectEntities();
         hitEntity.setSelected(true);
-      } else if (this.cursor === 'enter') {
-        selected.forEach(s => {
-          if (s.canHarvest() && hitEntity.isRefinery()) {
-            s.enter(hitEntity);
-          } else {
-            s.capture(hitEntity);
-          }
-        }); //  FIXME
-      } else if (this.cursor === 'attack') {
+      } else if (action === 'capture') {
+        selected.forEach(s => s.capture(hitEntity)); // FIXME
+      } else if (action === 'enter') {
+        selected.forEach(s => s.canHarvest() && hitEntity.isRefinery()); // FIXME
+      } else if (action === 'attack') {
         selected.forEach((s, i) => s.attack(hitEntity, i === 0));
-      } else if (this.cursor === 'sell') {
+      } else if (action === 'sell') {
         hitEntity.sell();
-      } else if (this.cursor === 'repair') {
+      } else if (action === 'repair') {
         hitEntity.repair();
-      } else if (this.cursor === 'expand') {
+      } else if (action === 'expand') {
         const deployable = selected.filter(s => s.isDeployable());
         if (deployable.length > 0) {
           deployable[0].deploy();
@@ -432,11 +436,11 @@ export class TheatreUI extends UIScene {
         }
       }
     } else if (hitTiberium) {
-      if (this.cursor === 'harvest' && hitTiberium) {
+      if (action === 'harvest' && hitTiberium) {
         selected.forEach((s, i) => s.harvest(hitTiberium, i === 0));
       }
     } else {
-      if (this.cursor === 'move') {
+      if (action === 'move') {
         map.moveSelectedEntities(cell);
       }
     }
@@ -529,7 +533,7 @@ export class TheatreUI extends UIScene {
 
     let cursor: MIXCursorType = 'default';
     if (!this.menuOpen) {
-      cursor = this.getViewportCursor(mpos);
+      this.updateCursorAction(mpos);
 
       let scrollV = new Vector(0, 0);
       let scrollC = '';
@@ -559,14 +563,15 @@ export class TheatreUI extends UIScene {
             cursor = ('cannot' + capitalize(cursor)) as MIXCursorType;
           }
         }
+      } else {
+        cursor = this.cursorAction.cursor;
       }
     }
 
-    this.cursor = cursor;
     this.scene.engine.cursor.setCursor(cursor);
   }
 
-  private getViewportCursor(mpos: MousePosition): MIXCursorType {
+  private updateCursorAction(mpos: MousePosition): void {
     const map = this.scene.map;
     const pos = map.getRealMousePosition(mpos);
     const selected = map.getSelectedEntities();
@@ -579,41 +584,50 @@ export class TheatreUI extends UIScene {
     const cell = cellFromPoint(pos);
     const revealed = map.isFowVisible() ? map.fow.isRevealedAt(cell) : true;
 
+    let cursorName: MIXCursorType = 'default';
+    let actionName;
+
     if (!this.isMouseOutsideViewport()) {
       if (this.currentAction === 'sell') {
-        return hovering && hovering.isSellable() ? 'sell' : 'cannotSell';
+        cursorName = hovering && hovering.isSellable() ? 'sell' : 'cannotSell';
       } else if (this.currentAction === 'repair') {
-        return hovering && hovering.isRepairable() ? 'repair' : 'cannotRepair';
+        cursorName = hovering && hovering.isRepairable() ? 'repair' : 'cannotRepair';
       } else if (this.currentAction === 'ion') {
-        return 'ion';
+        cursorName = 'ion';
       } else if (this.currentAction === 'atom') {
-        return 'nuke';
+        cursorName = 'nuke';
       } else if (this.currentAction === 'bomb') {
-        return 'bomb';
+        cursorName = 'bomb';
       } else {
         if (hovering && selected.length > 0 && hovering.isCapturable() && canCapture) {
-          return revealed ? 'enter' : 'unavailable';
+          cursorName = revealed ? 'enter' : 'unavailable';
+          if (cursorName === 'enter') {
+            actionName = 'capture';
+          }
         } else if (hovering && selected.length > 0 && hovering.isRefinery() && canHarvest) {
-          return revealed ? 'enter' : 'unavailable';
+          cursorName = revealed ? 'enter' : 'unavailable';
         } else if (tiberium && selected.length > 0 && canHarvest) {
-          return revealed ? 'harvest' : 'unavailable';
+          cursorName = revealed ? 'attack' : 'unavailable';
+          if (cursorName === 'attack') {
+            actionName = 'harvest';
+          }
         } else if (hovering && selected.length > 0 && hovering.isAttackable(selected[0]) && canAttack) {
-          return revealed ? 'attack' : 'move';
+          cursorName = revealed ? 'attack' : 'move';
         } else if (revealed && hovering && hovering.isSelectable()) {
-          return selected[0] === hovering &&  hovering.isDeployable()
+          cursorName = selected[0] === hovering &&  hovering.isDeployable()
             ? 'expand'
             : 'select';
         } else if (selected.length > 0) {
           const movable = selected.some((s: GameEntity): boolean => s.isMovable());
           if (movable) {
             const walkable = map.grid.isWalkableAt(cell.x, cell.y);
-            return walkable || !revealed ? 'move' : 'unavailable';
+            cursorName = walkable || !revealed ? 'move' : 'unavailable';
           }
         }
       }
     }
 
-    return 'default';
+    this.cursorAction = { cursor: cursorName, name: (actionName || cursorName) as CursorActionName };
   }
 
   private isMouseOutsideViewport(): boolean {
